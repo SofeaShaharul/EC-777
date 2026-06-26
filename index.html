@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ENCOM SYSTEMS — SECURE ACCESS</title>
 <style>
+/* ... (your existing styles remain the same) ... */
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 body{font-family:'Courier New',monospace;color:#00e5ff;}
@@ -48,6 +49,29 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 .msg-highlight{color:#00e5ff;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;text-shadow:0 0 16px #00e5ff;display:block;margin:20px 0 10px;}
 .msg-footer{font-size:9px;letter-spacing:.22em;color:rgba(0,229,255,.25);margin-top:28px;text-transform:uppercase;}
 .msg-sig{font-size:clamp(11px,1.7vw,14px);color:rgba(0,229,255,.5);letter-spacing:.15em;margin-top:10px;font-style:italic;}
+
+/* Audio debug overlay */
+#audio-debug {
+    position: fixed;
+    bottom: 10px;
+    left: 10px;
+    background: rgba(0,0,0,0.85);
+    border: 1px solid rgba(0,229,255,0.3);
+    padding: 10px 15px;
+    font-family: 'Courier New', monospace;
+    font-size: 9px;
+    color: #00e5ff;
+    z-index: 999;
+    max-width: 400px;
+    max-height: 200px;
+    overflow-y: auto;
+    display: none;
+    line-height: 1.6;
+}
+#audio-debug.show { display: block; }
+#audio-debug .error { color: #ff4444; }
+#audio-debug .success { color: #44ff44; }
+#audio-debug .info { color: #ffaa44; }
 </style>
 </head>
 <body>
@@ -58,6 +82,9 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 <div id="encom-hud">ENCOM SYSTEMS INC.</div>
 <div id="clock-hud"></div>
 <div id="flash"></div>
+
+<!-- Audio Debug Overlay -->
+<div id="audio-debug"></div>
 
 <div id="tapstart">
   <div class="ts-logo">ENCOM SYSTEMS INC. — SECURE NETWORK</div>
@@ -391,11 +418,39 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 </div>
 
 <audio id="audio" loop preload="auto">
-  <source src="YOUR_AUDIO_FILE.mp3" type="audio/mpeg">
+  <source src="EndofLine.mp3" type="audio/mpeg">
 </audio>
 
 <script>
 const $=id=>document.getElementById(id);
+const debugEl = $('audio-debug');
+
+// Enhanced audio debugging function
+function logAudio(message, type = 'info') {
+    if (!debugEl) return;
+    const timestamp = new Date().toLocaleTimeString();
+    const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
+    debugEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
+    debugEl.scrollTop = debugEl.scrollHeight;
+    
+    // Also log to console for server-side debugging
+    console.log(`[AUDIO] ${message}`);
+}
+
+function showDebug() {
+    if (debugEl) {
+        debugEl.classList.add('show');
+    }
+}
+
+// Toggle debug with key press (D key)
+document.addEventListener('keydown', (e) => {
+    if (e.key === 'd' || e.key === 'D') {
+        if (debugEl) {
+            debugEl.classList.toggle('show');
+        }
+    }
+});
 
 function clock(){
   const n=new Date();
@@ -564,12 +619,236 @@ function showMessage(){
   setTimeout(()=>{msg.style.opacity='1';$('sig3').style.opacity='1';},400);
 }
 
-$('tapstart').addEventListener('click',()=>{
-  $('tapstart').style.display='none';
-  $('phase1').style.display='flex';
-  try{const a=$('audio');a.volume=0.55;a.play().catch(()=>{});}catch(e){}
-  setTimeout(runLines,600);
+// Comprehensive audio handler with debugging
+function initAudio() {
+    const audio = $('audio');
+    if (!audio) {
+        logAudio('Audio element not found!', 'error');
+        return;
+    }
+    
+    logAudio('Audio element found. Checking source...', 'info');
+    
+    // Check if source element exists
+    const source = audio.querySelector('source');
+    if (!source) {
+        logAudio('No source element found in audio tag!', 'error');
+        return;
+    }
+    
+    logAudio(`Source URL: ${source.src}`, 'info');
+    logAudio(`Source type: ${source.type}`, 'info');
+    
+    // Add event listeners for debugging
+    audio.addEventListener('loadstart', () => {
+        logAudio('loadstart: Browser has started looking for data', 'info');
+    });
+    
+    audio.addEventListener('loadedmetadata', () => {
+        logAudio(`loadedmetadata: Duration=${audio.duration}s, ReadyState=${audio.readyState}`, 'success');
+    });
+    
+    audio.addEventListener('loadeddata', () => {
+        logAudio(`loadeddata: Data loaded, ReadyState=${audio.readyState}`, 'success');
+    });
+    
+    audio.addEventListener('canplay', () => {
+        logAudio('canplay: Enough data to start playing', 'success');
+    });
+    
+    audio.addEventListener('canplaythrough', () => {
+        logAudio('canplaythrough: Enough data to play through', 'success');
+    });
+    
+    audio.addEventListener('playing', () => {
+        logAudio('playing: Audio is playing', 'success');
+    });
+    
+    audio.addEventListener('play', () => {
+        logAudio('play: Playback started', 'success');
+    });
+    
+    audio.addEventListener('pause', () => {
+        logAudio('pause: Playback paused', 'info');
+    });
+    
+    audio.addEventListener('ended', () => {
+        logAudio('ended: Playback ended', 'info');
+    });
+    
+    audio.addEventListener('error', (e) => {
+        const error = audio.error;
+        let errorMsg = 'Unknown error';
+        if (error) {
+            switch(error.code) {
+                case error.MEDIA_ERR_ABORTED:
+                    errorMsg = 'MEDIA_ERR_ABORTED: Fetching process aborted by user';
+                    break;
+                case error.MEDIA_ERR_NETWORK:
+                    errorMsg = 'MEDIA_ERR_NETWORK: Network error occurred';
+                    break;
+                case error.MEDIA_ERR_DECODE:
+                    errorMsg = 'MEDIA_ERR_DECODE: Decoding error - file may be corrupted or unsupported format';
+                    break;
+                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
+                    errorMsg = 'MEDIA_ERR_SRC_NOT_SUPPORTED: Source format not supported by browser';
+                    break;
+                default:
+                    errorMsg = `Unknown error code: ${error.code}`;
+            }
+            logAudio(`ERROR: ${errorMsg}`, 'error');
+            logAudio(`Error details: ${error.message || 'No additional details'}`, 'error');
+            
+            // Check if it's a CORS issue
+            if (error.code === error.MEDIA_ERR_NETWORK) {
+                logAudio('⚠️ This may be a CORS issue or the file may not exist at the given path', 'error');
+            }
+        }
+        
+        // Log source URL for debugging
+        logAudio(`Attempted to load: ${source.src}`, 'error');
+    });
+    
+    // Check network status of the audio file
+    fetch(source.src, { method: 'HEAD' })
+        .then(response => {
+            if (response.ok) {
+                logAudio(`File found! Status: ${response.status} ${response.statusText}`, 'success');
+                logAudio(`Content-Type: ${response.headers.get('content-type')}`, 'info');
+                logAudio(`Content-Length: ${response.headers.get('content-length')} bytes`, 'info');
+            } else {
+                logAudio(`File not found! Status: ${response.status} ${response.statusText}`, 'error');
+                logAudio(`URL checked: ${source.src}`, 'error');
+                
+                // Try to check if file exists with full URL
+                const fullUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + source.src;
+                logAudio(`Full URL would be: ${fullUrl}`, 'info');
+                logAudio('💡 Make sure the file "EndofLine.mp3" is in the same directory as this HTML file', 'error');
+            }
+        })
+        .catch(err => {
+            logAudio(`Failed to check file: ${err.message}`, 'error');
+        });
+    
+    // Check browser support
+    const canPlayMP3 = audio.canPlayType('audio/mpeg');
+    logAudio(`MP3 support: ${canPlayMP3 || 'not supported'}`, canPlayMP3 ? 'success' : 'error');
+    
+    // Set volume
+    audio.volume = 0.55;
+    logAudio(`Volume set to: ${audio.volume}`, 'info');
+    
+    return audio;
+}
+
+// Enhanced play audio function with retry logic
+function playAudioWithRetry(audio, maxRetries = 3) {
+    let retries = 0;
+    
+    function attemptPlay() {
+        if (!audio) {
+            logAudio('No audio element to play', 'error');
+            return Promise.reject(new Error('No audio element'));
+        }
+        
+        logAudio(`Attempting to play (attempt ${retries + 1}/${maxRetries})`, 'info');
+        
+        return audio.play()
+            .then(() => {
+                logAudio('Play success! Audio is playing.', 'success');
+                return true;
+            })
+            .catch(err => {
+                logAudio(`Play failed: ${err.name} - ${err.message}`, 'error');
+                
+                // Check for specific errors
+                if (err.name === 'NotSupportedError') {
+                    logAudio('⚠️ Browser does not support this audio format', 'error');
+                } else if (err.name === 'NotAllowedError') {
+                    logAudio('⚠️ User interaction required before playing audio', 'info');
+                    // We'll retry on user interaction
+                    document.addEventListener('click', () => {
+                        logAudio('User interaction detected, retrying play', 'info');
+                        attemptPlay();
+                    }, { once: true });
+                    return false;
+                } else if (err.name === 'NotFoundError') {
+                    logAudio('⚠️ Audio file not found at the specified path', 'error');
+                } else if (err.name === 'AbortError') {
+                    logAudio('⚠️ Playback was aborted', 'info');
+                }
+                
+                // Retry logic
+                if (retries < maxRetries) {
+                    retries++;
+                    setTimeout(attemptPlay, 1000 * retries);
+                    return false;
+                }
+                
+                logAudio('All retry attempts failed', 'error');
+                return false;
+            });
+    }
+    
+    return attemptPlay();
+}
+
+// Main initialization
+$('tapstart').addEventListener('click', () => {
+    logAudio('User tapped start button', 'info');
+    $('tapstart').style.display = 'none';
+    $('phase1').style.display = 'flex';
+    
+    // Show debug overlay initially for troubleshooting
+    // Uncomment to auto-show debug:
+    // showDebug();
+    
+    // Initialize audio with debugging
+    const audio = initAudio();
+    
+    if (audio) {
+        // Try to play with retry
+        playAudioWithRetry(audio, 3)
+            .then(played => {
+                if (played) {
+                    logAudio('Audio playback started successfully', 'success');
+                } else {
+                    logAudio('Audio could not start. Check the debug panel (press D) for details.', 'error');
+                    // Add a retry button if audio fails
+                    const retryBtn = document.createElement('button');
+                    retryBtn.textContent = '🔄 Retry Audio';
+                    retryBtn.style.cssText = `
+                        position: fixed; bottom: 50px; left: 50%;
+                        transform: translateX(-50%);
+                        z-index: 999;
+                        padding: 10px 20px;
+                        background: #00e5ff;
+                        color: #000;
+                        border: none;
+                        font-family: 'Courier New', monospace;
+                        font-size: 12px;
+                        cursor: pointer;
+                        animation: tapblink 1.8s ease-in-out infinite;
+                    `;
+                    document.body.appendChild(retryBtn);
+                    retryBtn.addEventListener('click', () => {
+                        logAudio('Manual retry triggered', 'info');
+                        playAudioWithRetry(audio, 3);
+                        retryBtn.remove();
+                    });
+                }
+            });
+    }
+    
+    // Start the terminal sequence
+    setTimeout(runLines, 600);
 });
+
+// Keyboard shortcut to toggle debug (already added above)
+// Press D to show/hide audio debug panel
+
+console.log('🔊 ENCOM Audio System initialized. Press D to toggle debug panel.');
+logAudio('Welcome to ENCOM Systems. Audio debug enabled.', 'info');
 </script>
 </body>
 </html>
