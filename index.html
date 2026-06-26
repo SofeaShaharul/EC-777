@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<title>ENCOM SYSTEMS — SECURE ACCESS</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;background:#000;overflow:hidden;}
+body{font-family:'Courier New',monospace;color:#00e5ff;}
+#scanline{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(0,229,255,0.12);animation:scan 7s linear infinite;pointer-events:none;z-index:50;}
+@keyframes scan{0%{top:-2px}100%{top:100vh}}
+#gridlines{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
+#encom-hud{position:fixed;top:14px;left:18px;font-size:9px;letter-spacing:.35em;color:rgba(0,229,255,.2);text-transform:uppercase;z-index:10;}
+#clock-hud{position:fixed;top:14px;right:18px;font-size:9px;letter-spacing:.2em;color:rgba(0,229,255,.2);z-index:10;}
+#corner-tl{position:fixed;top:0;left:0;width:28px;height:28px;border-top:1px solid rgba(0,229,255,.35);border-left:1px solid rgba(0,229,255,.35);}
+#corner-tr{position:fixed;top:0;right:0;width:28px;height:28px;border-top:1px solid rgba(0,229,255,.35);border-right:1px solid rgba(0,229,255,.35);}
+#corner-bl{position:fixed;bottom:0;left:0;width:28px;height:28px;border-bottom:1px solid rgba(0,229,255,.35);border-left:1px solid rgba(0,229,255,.35);}
+#corner-br{position:fixed;bottom:0;right:0;width:28px;height:28px;border-bottom:1px solid rgba(0,229,255,.35);border-right:1px solid rgba(0,229,255,.35);}
+#flash{position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:200;transition:opacity .06s;}
+
+#tapstart{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;cursor:pointer;}
+.ts-logo{font-size:9px;letter-spacing:.45em;color:rgba(0,229,255,.25);text-transform:uppercase;margin-bottom:44px;}
+.ts-icon{width:68px;height:68px;margin:0 auto 38px;}
+.ts-icon svg{width:100%;height:100%;}
+.ts-prompt{font-size:clamp(13px,2.5vw,16px);letter-spacing:.3em;color:#00e5ff;text-transform:uppercase;text-shadow:0 0 18px #00e5ff;animation:tapblink 1.8s ease-in-out infinite;}
+@keyframes tapblink{0%,100%{opacity:1}50%{opacity:0.2}}
+.ts-sub{font-size:9px;letter-spacing:.2em;color:rgba(0,229,255,.25);margin-top:14px;text-transform:uppercase;}
+
+#phase1{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;padding:44px 44px 56px;}
+#terminal-scroll{overflow:hidden;max-height:calc(100vh - 100px);display:flex;flex-direction:column;justify-content:flex-end;}
+#terminal{font-size:clamp(11px,1.65vw,14.5px);line-height:2.05;color:#00e5ff;text-shadow:0 0 7px rgba(0,229,255,.4);white-space:pre-wrap;max-width:660px;}
+.cur{display:inline-block;width:8px;height:.95em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 5px #00e5ff;}
+@keyframes blink{50%{opacity:0}}
+
+#phase2{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;}
+.map-hud-top{font-size:9px;letter-spacing:.4em;color:rgba(0,229,255,.35);text-transform:uppercase;margin-bottom:8px;text-align:center;}
+.map-hud-title{font-size:clamp(11px,2vw,15px);letter-spacing:.25em;color:#00e5ff;text-shadow:0 0 10px #00e5ff;text-transform:uppercase;margin-bottom:14px;text-align:center;}
+#mapsvg-wrap{width:min(96vw,660px);flex-shrink:0;}
+#mapsvg-wrap svg{width:100%;height:auto;display:block;}
+#tap-proceed{display:none;margin-top:18px;font-family:'Courier New',monospace;font-size:clamp(10px,1.6vw,12px);letter-spacing:.3em;color:rgba(0,229,255,.45);text-transform:uppercase;text-align:center;cursor:pointer;border:1px solid rgba(0,229,255,.2);padding:11px 26px;background:transparent;animation:tapblink 1.8s ease-in-out infinite;}
+#tap-proceed.on{display:block;}
+
+#phase3{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:36px;text-align:center;}
+.msg-glyph{width:56px;height:56px;margin:0 auto 24px;}
+.msg-glyph svg{width:100%;height:100%;}
+.msg-line{font-size:clamp(13px,1.9vw,16px);color:rgba(0,229,255,.8);letter-spacing:.06em;line-height:2.3;max-width:520px;}
+.msg-highlight{color:#00e5ff;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;text-shadow:0 0 16px #00e5ff;display:block;margin:20px 0 10px;}
+.msg-footer{font-size:9px;letter-spacing:.22em;color:rgba(0,229,255,.25);margin-top:28px;text-transform:uppercase;}
+.msg-sig{font-size:clamp(11px,1.7vw,14px);color:rgba(0,229,255,.5);letter-spacing:.15em;margin-top:10px;font-style:italic;}
+</style>
+</head>
+<body>
+<div id="gridlines"></div>
+<div id="scanline"></div>
+<div id="corner-tl"></div><div id="corner-tr"></div>
+<div id="corner-bl"></div><div id="corner-br"></div>
+<div id="encom-hud">ENCOM SYSTEMS INC.</div>
+<div id="clock-hud"></div>
+<div id="flash"></div>
+
+<div id="tapstart">
+  <div class="ts-logo">ENCOM SYSTEMS INC. — SECURE NETWORK</div>
+  <div class="ts-icon">
+    <svg viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg">
+      <circle cx="34" cy="34" r="30" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
+      <circle cx="34" cy="34" r="20" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".55"/>
+      <circle cx="34" cy="34" r="10" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".3"/>
+      <circle cx="34" cy="34" r="3.5" fill="#00e5ff" opacity=".95"/>
+      <line x1="4" y1="34" x2="24" y2="34" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+      <line x1="44" y1="34" x2="64" y2="34" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+      <line x1="34" y1="4" x2="34" y2="24" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+      <line x1="34" y1="44" x2="34" y2="64" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+    </svg>
+  </div>
+  <div class="ts-prompt">TAP TO ENTER THE GRID</div>
+  <div class="ts-sub">ENCOM SECURE SHELL — AUTHORISED USERS ONLY</div>
+</div>
+
+<div id="phase1">
+  <div id="terminal-scroll"><div id="terminal"></div></div>
+</div>
+
+<div id="phase2">
+  <div class="map-hud-top">ENCOM GRID — PURSUIT SIMULATION — LEVEL 0 — ROUTE ALPHA</div>
+  <div class="map-hud-title">ACTIVE MISSION: NAVIGATE TO THE I/O TOWER</div>
+  <div id="mapsvg-wrap">
+    <svg id="mapsvg" viewBox="0 0 660 430" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
+          <feGaussianBlur stdDeviation="3.5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glow2" x="-40%" y="-40%" width="180%" height="180%">
+          <feGaussianBlur stdDeviation="2" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+        <filter id="glowfat" x="-80%" y="-80%" width="260%" height="260%">
+          <feGaussianBlur stdDeviation="5" result="b"/>
+          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+        </filter>
+      </defs>
+
+      <!-- Arena wall -->
+      <rect x="6" y="6" width="648" height="418" fill="none" stroke="rgba(0,229,255,0.55)" stroke-width="1.5"/>
+      <rect x="10" y="10" width="640" height="410" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+
+      <!-- Arena floor grid -->
+      <line x1="6" y1="107" x2="654" y2="107" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <line x1="6" y1="214" x2="654" y2="214" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <line x1="6" y1="321" x2="654" y2="321" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <line x1="165" y1="6" x2="165" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <line x1="330" y1="6" x2="330" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <line x1="495" y1="6" x2="495" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
+      <!-- sub-grid -->
+      <line x1="6" y1="53" x2="654" y2="53" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="6" y1="160" x2="654" y2="160" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="6" y1="267" x2="654" y2="267" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="6" y1="374" x2="654" y2="374" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="82" y1="6" x2="82" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="247" y1="6" x2="247" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="412" y1="6" x2="412" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+      <line x1="577" y1="6" x2="577" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+
+      <!-- corner markers -->
+      <text x="18" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">01</text>
+      <text x="627" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">04</text>
+      <text x="18" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">02</text>
+      <text x="627" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">03</text>
+
+      <!--
+        PURSUIT SIMULATION DESIGN
+        ═══════════════════════════════════════════════════
+        USER cycle (cyan/bright): EC-777 — the player
+        PURSUER cycle (orange/dim): MCP sentinel program
+
+        The real house sectors are labelled at the nodes where
+        the USER path passes through them. The pursuit web of
+        criss-crossing trails gives the classic tron arena look.
+
+        USER PATH (cyan):
+          Start: bottom-left  (40, 390)
+          → right along bottom to (300, 390)      [POOL node near start]
+          → up to (300, 270)                       [DINING node]
+          → right to (460, 270)                    [LIVING ROOM node]
+          → up to (460, 140)
+          → right to (580, 140)                    [CORRIDOR node]
+          → up to (580, 50)
+          → left to (500, 50)                      [I/O TOWER arrives from right]
+
+        PURSUER PATH (orange — MCP sentinel):
+          Start: top-right (620, 40)
+          → down to (620, 320)
+          → left to (380, 320)
+          → down to (380, 390)
+          → left to (180, 390)
+          → up to (180, 180)
+          → right to (460, 180)                    [crosses behind user — tension moment]
+          → up to (460, 80)
+          (pursuer gets cut off by user wall and derezzed — never reaches I/O Tower)
+
+        This creates a classic pursuit web with multiple crossings,
+        corridors of light walls, and sector nodes sitting naturally
+        at path intersections.
+      -->
+
+      <!-- ═══ PURSUER TRAIL (orange) — draws first, dimmer ═══ -->
+      <!-- Seg P1: down right side -->
+      <polyline id="p1" points="620,40 620,320"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="280" stroke-dashoffset="280"/>
+      <polyline id="p1g" points="620,40 620,320"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="280" stroke-dashoffset="280"/>
+
+      <!-- Seg P2: left along bottom third -->
+      <polyline id="p2" points="620,320 380,320"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="240" stroke-dashoffset="240"/>
+      <polyline id="p2g" points="620,320 380,320"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="240" stroke-dashoffset="240"/>
+
+      <!-- Seg P3: down to bottom -->
+      <polyline id="p3" points="380,320 380,390"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="70" stroke-dashoffset="70"/>
+      <polyline id="p3g" points="380,320 380,390"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="70" stroke-dashoffset="70"/>
+
+      <!-- Seg P4: left along bottom -->
+      <polyline id="p4" points="380,390 180,390"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="200" stroke-dashoffset="200"/>
+      <polyline id="p4g" points="380,390 180,390"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="200" stroke-dashoffset="200"/>
+
+      <!-- Seg P5: up left side -->
+      <polyline id="p5" points="180,390 180,180"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="210" stroke-dashoffset="210"/>
+      <polyline id="p5g" points="180,390 180,180"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="210" stroke-dashoffset="210"/>
+
+      <!-- Seg P6: right — pursuer cuts across, DEREZZED here (hits user wall at 460) -->
+      <polyline id="p6" points="180,180 460,180"
+        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
+        filter="url(#glow2)"
+        stroke-dasharray="280" stroke-dashoffset="280"/>
+      <polyline id="p6g" points="180,180 460,180"
+        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
+        stroke-dasharray="280" stroke-dashoffset="280"/>
+
+      <!-- ═══ USER TRAIL (cyan) — draws on top, brighter ═══ -->
+      <!-- Seg U1: right along bottom -->
+      <polyline id="u1" points="40,390 300,390"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="260" stroke-dashoffset="260"/>
+      <polyline id="u1g" points="40,390 300,390"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="260" stroke-dashoffset="260"/>
+
+      <!-- Seg U2: up -->
+      <polyline id="u2" points="300,390 300,270"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u2g" points="300,390 300,270"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="120" stroke-dashoffset="120"/>
+
+      <!-- Seg U3: right -->
+      <polyline id="u3" points="300,270 460,270"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="160" stroke-dashoffset="160"/>
+      <polyline id="u3g" points="300,270 460,270"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="160" stroke-dashoffset="160"/>
+
+      <!-- Seg U4: up (this wall cuts off pursuer at y=180) -->
+      <polyline id="u4" points="460,270 460,140"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="130" stroke-dashoffset="130"/>
+      <polyline id="u4g" points="460,270 460,140"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="130" stroke-dashoffset="130"/>
+
+      <!-- Seg U5: right to corridor -->
+      <polyline id="u5" points="460,140 580,140"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u5g" points="460,140 580,140"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="120" stroke-dashoffset="120"/>
+
+      <!-- Seg U6: up to top -->
+      <polyline id="u6" points="580,140 580,50"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="90" stroke-dashoffset="90"/>
+      <polyline id="u6g" points="580,140 580,50"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="90" stroke-dashoffset="90"/>
+
+      <!-- Seg U7: left into I/O Tower -->
+      <polyline id="u7" points="580,50 500,50"
+        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
+        filter="url(#glow)"
+        stroke-dasharray="80" stroke-dashoffset="80"/>
+      <polyline id="u7g" points="580,50 500,50"
+        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
+        stroke-dasharray="80" stroke-dashoffset="80"/>
+
+      <!-- ═══ DEREZZ EXPLOSION at pursuer collision point (460,180) ═══ -->
+      <g id="derezz" opacity="0">
+        <circle cx="460" cy="180" r="10" fill="none" stroke="#ff6600" stroke-width="1.5"/>
+        <circle cx="460" cy="180" r="5" fill="rgba(255,100,0,0.6)"/>
+        <line x1="450" y1="170" x2="442" y2="162" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
+        <line x1="470" y1="170" x2="478" y2="162" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
+        <line x1="450" y1="190" x2="442" y2="198" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
+        <line x1="470" y1="190" x2="478" y2="198" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
+        <text x="460" y="210" text-anchor="middle" fill="rgba(255,100,0,0.6)" font-family="Courier New" font-size="7" letter-spacing="1">DEREZZ</text>
+      </g>
+
+      <!-- ═══ SECTOR NODE LABELS ═══ -->
+      <!-- positioned at the key path nodes -->
+
+      <!-- POOL — origin, bottom left -->
+      <rect x="16" y="362" width="74" height="52" fill="rgba(0,229,255,0.07)" stroke="rgba(0,229,255,0.6)" stroke-width="1.2"/>
+      <rect x="18" y="364" width="70" height="48" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+      <text x="53" y="381" text-anchor="middle" fill="rgba(0,229,255,0.5)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 0</text>
+      <text x="53" y="395" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="9" font-weight="bold">POOL</text>
+      <text x="53" y="408" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">ORIGIN</text>
+
+      <!-- DINING — at (300, 270) turn point -->
+      <rect x="248" y="244" width="86" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
+      <text x="291" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 1</text>
+      <text x="291" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">DINING</text>
+      <text x="291" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">GLASS DOORS</text>
+
+      <!-- LIVING ROOM — at (460, 270) -->
+      <rect x="408" y="244" width="96" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
+      <text x="456" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 2</text>
+      <text x="456" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">LIVING ROOM</text>
+      <text x="456" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">COFFEE STA. LHS</text>
+
+      <!-- TABLE TENNIS — bypass zone, floats mid-arena -->
+      <rect x="330" y="148" width="86" height="40" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="5 5"/>
+      <text x="373" y="165" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">TABLE TENNIS</text>
+      <text x="373" y="178" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">BYPASS ZONE — RHS</text>
+
+      <!-- CORRIDOR — at (580, 140) -->
+      <rect x="526" y="112" width="96" height="56" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
+      <text x="574" y="130" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 3</text>
+      <text x="574" y="144" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">CORRIDOR</text>
+      <text x="574" y="157" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">BATH LHS · LIFT RHS</text>
+
+      <!-- BATHROOM — on LHS of corridor, annotated on left of sector 3 node -->
+      <rect x="420" y="120" width="62" height="32" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="4 5"/>
+      <text x="451" y="134" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">BATHROOM</text>
+      <text x="451" y="146" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">LHS</text>
+      <line x1="482" y1="136" x2="526" y2="136" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
+
+      <!-- I/O TOWER — destination, top area -->
+      <rect id="iotower" x="380" y="22" width="116" height="68" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow2)" opacity="0"/>
+      <rect id="iotower2" x="383" y="25" width="110" height="62" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="3.5" opacity="0"/>
+      <text id="iot1" x="438" y="46" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="8" letter-spacing="2.5" filter="url(#glow2)" opacity="0">I/O TOWER</text>
+      <text id="iot2" x="438" y="62" text-anchor="middle" fill="rgba(0,229,255,0.95)" font-family="Courier New" font-size="9" opacity="0">MOVIE THEATRE</text>
+      <text id="iot3" x="438" y="76" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" opacity="0">PACKAGE AWAITS</text>
+
+      <!-- Origin pulse -->
+      <circle cx="40" cy="390" r="5" fill="#00e5ff" opacity=".95"/>
+      <circle cx="40" cy="390" r="5" fill="none" stroke="#00e5ff" stroke-width="1.5">
+        <animate attributeName="r" values="5;18" dur="2s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.7;0" dur="2s" repeatCount="indefinite"/>
+      </circle>
+      <text x="40" y="378" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">YOU ARE HERE</text>
+
+      <!-- Pursuer origin marker (orange dot, top right) -->
+      <circle cx="620" cy="40" r="4" fill="#ff6600" opacity=".8"/>
+      <circle cx="620" cy="40" r="4" fill="none" stroke="#ff6600" stroke-width="1.5">
+        <animate attributeName="r" values="4;14" dur="1.6s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
+      </circle>
+      <text x="620" y="30" text-anchor="middle" fill="rgba(255,100,0,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">PURSUER</text>
+
+      <!-- Pursuer label -->
+      <text x="590" y="200" text-anchor="middle" fill="rgba(255,100,0,0.3)" font-family="Courier New" font-size="7" letter-spacing="1">MCP SENTINEL</text>
+
+      <!-- Destination pulse (hidden until reveal) -->
+      <circle id="dest-dot" cx="500" cy="50" r="6" fill="#00e5ff" opacity="0" filter="url(#glow)"/>
+      <circle id="dest-pulse" cx="500" cy="50" r="6" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0">
+        <animate attributeName="r" values="6;22" dur="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="1;0" dur="1.5s" repeatCount="indefinite"/>
+      </circle>
+
+      <!-- Legend -->
+      <line x1="20" y1="48" x2="44" y2="48" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
+      <text x="50" y="52" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="7">USER EC-777</text>
+      <line x1="20" y1="64" x2="44" y2="64" stroke="#ff6600" stroke-width="2" stroke-linecap="square"/>
+      <text x="50" y="68" fill="rgba(255,100,0,0.35)" font-family="Courier New" font-size="7">MCP SENTINEL</text>
+    </svg>
+  </div>
+  <button id="tap-proceed">[ TAP TO PROCEED ]</button>
+</div>
+
+<div id="phase3">
+  <div class="msg-glyph">
+    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+      <polygon points="30,3 57,17 57,43 30,57 3,43 3,17" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
+      <polygon points="30,12 48,21 48,39 30,48 12,39 12,21" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".5"/>
+      <polygon points="30,21 39,25.5 39,34.5 30,39 21,34.5 21,25.5" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".3"/>
+      <circle cx="30" cy="30" r="3.5" fill="#00e5ff" opacity=".95"/>
+    </svg>
+  </div>
+  <div class="msg-line" id="msg3" style="opacity:0;transition:opacity 1.4s ease;"></div>
+  <div class="msg-footer">— TRANSMISSION ORIGIN: CLASSIFIED —</div>
+  <div class="msg-sig" id="sig3" style="opacity:0;transition:opacity 1.2s ease 1s;">// Q.</div>
+</div>
+
+<audio id="audio" loop preload="auto">
+  <source src="YOUR_AUDIO_FILE.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const $=id=>document.getElementById(id);
+
+function clock(){
+  const n=new Date();
+  $('clock-hud').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+}
+setInterval(clock,1000);clock();
+
+const lines=[
+  {t:'ENCOM SYSTEMS — SECURE SHELL v4.7.2',d:0},
+  {t:'',d:280},
+  {t:'> SCANNING IDENTITY TOKEN...',d:480},
+  {t:'',d:1350},
+  {t:'> NAME:         ERIDANI EFFENDI',d:1550},
+  {t:'> EMPLOYEE ID:  EC-777',d:2450},
+  {t:'> CLEARANCE:    USER — ACTIVE',d:3250},
+  {t:'> MISSING ASSET: CLASSIFIED // REF-777-X',d:4050},
+  {t:'',d:4900},
+  {t:'> INITIATING OVERRIDE SEQUENCE...',d:5300},
+  {t:'> BYPASSING MCP FIREWALL......... [ OK ]',d:6600},
+  {t:'> DECRYPTING SECTOR KEYS......... [ OK ]',d:7800},
+  {t:'> ERASING TRACE VECTORS.......... [ OK ]',d:8800},
+  {t:'> REROUTING THROUGH THE GRID..... [ OK ]',d:9700},
+  {t:'',d:10600},
+  {t:'> ACCESS GRANTED, USER.',d:11000},
+  {t:'',d:11900},
+  {t:'> INCOMING TRANSMISSION — SOURCE: ENCRYPTED',d:12300},
+  {t:'',d:13300},
+  {t:'> "You made it out of the arena."',d:13700},
+  {t:'> "Now comes the harder part."',d:15300},
+  {t:'> "Something was taken from you a long time ago."',d:16900},
+  {t:'> "Flynn kept it safe. Now I am."',d:18900},
+  {t:'> "It belongs to you. It always did."',d:20700},
+  {t:'> "They don\'t know you\'re coming."',d:22400},
+  {t:'> "Ride, User. End of line."',d:23900},
+  {t:'',d:25200},
+  {t:'> LOADING PURSUIT SIMULATION...',d:25600},
+];
+
+const term=$('terminal');
+const scrollEl=$('terminal-scroll');
+let built='';
+let lineIdx=0;
+let mapTriggered=false;
+
+function appendCursor(){
+  const c=document.createElement('span');c.className='cur';term.appendChild(c);
+}
+
+function typeStr(str,cb){
+  let i=0;
+  function next(){
+    if(i>=str.length){cb();return;}
+    built+=str[i];term.textContent=built;appendCursor();
+    scrollEl.scrollTop=scrollEl.scrollHeight;
+    const d=str[i]==='.'?62:str[i]===' '?12:(str[i]==='['||str[i]===']')?44:23;
+    i++;setTimeout(next,d);
+  }
+  next();
+}
+
+function runLines(){
+  if(lineIdx>=lines.length){
+    if(!mapTriggered){mapTriggered=true;setTimeout(doFlashToMap,900);}
+    return;
+  }
+  const line=lines[lineIdx];
+  const prev=lineIdx>0?lines[lineIdx-1].d:0;
+  const wait=line.d-prev;
+  lineIdx++;
+  setTimeout(()=>{
+    if(line.t===''){
+      built+='\n';term.textContent=built;appendCursor();
+      scrollEl.scrollTop=scrollEl.scrollHeight;runLines();
+    } else {
+      typeStr(line.t,()=>{
+        built+='\n';
+        if(lineIdx>=lines.length&&!mapTriggered){mapTriggered=true;setTimeout(doFlashToMap,900);}
+        else runLines();
+      });
+    }
+  },wait);
+}
+
+function doFlash(cb){
+  const f=$('flash');
+  f.style.opacity='1';
+  setTimeout(()=>{f.style.opacity='0';
+  setTimeout(()=>{f.style.opacity='0.55';
+  setTimeout(()=>{f.style.opacity='0';
+  setTimeout(()=>{f.style.opacity='0.85';
+  setTimeout(()=>{f.style.opacity='0';
+  setTimeout(()=>{if(cb)cb();},320);
+  },65)},85)},85)},115)},130);
+}
+
+function doFlashToMap(){doFlash(showMap);}
+
+function anim(id,gid,dur,delay,cb){
+  setTimeout(()=>{
+    const el=document.getElementById(id);
+    const gr=document.getElementById(gid);
+    if(el){el.style.transition='stroke-dashoffset '+dur+'ms linear';el.style.strokeDashoffset='0';}
+    if(gr){gr.style.transition='stroke-dashoffset '+dur+'ms linear';gr.style.strokeDashoffset='0';}
+    if(cb) setTimeout(cb,dur);
+  },delay);
+}
+
+function showMap(){
+  $('phase1').style.display='none';
+  $('phase2').style.display='flex';
+
+  // Pursuer draws first — faster, more aggressive
+  anim('p1','p1g',500,200,null);
+  anim('p2','p2g',450,750,null);
+  anim('p3','p3g',200,1220,null);
+  anim('p4','p4g',400,1450,null);
+  anim('p5','p5g',450,1880,null);
+  // pursuer seg 6 draws but hits user wall — derezz fires
+  anim('p6','p6g',700,2360,()=>{
+    // derezz flash at collision
+    const dz=$('derezz');
+    if(dz){
+      dz.style.opacity='1';
+      setTimeout(()=>{dz.style.opacity='0.6';},80);
+      setTimeout(()=>{dz.style.opacity='1';},160);
+      setTimeout(()=>{dz.style.opacity='0.4';},400);
+    }
+  });
+
+  // User path draws interleaved — slightly behind pursuer start, then overtakes
+  anim('u1','u1g',650,500,null);
+  anim('u2','u2g',300,1180,null);
+  anim('u3','u3g',380,1500,null);
+  // U4 — the wall that kills the pursuer — draws at same time as P6 collision
+  anim('u4','u4g',350,1900,null);
+  anim('u5','u5g',320,2270,null);
+  anim('u6','u6g',280,2610,null);
+  anim('u7','u7g',300,2910,()=>{
+    // Reveal I/O Tower
+    setTimeout(()=>{
+      ['iotower','iotower2','iot1','iot2','iot3','iot4'].forEach(id=>{
+        const el=document.getElementById(id);
+        if(el){el.style.opacity='1';el.style.transition='opacity 0.5s ease';}
+      });
+      $('dest-dot').style.opacity='1';
+      $('dest-pulse').style.opacity='1';
+    },300);
+    // Show tap to proceed
+    setTimeout(()=>{$('tap-proceed').classList.add('on');},1400);
+  });
+}
+
+$('tap-proceed').addEventListener('click',()=>doFlash(showMessage));
+
+function showMessage(){
+  $('phase2').style.display='none';
+  $('phase3').style.display='flex';
+  const msg=$('msg3');
+  msg.innerHTML=
+    `Something is waiting for you in the I/O Tower.<br><br>`+
+    `<span class="msg-highlight">&rarr; Proceed to the Movie Theatre</span>`+
+    `Flynn believed the Grid could change the world.<br>`+
+    `I think you already do.<br><br>`+
+    `Happy birthday, Eridani.<br>`+
+    `The Grid is lucky to have you in it.`;
+  setTimeout(()=>{msg.style.opacity='1';$('sig3').style.opacity='1';},400);
+}
+
+$('tapstart').addEventListener('click',()=>{
+  $('tapstart').style.display='none';
+  $('phase1').style.display='flex';
+  try{const a=$('audio');a.volume=0.55;a.play().catch(()=>{});}catch(e){}
+  setTimeout(runLines,600);
+});
+</script>
+</body>
+</html>
