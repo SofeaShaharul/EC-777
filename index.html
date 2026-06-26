@@ -5,7 +5,6 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
 <title>ENCOM SYSTEMS — SECURE ACCESS</title>
 <style>
-/* ... (your existing styles remain the same) ... */
 *{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
 body{font-family:'Courier New',monospace;color:#00e5ff;}
@@ -49,32 +48,10 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 .msg-highlight{color:#00e5ff;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;text-shadow:0 0 16px #00e5ff;display:block;margin:20px 0 10px;}
 .msg-footer{font-size:9px;letter-spacing:.22em;color:rgba(0,229,255,.25);margin-top:28px;text-transform:uppercase;}
 .msg-sig{font-size:clamp(11px,1.7vw,14px);color:rgba(0,229,255,.5);letter-spacing:.15em;margin-top:10px;font-style:italic;}
-
-/* Audio debug overlay */
-#audio-debug {
-    position: fixed;
-    bottom: 10px;
-    left: 10px;
-    background: rgba(0,0,0,0.85);
-    border: 1px solid rgba(0,229,255,0.3);
-    padding: 10px 15px;
-    font-family: 'Courier New', monospace;
-    font-size: 9px;
-    color: #00e5ff;
-    z-index: 999;
-    max-width: 400px;
-    max-height: 200px;
-    overflow-y: auto;
-    display: none;
-    line-height: 1.6;
-}
-#audio-debug.show { display: block; }
-#audio-debug .error { color: #ff4444; }
-#audio-debug .success { color: #44ff44; }
-#audio-debug .info { color: #ffaa44; }
 </style>
 </head>
 <body>
+
 <div id="gridlines"></div>
 <div id="scanline"></div>
 <div id="corner-tl"></div><div id="corner-tr"></div>
@@ -82,9 +59,6 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 <div id="encom-hud">ENCOM SYSTEMS INC.</div>
 <div id="clock-hud"></div>
 <div id="flash"></div>
-
-<!-- Audio Debug Overlay -->
-<div id="audio-debug"></div>
 
 <div id="tapstart">
   <div class="ts-logo">ENCOM SYSTEMS INC. — SECURE NETWORK</div>
@@ -122,24 +96,17 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
           <feGaussianBlur stdDeviation="2" result="b"/>
           <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
         </filter>
-        <filter id="glowfat" x="-80%" y="-80%" width="260%" height="260%">
-          <feGaussianBlur stdDeviation="5" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
       </defs>
 
-      <!-- Arena wall -->
       <rect x="6" y="6" width="648" height="418" fill="none" stroke="rgba(0,229,255,0.55)" stroke-width="1.5"/>
       <rect x="10" y="10" width="640" height="410" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
 
-      <!-- Arena floor grid -->
       <line x1="6" y1="107" x2="654" y2="107" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
       <line x1="6" y1="214" x2="654" y2="214" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
       <line x1="6" y1="321" x2="654" y2="321" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
       <line x1="165" y1="6" x2="165" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
       <line x1="330" y1="6" x2="330" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
       <line x1="495" y1="6" x2="495" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <!-- sub-grid -->
       <line x1="6" y1="53" x2="654" y2="53" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
       <line x1="6" y1="160" x2="654" y2="160" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
       <line x1="6" y1="267" x2="654" y2="267" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
@@ -149,168 +116,39 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
       <line x1="412" y1="6" x2="412" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
       <line x1="577" y1="6" x2="577" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
 
-      <!-- corner markers -->
       <text x="18" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">01</text>
       <text x="627" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">04</text>
       <text x="18" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">02</text>
       <text x="627" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">03</text>
 
-      <!--
-        PURSUIT SIMULATION DESIGN
-        ═══════════════════════════════════════════════════
-        USER cycle (cyan/bright): EC-777 — the player
-        PURSUER cycle (orange/dim): MCP sentinel program
+      <polyline id="p1" points="620,40 620,320" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="280" stroke-dashoffset="280"/>
+      <polyline id="p1g" points="620,40 620,320" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="280" stroke-dashoffset="280"/>
+      <polyline id="p2" points="620,320 380,320" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="240" stroke-dashoffset="240"/>
+      <polyline id="p2g" points="620,320 380,320" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="240" stroke-dashoffset="240"/>
+      <polyline id="p3" points="380,320 380,390" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="70" stroke-dashoffset="70"/>
+      <polyline id="p3g" points="380,320 380,390" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="70" stroke-dashoffset="70"/>
+      <polyline id="p4" points="380,390 180,390" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="200" stroke-dashoffset="200"/>
+      <polyline id="p4g" points="380,390 180,390" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="200" stroke-dashoffset="200"/>
+      <polyline id="p5" points="180,390 180,180" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="210" stroke-dashoffset="210"/>
+      <polyline id="p5g" points="180,390 180,180" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="210" stroke-dashoffset="210"/>
+      <polyline id="p6" points="180,180 460,180" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="280" stroke-dashoffset="280"/>
+      <polyline id="p6g" points="180,180 460,180" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="280" stroke-dashoffset="280"/>
 
-        The real house sectors are labelled at the nodes where
-        the USER path passes through them. The pursuit web of
-        criss-crossing trails gives the classic tron arena look.
+      <polyline id="u1" points="40,390 300,390" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="260" stroke-dashoffset="260"/>
+      <polyline id="u1g" points="40,390 300,390" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="260" stroke-dashoffset="260"/>
+      <polyline id="u2" points="300,390 300,270" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u2g" points="300,390 300,270" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u3" points="300,270 460,270" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="160" stroke-dashoffset="160"/>
+      <polyline id="u3g" points="300,270 460,270" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="160" stroke-dashoffset="160"/>
+      <polyline id="u4" points="460,270 460,140" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="130" stroke-dashoffset="130"/>
+      <polyline id="u4g" points="460,270 460,140" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="130" stroke-dashoffset="130"/>
+      <polyline id="u5" points="460,140 580,140" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u5g" points="460,140 580,140" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="120" stroke-dashoffset="120"/>
+      <polyline id="u6" points="580,140 580,50" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="90" stroke-dashoffset="90"/>
+      <polyline id="u6g" points="580,140 580,50" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="90" stroke-dashoffset="90"/>
+      <polyline id="u7" points="580,50 500,50" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="80" stroke-dashoffset="80"/>
+      <polyline id="u7g" points="580,50 500,50" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="80" stroke-dashoffset="80"/>
 
-        USER PATH (cyan):
-          Start: bottom-left  (40, 390)
-          → right along bottom to (300, 390)      [POOL node near start]
-          → up to (300, 270)                       [DINING node]
-          → right to (460, 270)                    [LIVING ROOM node]
-          → up to (460, 140)
-          → right to (580, 140)                    [CORRIDOR node]
-          → up to (580, 50)
-          → left to (500, 50)                      [I/O TOWER arrives from right]
-
-        PURSUER PATH (orange — MCP sentinel):
-          Start: top-right (620, 40)
-          → down to (620, 320)
-          → left to (380, 320)
-          → down to (380, 390)
-          → left to (180, 390)
-          → up to (180, 180)
-          → right to (460, 180)                    [crosses behind user — tension moment]
-          → up to (460, 80)
-          (pursuer gets cut off by user wall and derezzed — never reaches I/O Tower)
-
-        This creates a classic pursuit web with multiple crossings,
-        corridors of light walls, and sector nodes sitting naturally
-        at path intersections.
-      -->
-
-      <!-- ═══ PURSUER TRAIL (orange) — draws first, dimmer ═══ -->
-      <!-- Seg P1: down right side -->
-      <polyline id="p1" points="620,40 620,320"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="280" stroke-dashoffset="280"/>
-      <polyline id="p1g" points="620,40 620,320"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="280" stroke-dashoffset="280"/>
-
-      <!-- Seg P2: left along bottom third -->
-      <polyline id="p2" points="620,320 380,320"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="240" stroke-dashoffset="240"/>
-      <polyline id="p2g" points="620,320 380,320"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="240" stroke-dashoffset="240"/>
-
-      <!-- Seg P3: down to bottom -->
-      <polyline id="p3" points="380,320 380,390"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="70" stroke-dashoffset="70"/>
-      <polyline id="p3g" points="380,320 380,390"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="70" stroke-dashoffset="70"/>
-
-      <!-- Seg P4: left along bottom -->
-      <polyline id="p4" points="380,390 180,390"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="200" stroke-dashoffset="200"/>
-      <polyline id="p4g" points="380,390 180,390"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="200" stroke-dashoffset="200"/>
-
-      <!-- Seg P5: up left side -->
-      <polyline id="p5" points="180,390 180,180"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="210" stroke-dashoffset="210"/>
-      <polyline id="p5g" points="180,390 180,180"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="210" stroke-dashoffset="210"/>
-
-      <!-- Seg P6: right — pursuer cuts across, DEREZZED here (hits user wall at 460) -->
-      <polyline id="p6" points="180,180 460,180"
-        fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square"
-        filter="url(#glow2)"
-        stroke-dasharray="280" stroke-dashoffset="280"/>
-      <polyline id="p6g" points="180,180 460,180"
-        fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square"
-        stroke-dasharray="280" stroke-dashoffset="280"/>
-
-      <!-- ═══ USER TRAIL (cyan) — draws on top, brighter ═══ -->
-      <!-- Seg U1: right along bottom -->
-      <polyline id="u1" points="40,390 300,390"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="260" stroke-dashoffset="260"/>
-      <polyline id="u1g" points="40,390 300,390"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="260" stroke-dashoffset="260"/>
-
-      <!-- Seg U2: up -->
-      <polyline id="u2" points="300,390 300,270"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u2g" points="300,390 300,270"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="120" stroke-dashoffset="120"/>
-
-      <!-- Seg U3: right -->
-      <polyline id="u3" points="300,270 460,270"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="160" stroke-dashoffset="160"/>
-      <polyline id="u3g" points="300,270 460,270"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="160" stroke-dashoffset="160"/>
-
-      <!-- Seg U4: up (this wall cuts off pursuer at y=180) -->
-      <polyline id="u4" points="460,270 460,140"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="130" stroke-dashoffset="130"/>
-      <polyline id="u4g" points="460,270 460,140"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="130" stroke-dashoffset="130"/>
-
-      <!-- Seg U5: right to corridor -->
-      <polyline id="u5" points="460,140 580,140"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u5g" points="460,140 580,140"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="120" stroke-dashoffset="120"/>
-
-      <!-- Seg U6: up to top -->
-      <polyline id="u6" points="580,140 580,50"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="90" stroke-dashoffset="90"/>
-      <polyline id="u6g" points="580,140 580,50"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="90" stroke-dashoffset="90"/>
-
-      <!-- Seg U7: left into I/O Tower -->
-      <polyline id="u7" points="580,50 500,50"
-        fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"
-        filter="url(#glow)"
-        stroke-dasharray="80" stroke-dashoffset="80"/>
-      <polyline id="u7g" points="580,50 500,50"
-        fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square"
-        stroke-dasharray="80" stroke-dashoffset="80"/>
-
-      <!-- ═══ DEREZZ EXPLOSION at pursuer collision point (460,180) ═══ -->
       <g id="derezz" opacity="0">
         <circle cx="460" cy="180" r="10" fill="none" stroke="#ff6600" stroke-width="1.5"/>
         <circle cx="460" cy="180" r="5" fill="rgba(255,100,0,0.6)"/>
@@ -321,53 +159,42 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
         <text x="460" y="210" text-anchor="middle" fill="rgba(255,100,0,0.6)" font-family="Courier New" font-size="7" letter-spacing="1">DEREZZ</text>
       </g>
 
-      <!-- ═══ SECTOR NODE LABELS ═══ -->
-      <!-- positioned at the key path nodes -->
-
-      <!-- POOL — origin, bottom left -->
       <rect x="16" y="362" width="74" height="52" fill="rgba(0,229,255,0.07)" stroke="rgba(0,229,255,0.6)" stroke-width="1.2"/>
       <rect x="18" y="364" width="70" height="48" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
       <text x="53" y="381" text-anchor="middle" fill="rgba(0,229,255,0.5)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 0</text>
       <text x="53" y="395" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="9" font-weight="bold">POOL</text>
       <text x="53" y="408" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">ORIGIN</text>
 
-      <!-- DINING — at (300, 270) turn point -->
       <rect x="248" y="244" width="86" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
       <text x="291" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 1</text>
       <text x="291" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">DINING</text>
       <text x="291" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">GLASS DOORS</text>
 
-      <!-- LIVING ROOM — at (460, 270) -->
       <rect x="408" y="244" width="96" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
       <text x="456" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 2</text>
       <text x="456" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">LIVING ROOM</text>
       <text x="456" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">COFFEE STA. LHS</text>
 
-      <!-- TABLE TENNIS — bypass zone, floats mid-arena -->
       <rect x="330" y="148" width="86" height="40" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="5 5"/>
       <text x="373" y="165" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">TABLE TENNIS</text>
       <text x="373" y="178" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">BYPASS ZONE — RHS</text>
 
-      <!-- CORRIDOR — at (580, 140) -->
       <rect x="526" y="112" width="96" height="56" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
       <text x="574" y="130" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 3</text>
       <text x="574" y="144" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">CORRIDOR</text>
       <text x="574" y="157" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">BATH LHS · LIFT RHS</text>
 
-      <!-- BATHROOM — on LHS of corridor, annotated on left of sector 3 node -->
       <rect x="420" y="120" width="62" height="32" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="4 5"/>
       <text x="451" y="134" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">BATHROOM</text>
       <text x="451" y="146" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">LHS</text>
       <line x1="482" y1="136" x2="526" y2="136" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
 
-      <!-- I/O TOWER — destination, top area -->
       <rect id="iotower" x="380" y="22" width="116" height="68" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow2)" opacity="0"/>
       <rect id="iotower2" x="383" y="25" width="110" height="62" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="3.5" opacity="0"/>
       <text id="iot1" x="438" y="46" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="8" letter-spacing="2.5" filter="url(#glow2)" opacity="0">I/O TOWER</text>
       <text id="iot2" x="438" y="62" text-anchor="middle" fill="rgba(0,229,255,0.95)" font-family="Courier New" font-size="9" opacity="0">MOVIE THEATRE</text>
       <text id="iot3" x="438" y="76" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" opacity="0">PACKAGE AWAITS</text>
 
-      <!-- Origin pulse -->
       <circle cx="40" cy="390" r="5" fill="#00e5ff" opacity=".95"/>
       <circle cx="40" cy="390" r="5" fill="none" stroke="#00e5ff" stroke-width="1.5">
         <animate attributeName="r" values="5;18" dur="2s" repeatCount="indefinite"/>
@@ -375,25 +202,20 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
       </circle>
       <text x="40" y="378" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">YOU ARE HERE</text>
 
-      <!-- Pursuer origin marker (orange dot, top right) -->
       <circle cx="620" cy="40" r="4" fill="#ff6600" opacity=".8"/>
       <circle cx="620" cy="40" r="4" fill="none" stroke="#ff6600" stroke-width="1.5">
         <animate attributeName="r" values="4;14" dur="1.6s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
       </circle>
       <text x="620" y="30" text-anchor="middle" fill="rgba(255,100,0,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">PURSUER</text>
-
-      <!-- Pursuer label -->
       <text x="590" y="200" text-anchor="middle" fill="rgba(255,100,0,0.3)" font-family="Courier New" font-size="7" letter-spacing="1">MCP SENTINEL</text>
 
-      <!-- Destination pulse (hidden until reveal) -->
       <circle id="dest-dot" cx="500" cy="50" r="6" fill="#00e5ff" opacity="0" filter="url(#glow)"/>
       <circle id="dest-pulse" cx="500" cy="50" r="6" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0">
         <animate attributeName="r" values="6;22" dur="1.5s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="1;0" dur="1.5s" repeatCount="indefinite"/>
       </circle>
 
-      <!-- Legend -->
       <line x1="20" y1="48" x2="44" y2="48" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
       <text x="50" y="52" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="7">USER EC-777</text>
       <line x1="20" y1="64" x2="44" y2="64" stroke="#ff6600" stroke-width="2" stroke-linecap="square"/>
@@ -423,34 +245,6 @@ body{font-family:'Courier New',monospace;color:#00e5ff;}
 
 <script>
 const $=id=>document.getElementById(id);
-const debugEl = $('audio-debug');
-
-// Enhanced audio debugging function
-function logAudio(message, type = 'info') {
-    if (!debugEl) return;
-    const timestamp = new Date().toLocaleTimeString();
-    const className = type === 'error' ? 'error' : type === 'success' ? 'success' : 'info';
-    debugEl.innerHTML += `<div class="${className}">[${timestamp}] ${message}</div>`;
-    debugEl.scrollTop = debugEl.scrollHeight;
-    
-    // Also log to console for server-side debugging
-    console.log(`[AUDIO] ${message}`);
-}
-
-function showDebug() {
-    if (debugEl) {
-        debugEl.classList.add('show');
-    }
-}
-
-// Toggle debug with key press (D key)
-document.addEventListener('keydown', (e) => {
-    if (e.key === 'd' || e.key === 'D') {
-        if (debugEl) {
-            debugEl.classList.toggle('show');
-        }
-    }
-});
 
 function clock(){
   const n=new Date();
@@ -554,23 +348,19 @@ function anim(id,gid,dur,delay,cb){
     const gr=document.getElementById(gid);
     if(el){el.style.transition='stroke-dashoffset '+dur+'ms linear';el.style.strokeDashoffset='0';}
     if(gr){gr.style.transition='stroke-dashoffset '+dur+'ms linear';gr.style.strokeDashoffset='0';}
-    if(cb) setTimeout(cb,dur);
+    if(cb)setTimeout(cb,dur);
   },delay);
 }
 
 function showMap(){
   $('phase1').style.display='none';
   $('phase2').style.display='flex';
-
-  // Pursuer draws first — faster, more aggressive
   anim('p1','p1g',500,200,null);
   anim('p2','p2g',450,750,null);
   anim('p3','p3g',200,1220,null);
   anim('p4','p4g',400,1450,null);
   anim('p5','p5g',450,1880,null);
-  // pursuer seg 6 draws but hits user wall — derezz fires
   anim('p6','p6g',700,2360,()=>{
-    // derezz flash at collision
     const dz=$('derezz');
     if(dz){
       dz.style.opacity='1';
@@ -579,26 +369,21 @@ function showMap(){
       setTimeout(()=>{dz.style.opacity='0.4';},400);
     }
   });
-
-  // User path draws interleaved — slightly behind pursuer start, then overtakes
   anim('u1','u1g',650,500,null);
   anim('u2','u2g',300,1180,null);
   anim('u3','u3g',380,1500,null);
-  // U4 — the wall that kills the pursuer — draws at same time as P6 collision
   anim('u4','u4g',350,1900,null);
   anim('u5','u5g',320,2270,null);
   anim('u6','u6g',280,2610,null);
   anim('u7','u7g',300,2910,()=>{
-    // Reveal I/O Tower
     setTimeout(()=>{
-      ['iotower','iotower2','iot1','iot2','iot3','iot4'].forEach(id=>{
+      ['iotower','iotower2','iot1','iot2','iot3'].forEach(id=>{
         const el=document.getElementById(id);
         if(el){el.style.opacity='1';el.style.transition='opacity 0.5s ease';}
       });
       $('dest-dot').style.opacity='1';
       $('dest-pulse').style.opacity='1';
     },300);
-    // Show tap to proceed
     setTimeout(()=>{$('tap-proceed').classList.add('on');},1400);
   });
 }
@@ -613,242 +398,27 @@ function showMessage(){
     `Something is waiting for you in the I/O Tower.<br><br>`+
     `<span class="msg-highlight">&rarr; Proceed to the Movie Theatre</span>`+
     `Flynn believed the Grid could change the world.<br>`+
-    `I think you already do.<br><br>`+
-    `Happy birthday, Eridani.<br>`+
+    `I think you will.<br><br>`+
+    `Happy birthday, Buh.<br>`+
     `The Grid is lucky to have you in it.`;
   setTimeout(()=>{msg.style.opacity='1';$('sig3').style.opacity='1';},400);
 }
 
-// Comprehensive audio handler with debugging
-function initAudio() {
-    const audio = $('audio');
-    if (!audio) {
-        logAudio('Audio element not found!', 'error');
-        return;
+$('tapstart').addEventListener('click',()=>{
+  $('tapstart').style.display='none';
+  $('phase1').style.display='flex';
+  const a=$('audio');
+  if(a){
+    a.volume=0.55;
+    const p=a.play();
+    if(p!==undefined){
+      p.catch(()=>{
+        document.addEventListener('click',()=>{a.play();},{once:true});
+      });
     }
-    
-    logAudio('Audio element found. Checking source...', 'info');
-    
-    // Check if source element exists
-    const source = audio.querySelector('source');
-    if (!source) {
-        logAudio('No source element found in audio tag!', 'error');
-        return;
-    }
-    
-    logAudio(`Source URL: ${source.src}`, 'info');
-    logAudio(`Source type: ${source.type}`, 'info');
-    
-    // Add event listeners for debugging
-    audio.addEventListener('loadstart', () => {
-        logAudio('loadstart: Browser has started looking for data', 'info');
-    });
-    
-    audio.addEventListener('loadedmetadata', () => {
-        logAudio(`loadedmetadata: Duration=${audio.duration}s, ReadyState=${audio.readyState}`, 'success');
-    });
-    
-    audio.addEventListener('loadeddata', () => {
-        logAudio(`loadeddata: Data loaded, ReadyState=${audio.readyState}`, 'success');
-    });
-    
-    audio.addEventListener('canplay', () => {
-        logAudio('canplay: Enough data to start playing', 'success');
-    });
-    
-    audio.addEventListener('canplaythrough', () => {
-        logAudio('canplaythrough: Enough data to play through', 'success');
-    });
-    
-    audio.addEventListener('playing', () => {
-        logAudio('playing: Audio is playing', 'success');
-    });
-    
-    audio.addEventListener('play', () => {
-        logAudio('play: Playback started', 'success');
-    });
-    
-    audio.addEventListener('pause', () => {
-        logAudio('pause: Playback paused', 'info');
-    });
-    
-    audio.addEventListener('ended', () => {
-        logAudio('ended: Playback ended', 'info');
-    });
-    
-    audio.addEventListener('error', (e) => {
-        const error = audio.error;
-        let errorMsg = 'Unknown error';
-        if (error) {
-            switch(error.code) {
-                case error.MEDIA_ERR_ABORTED:
-                    errorMsg = 'MEDIA_ERR_ABORTED: Fetching process aborted by user';
-                    break;
-                case error.MEDIA_ERR_NETWORK:
-                    errorMsg = 'MEDIA_ERR_NETWORK: Network error occurred';
-                    break;
-                case error.MEDIA_ERR_DECODE:
-                    errorMsg = 'MEDIA_ERR_DECODE: Decoding error - file may be corrupted or unsupported format';
-                    break;
-                case error.MEDIA_ERR_SRC_NOT_SUPPORTED:
-                    errorMsg = 'MEDIA_ERR_SRC_NOT_SUPPORTED: Source format not supported by browser';
-                    break;
-                default:
-                    errorMsg = `Unknown error code: ${error.code}`;
-            }
-            logAudio(`ERROR: ${errorMsg}`, 'error');
-            logAudio(`Error details: ${error.message || 'No additional details'}`, 'error');
-            
-            // Check if it's a CORS issue
-            if (error.code === error.MEDIA_ERR_NETWORK) {
-                logAudio('⚠️ This may be a CORS issue or the file may not exist at the given path', 'error');
-            }
-        }
-        
-        // Log source URL for debugging
-        logAudio(`Attempted to load: ${source.src}`, 'error');
-    });
-    
-    // Check network status of the audio file
-    fetch(source.src, { method: 'HEAD' })
-        .then(response => {
-            if (response.ok) {
-                logAudio(`File found! Status: ${response.status} ${response.statusText}`, 'success');
-                logAudio(`Content-Type: ${response.headers.get('content-type')}`, 'info');
-                logAudio(`Content-Length: ${response.headers.get('content-length')} bytes`, 'info');
-            } else {
-                logAudio(`File not found! Status: ${response.status} ${response.statusText}`, 'error');
-                logAudio(`URL checked: ${source.src}`, 'error');
-                
-                // Try to check if file exists with full URL
-                const fullUrl = window.location.href.substring(0, window.location.href.lastIndexOf('/') + 1) + source.src;
-                logAudio(`Full URL would be: ${fullUrl}`, 'info');
-                logAudio('💡 Make sure the file "EndofLine.mp3" is in the same directory as this HTML file', 'error');
-            }
-        })
-        .catch(err => {
-            logAudio(`Failed to check file: ${err.message}`, 'error');
-        });
-    
-    // Check browser support
-    const canPlayMP3 = audio.canPlayType('audio/mpeg');
-    logAudio(`MP3 support: ${canPlayMP3 || 'not supported'}`, canPlayMP3 ? 'success' : 'error');
-    
-    // Set volume
-    audio.volume = 0.55;
-    logAudio(`Volume set to: ${audio.volume}`, 'info');
-    
-    return audio;
-}
-
-// Enhanced play audio function with retry logic
-function playAudioWithRetry(audio, maxRetries = 3) {
-    let retries = 0;
-    
-    function attemptPlay() {
-        if (!audio) {
-            logAudio('No audio element to play', 'error');
-            return Promise.reject(new Error('No audio element'));
-        }
-        
-        logAudio(`Attempting to play (attempt ${retries + 1}/${maxRetries})`, 'info');
-        
-        return audio.play()
-            .then(() => {
-                logAudio('Play success! Audio is playing.', 'success');
-                return true;
-            })
-            .catch(err => {
-                logAudio(`Play failed: ${err.name} - ${err.message}`, 'error');
-                
-                // Check for specific errors
-                if (err.name === 'NotSupportedError') {
-                    logAudio('⚠️ Browser does not support this audio format', 'error');
-                } else if (err.name === 'NotAllowedError') {
-                    logAudio('⚠️ User interaction required before playing audio', 'info');
-                    // We'll retry on user interaction
-                    document.addEventListener('click', () => {
-                        logAudio('User interaction detected, retrying play', 'info');
-                        attemptPlay();
-                    }, { once: true });
-                    return false;
-                } else if (err.name === 'NotFoundError') {
-                    logAudio('⚠️ Audio file not found at the specified path', 'error');
-                } else if (err.name === 'AbortError') {
-                    logAudio('⚠️ Playback was aborted', 'info');
-                }
-                
-                // Retry logic
-                if (retries < maxRetries) {
-                    retries++;
-                    setTimeout(attemptPlay, 1000 * retries);
-                    return false;
-                }
-                
-                logAudio('All retry attempts failed', 'error');
-                return false;
-            });
-    }
-    
-    return attemptPlay();
-}
-
-// Main initialization
-$('tapstart').addEventListener('click', () => {
-    logAudio('User tapped start button', 'info');
-    $('tapstart').style.display = 'none';
-    $('phase1').style.display = 'flex';
-    
-    // Show debug overlay initially for troubleshooting
-    // Uncomment to auto-show debug:
-    // showDebug();
-    
-    // Initialize audio with debugging
-    const audio = initAudio();
-    
-    if (audio) {
-        // Try to play with retry
-        playAudioWithRetry(audio, 3)
-            .then(played => {
-                if (played) {
-                    logAudio('Audio playback started successfully', 'success');
-                } else {
-                    logAudio('Audio could not start. Check the debug panel (press D) for details.', 'error');
-                    // Add a retry button if audio fails
-                    const retryBtn = document.createElement('button');
-                    retryBtn.textContent = '🔄 Retry Audio';
-                    retryBtn.style.cssText = `
-                        position: fixed; bottom: 50px; left: 50%;
-                        transform: translateX(-50%);
-                        z-index: 999;
-                        padding: 10px 20px;
-                        background: #00e5ff;
-                        color: #000;
-                        border: none;
-                        font-family: 'Courier New', monospace;
-                        font-size: 12px;
-                        cursor: pointer;
-                        animation: tapblink 1.8s ease-in-out infinite;
-                    `;
-                    document.body.appendChild(retryBtn);
-                    retryBtn.addEventListener('click', () => {
-                        logAudio('Manual retry triggered', 'info');
-                        playAudioWithRetry(audio, 3);
-                        retryBtn.remove();
-                    });
-                }
-            });
-    }
-    
-    // Start the terminal sequence
-    setTimeout(runLines, 600);
+  }
+  setTimeout(runLines,600);
 });
-
-// Keyboard shortcut to toggle debug (already added above)
-// Press D to show/hide audio debug panel
-
-console.log('🔊 ENCOM Audio System initialized. Press D to toggle debug panel.');
-logAudio('Welcome to ENCOM Systems. Audio debug enabled.', 'info');
 </script>
 </body>
 </html>
