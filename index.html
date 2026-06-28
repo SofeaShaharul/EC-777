@@ -39,6 +39,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 /* ── FLASH OVERLAYS ─────────────────────────────────────────── */
 #flash    {position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
 #flash-red{position:fixed;inset:0;background:#ff1111;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
+#flash-green{position:fixed;inset:0;background:#00ff88;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
 /* Glitch overlay pair */
 #glitch-a,#glitch-b{position:fixed;inset:0;pointer-events:none;z-index:800;opacity:0;}
 #glitch-a{background:rgba(0,229,255,.08);}
@@ -258,14 +259,117 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   animation:pulse 1.8s ease-in-out infinite,slideup .5s ease 1.2s both;
 }
 
-/* ── STATE: FINAL MESSAGE ───────────────────────────────────── */
-#state-message{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;padding:clamp(28px,5vw,56px);text-align:center;}
-.msg-glyph{width:56px;height:56px;margin:0 auto 26px;}
-.msg-glyph svg{width:100%;height:100%;}
-#msg-body{font-size:clamp(14px,2.2vw,17px);color:#00e5ff;letter-spacing:.05em;line-height:2.4;max-width:540px;opacity:0;transition:opacity 1.4s ease;}
-.msg-highlight{display:block;margin:20px 0 10px;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;color:#00e5ff;text-shadow:0 0 18px rgba(0,229,255,.9);}
-.msg-footer{font-size:clamp(9px,1.3vw,11px);letter-spacing:.22em;color:rgba(0,229,255,.35);margin-top:28px;text-transform:uppercase;}
-#msg-sig{font-size:clamp(12px,1.8vw,15px);color:rgba(0,229,255,.6);letter-spacing:.15em;margin-top:10px;font-style:italic;opacity:0;transition:opacity 1.2s ease 1.2s;}
+/* ── STATE: FINAL MESSAGE — GRAND REVEAL ────────────────────── */
+@keyframes revealLine  {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
+@keyframes discSpin    {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes discPulse   {0%,100%{filter:drop-shadow(0 0 8px #00e5ff) drop-shadow(0 0 20px rgba(0,229,255,.4))}50%{filter:drop-shadow(0 0 18px #00e5ff) drop-shadow(0 0 50px rgba(0,229,255,.8))}}
+@keyframes particleFly {0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
+@keyframes sigAppear   {from{opacity:0;letter-spacing:.05em}to{opacity:1;letter-spacing:.18em}}
+@keyframes borderPulse {0%,100%{opacity:.35}50%{opacity:.7}}
+
+#state-message{
+  position:fixed;inset:0;z-index:70;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  padding:clamp(20px,4vw,48px);text-align:center;
+  overflow:hidden;
+}
+
+/* Particle canvas behind everything */
+#msg-particles{position:absolute;inset:0;pointer-events:none;z-index:0;}
+
+/* Animated border frame */
+#msg-frame{
+  position:absolute;inset:clamp(12px,2vw,24px);
+  border:1px solid rgba(0,229,255,0);
+  pointer-events:none;z-index:1;
+  transition:border-color 2s ease 0.5s;
+}
+#msg-frame.on{border-color:rgba(0,229,255,.2);}
+#msg-frame::before,#msg-frame::after{
+  content:'';position:absolute;
+  width:clamp(24px,4vw,40px);height:clamp(24px,4vw,40px);
+  border-color:#00e5ff;border-style:solid;
+  opacity:0;transition:opacity 1.5s ease 1s;
+}
+#msg-frame::before{top:-1px;left:-1px;border-width:2px 0 0 2px;}
+#msg-frame::after {bottom:-1px;right:-1px;border-width:0 2px 2px 0;}
+#msg-frame.on::before,#msg-frame.on::after{opacity:.8;}
+.msg-frame-corner-tr,.msg-frame-corner-bl{
+  position:absolute;
+  width:clamp(24px,4vw,40px);height:clamp(24px,4vw,40px);
+  border-color:#00e5ff;border-style:solid;
+  opacity:0;transition:opacity 1.5s ease 1s;
+}
+.msg-frame-corner-tr{top:-1px;right:-1px;border-width:2px 2px 0 0;}
+.msg-frame-corner-bl{bottom:-1px;left:-1px;border-width:0 0 2px 2px;}
+#msg-frame.on .msg-frame-corner-tr,
+#msg-frame.on .msg-frame-corner-bl{opacity:.8;}
+
+/* Content wrapper */
+#msg-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;max-width:560px;width:100%;}
+
+/* Identity Disc SVG */
+#disc-wrap{width:clamp(90px,18vw,130px);height:clamp(90px,18vw,130px);margin-bottom:clamp(24px,4vw,36px);opacity:0;transition:opacity 1s ease;}
+#disc-wrap.on{opacity:1;}
+#disc-outer-ring{animation:discSpin 12s linear infinite;}
+#disc-inner-ring{animation:discSpin 8s linear infinite reverse;}
+#disc-wrap.on svg{animation:discPulse 3s ease-in-out infinite;}
+
+/* Divider line */
+.msg-divider{width:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.6),transparent);margin:0 auto clamp(20px,3vw,30px);transition:width 1.2s ease;}
+.msg-divider.on{width:min(320px,80vw);}
+
+/* Text lines — each reveals individually */
+.msg-line{
+  font-size:clamp(13px,2.1vw,16px);color:#00e5ff;
+  letter-spacing:.06em;line-height:2.3;
+  opacity:0;
+}
+.msg-line.on{animation:revealLine .7s ease forwards;}
+
+/* The directional highlight */
+.msg-highlight{
+  display:block;
+  font-size:clamp(15px,2.8vw,22px);letter-spacing:.28em;
+  text-transform:uppercase;color:#00e5ff;
+  text-shadow:0 0 22px rgba(0,229,255,1),0 0 50px rgba(0,229,255,.5);
+  margin:clamp(16px,3vw,26px) 0;
+  opacity:0;
+}
+.msg-highlight.on{animation:revealLine .8s ease forwards;}
+
+/* Birthday line — larger */
+.msg-bday{
+  font-size:clamp(17px,3vw,24px);color:#00e5ff;
+  letter-spacing:.12em;
+  text-shadow:0 0 14px rgba(0,229,255,.7);
+  opacity:0;margin-top:clamp(14px,2.5vw,22px);
+}
+.msg-bday.on{animation:revealLine .8s ease forwards;}
+
+/* End of line */
+.msg-eol{
+  font-size:clamp(10px,1.5vw,13px);letter-spacing:.4em;
+  color:rgba(0,229,255,.45);text-transform:uppercase;
+  opacity:0;margin-top:8px;
+}
+.msg-eol.on{animation:revealLine .6s ease forwards;}
+
+/* Footer */
+.msg-footer{
+  font-size:clamp(8px,1.2vw,10px);letter-spacing:.22em;
+  color:rgba(0,229,255,.2);margin-top:clamp(20px,4vw,36px);
+  text-transform:uppercase;opacity:0;transition:opacity 1.5s ease;
+}
+.msg-footer.on{opacity:1;}
+
+/* Signature */
+#msg-sig{
+  font-size:clamp(13px,2vw,16px);color:rgba(0,229,255,.65);
+  letter-spacing:.05em;margin-top:8px;font-style:italic;
+  opacity:0;
+}
+#msg-sig.on{animation:sigAppear 1.2s ease forwards;}
 </style>
 </head>
 <body>
@@ -279,16 +383,18 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 <div id="clock-hud"></div>
 <div id="flash"></div>
 <div id="flash-red"></div>
+<div id="flash-green"></div>
 <div id="glitch-a"></div>
 <div id="glitch-b"></div>
 
 <!-- ── AUDIO ──────────────────────────────────────────────────── -->
 <audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
+<audio id="audio-end"        loop preload="auto"><source src="EndTitles.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-type"            preload="auto"><source src="sfx-typing.mp3"     type="audio/mpeg"></audio>
-<audio id="audio-lightcycle"      preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
+<audio id="audio-lightcycle" loop preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
 <audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-granted"         preload="auto"><source src="sfx-granted.mp3"    type="audio/mpeg"></audio>
-<audio id="audio-lightcycle2" loop preload="auto"><source src="sfx-lightcycle2.mp3" type="audio/mpeg"></audio>
+<audio id="audio-click"           preload="auto"><source src="sfx-click.mp3"      type="audio/mpeg"></audio>
 
 <!-- ════════════════════════════════════════════════════════════
      GATEWAY
@@ -655,20 +761,74 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
-     FINAL MESSAGE
+     FINAL MESSAGE — GRAND REVEAL
 ════════════════════════════════════════════════════════════ -->
 <div id="state-message">
-  <div class="msg-glyph">
-    <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-      <polygon points="30,3 57,17 57,43 30,57 3,43 3,17" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
-      <polygon points="30,12 48,21 48,39 30,48 12,39 12,21" fill="none" stroke="#00e5ff" stroke-width="1"   opacity=".55"/>
-      <polygon points="30,21 39,25.5 39,34.5 30,39 21,34.5 21,25.5" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".35"/>
-      <circle cx="30" cy="30" r="4" fill="#00e5ff" opacity=".95"/>
-    </svg>
+  <canvas id="msg-particles"></canvas>
+  <div id="msg-frame">
+    <div class="msg-frame-corner-tr"></div>
+    <div class="msg-frame-corner-bl"></div>
   </div>
-  <div id="msg-body"></div>
-  <div class="msg-footer">— TRANSMISSION ORIGIN : ENCOM GRID — CLASSIFIED —</div>
-  <div id="msg-sig">// Your Quorrbuh</div>
+
+  <div id="msg-content">
+
+    <!-- Identity Disc -->
+    <div id="disc-wrap">
+      <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
+        <!-- Static base -->
+        <circle cx="65" cy="65" r="62" fill="none" stroke="rgba(0,229,255,.12)" stroke-width="1"/>
+        <!-- Outer spinning ring -->
+        <g id="disc-outer-ring">
+          <circle cx="65" cy="65" r="56" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="24 10" opacity=".8"/>
+        </g>
+        <!-- Mid ring -->
+        <circle cx="65" cy="65" r="46" fill="none" stroke="rgba(0,229,255,.3)" stroke-width="1"/>
+        <!-- Inner spinning ring -->
+        <g id="disc-inner-ring">
+          <circle cx="65" cy="65" r="38" fill="none" stroke="#00e5ff" stroke-width="1" stroke-dasharray="8 18" opacity=".6"/>
+        </g>
+        <!-- Spokes -->
+        <line x1="65" y1="9"  x2="65" y2="27"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="65" y1="103" x2="65" y2="121" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="9"  y1="65" x2="27" y2="65"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="103" y1="65" x2="121" y2="65" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="24" y1="24" x2="36" y2="36"  stroke="rgba(0,229,255,.25)" stroke-width="1"/>
+        <line x1="106" y1="24" x2="94" y2="36" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
+        <line x1="24" y1="106" x2="36" y2="94" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
+        <line x1="106" y1="106" x2="94" y2="94" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
+        <!-- Core disc shape -->
+        <circle cx="65" cy="65" r="26" fill="rgba(0,229,255,.06)" stroke="#00e5ff" stroke-width="1.5"/>
+        <circle cx="65" cy="65" r="16" fill="rgba(0,229,255,.1)"  stroke="rgba(0,229,255,.5)" stroke-width="1"/>
+        <!-- Centre dot -->
+        <circle cx="65" cy="65" r="5"  fill="#00e5ff" opacity=".95"/>
+        <circle cx="65" cy="65" r="5"  fill="none" stroke="#00e5ff" stroke-width="1.5">
+          <animate attributeName="r" values="5;16" dur="2.2s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="2.2s" repeatCount="indefinite"/>
+        </circle>
+        <!-- EC-777 label -->
+        <text x="65" y="69" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="7" letter-spacing="2">EC-777</text>
+      </svg>
+    </div>
+
+    <!-- Lines revealed one by one via JS -->
+    <div class="msg-divider" id="msg-div1"></div>
+
+    <div class="msg-line" id="ml1">It was never lost, User.</div>
+    <div class="msg-line" id="ml2">It was hidden — deep in the Grid,</div>
+    <div class="msg-line" id="ml3">waiting for the one who earned it back.</div>
+
+    <div class="msg-highlight" id="ml4">&rarr; Proceed to the Storage Room</div>
+
+    <div class="msg-line" id="ml5">The UV light will guide you through the Grid.</div>
+
+    <div class="msg-divider" id="msg-div2" style="margin-top:clamp(16px,3vw,26px);"></div>
+
+    <div class="msg-bday"  id="ml6">Happy birthday, Buh.</div>
+    <div class="msg-eol"   id="ml7">End of line.</div>
+
+    <div class="msg-footer" id="msg-footer">— TRANSMISSION ORIGIN : CLASSIFIED — ISIS / ENCOM GRID —</div>
+    <div id="msg-sig">// Your Quorrbuh</div>
+  </div>
 </div>
 
 <script>
@@ -710,7 +870,14 @@ function doRedFlash(cb){
   setTimeout(()=>{f.style.opacity='0';setTimeout(()=>{if(cb)cb();},100);},180);
 }
 
-// Glitch burst — brief screen tear effect
+// Green flash
+function doGreenFlash(cb){
+  const f=$('flash-green');
+  f.style.opacity='0.6';
+  setTimeout(()=>{f.style.opacity='0';setTimeout(()=>{if(cb)cb();},100);},200);
+}
+
+// Glitch burst
 function doGlitch(dur=400){
   const ga=$('glitch-a'), gb=$('glitch-b');
   ga.style.animation='glitch1 .15s step-end infinite';
@@ -721,13 +888,14 @@ function doGlitch(dur=400){
 }
 
 // Audio
-function playBg()         {const a=$('audio-bg');        a.volume=0.18; a.play().catch(()=>{});}
-function playType()       {const a=$('audio-type');       a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
-function stopType()       {const a=$('audio-type');       a.pause(); a.currentTime=0;}
-function playLightcycle() {const a=$('audio-lightcycle'); a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
-function playDenied()     {const a=$('audio-denied');     a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
-function playGranted()    {const a=$('audio-granted');    a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
-function playLightcycle2(){const a=$('audio-lightcycle2');a.volume=0.32; a.loop=true; a.currentTime=0; a.play().catch(()=>{});}
+function playBg()          {const a=$('audio-bg');        a.volume=0.18; a.play().catch(()=>{});}
+function playType()        {const a=$('audio-type');       a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function stopType()        {const a=$('audio-type');       a.pause(); a.currentTime=0;}
+function playLightcycle()  {const a=$('audio-lightcycle'); a.volume=0.9;  a.currentTime=0; a.play().catch(()=>{});}
+function stopLightcycle()  {const a=$('audio-lightcycle'); a.pause(); a.currentTime=0;}
+function playDenied()      {const a=$('audio-denied');     a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function playGranted()     {const a=$('audio-granted');    a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function playClick()       {const a=$('audio-click');      a.volume=0.8;  a.currentTime=0; a.play().catch(()=>{});}
 
 // SVG path animate
 function animPath(id,gid,dur,delay,cb){
@@ -773,6 +941,7 @@ function startMatrixRain(){
 }
 
 $('gw-btn').addEventListener('click',()=>{
+  playClick();
   hideEl('state-gateway');
   showEl('boot-screen');
   playBg();
@@ -961,7 +1130,7 @@ function runTerminalB(){
 
 function runTerminal(){ lineIdx=0; runTerminalA(); }
 
-$('track-btn').addEventListener('click',()=>doFlash(showMap));
+$('track-btn').addEventListener('click',()=>{playClick();doFlash(showMap);});
 
 /* ════════════════════════════════════════════════════════════
    MAP — LEG 1
@@ -1030,20 +1199,19 @@ function handleDenied(){
 }
 
 function handleGranted(){
-  playDenied();
-  doRedFlash();
+  doGreenFlash();
+  playGranted();
+  doGlitch(600);
+  stopLightcycle();
+  showEl('isis-screen');
+  // Reveal the proceed button after 3s so he has time to read first
   setTimeout(()=>{
-    playGranted();
-    doGlitch(600);
-    showEl('isis-screen');
-    // Reveal the proceed button after 3s so he has time to read first
-    setTimeout(()=>{
-      $('isis-proceed-btn').style.display='block';
-    },3000);
-  },500);
+    $('isis-proceed-btn').style.display='block';
+  },3000);
 }
 
 $('isis-proceed-btn').addEventListener('click',()=>{
+  playClick();
   doFlash(()=>{
     hideEl('isis-screen');
     showLeg2();
@@ -1057,6 +1225,9 @@ function showLeg2(){
   // Update headers
   $('map-eyebrow').textContent='CLASSIFIED GRID LAYOUT — ROUTE BETA — REROUTED';
   $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE STORAGE ROOM';
+
+  // Hide password prompt — no longer needed
+  $('pw-block').style.display='none';
 
   // Reveal the storage room label now
   ['rl-storage-label','rl-storage-name'].forEach(id=>{
@@ -1084,7 +1255,7 @@ function showLeg2(){
       const el=document.getElementById(id);
       if(el)el.style.opacity='1';
     });
-    playLightcycle2();
+    playLightcycle();
 
     animPath('lb1','lb1g',400,  300,()=>flashRoomOrange('rl-golf'));
     animPath('lb2','lb2g',780,  740,()=>{flashRoomOrange('rl-lift1');flashRoomOrange('rl-lift0');});
@@ -1108,7 +1279,11 @@ function showLeg2(){
   },700);
 }
 
-$('map-proceed-btn').addEventListener('click',()=>doFlash(showFinalMessage));
+$('map-proceed-btn').addEventListener('click',()=>{
+  playClick();
+  stopLightcycle();
+  doFlash(showFinalMessage);
+});
 
 function flashRoomOrange(id){
   const el=document.getElementById(id);
@@ -1119,24 +1294,103 @@ function flashRoomOrange(id){
 }
 
 /* ════════════════════════════════════════════════════════════
-   FINAL MESSAGE
+   FINAL MESSAGE — GRAND REVEAL
 ════════════════════════════════════════════════════════════ */
+
+// Particle burst on the canvas
+function launchParticles(){
+  const canvas=$('msg-particles');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const cx=canvas.width/2, cy=canvas.height/2;
+  const particles=[];
+  for(let i=0;i<80;i++){
+    const angle=Math.random()*Math.PI*2;
+    const speed=(Math.random()*3+1);
+    particles.push({
+      x:cx,y:cy,
+      vx:Math.cos(angle)*speed,
+      vy:Math.sin(angle)*speed,
+      life:1,
+      decay:Math.random()*.012+.006,
+      size:Math.random()*2.5+0.5,
+    });
+  }
+  function draw(){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    let alive=false;
+    for(const p of particles){
+      if(p.life<=0)continue;
+      alive=true;
+      ctx.globalAlpha=p.life*0.7;
+      ctx.fillStyle='#00e5ff';
+      ctx.shadowBlur=8;
+      ctx.shadowColor='#00e5ff';
+      ctx.beginPath();
+      ctx.arc(p.x,p.y,p.size,0,Math.PI*2);
+      ctx.fill();
+      p.x+=p.vx; p.y+=p.vy;
+      p.vx*=0.97; p.vy*=0.97;
+      p.life-=p.decay;
+    }
+    ctx.globalAlpha=1; ctx.shadowBlur=0;
+    if(alive)requestAnimationFrame(draw);
+  }
+  draw();
+}
+
 function showFinalMessage(){
   hideEl('state-map');
   showEl('state-message');
-  const body=$('msg-body');
-  body.innerHTML=
-    `It was never lost, User.<br>
-     It was hidden — deep in the Grid,<br>
-     waiting for the one who earned it back.<br>
-     <span class="msg-highlight">&rarr; Proceed to the Storage Room</span>
-     Take the UV light with you.<br><br>
-     Happy birthday, Buh.<br>
-     End of line.`;
-  setTimeout(()=>{
-    body.style.opacity='1';
-    $('msg-sig').style.opacity='1';
-  },500);
+
+  // Music crossfade: fade out EndofLine, fade in EndTitles
+  const bg=$('audio-bg');
+  const end=$('audio-end');
+  end.volume=0;
+  end.play().catch(()=>{});
+  let vol=0;
+  const fadeInterval=setInterval(()=>{
+    if(bg.volume>0.02) bg.volume=Math.max(0,bg.volume-0.015);
+    else { bg.pause(); bg.volume=0; }
+    if(vol<0.18){ vol=Math.min(0.18,vol+0.008); end.volume=vol; }
+    if(bg.paused&&vol>=0.18) clearInterval(fadeInterval);
+  },80);
+
+  // Frame corners animate in
+  const frame=$('msg-frame');
+  setTimeout(()=>frame.classList.add('on'),100);
+
+  // Disc fades in
+  setTimeout(()=>$('disc-wrap').classList.add('on'),300);
+
+  // Particle burst
+  setTimeout(launchParticles,400);
+
+  // Divider 1 expands
+  setTimeout(()=>$('msg-div1').classList.add('on'),700);
+
+  // Staggered line reveals
+  const lineIds=['ml1','ml2','ml3','ml4','ml5'];
+  const lineDelays=[1000,1600,2200,3000,3900];
+  lineIds.forEach((id,i)=>{
+    setTimeout(()=>{
+      const el=$(id);
+      if(el)el.classList.add('on');
+    },lineDelays[i]);
+  });
+
+  // Divider 2
+  setTimeout(()=>$('msg-div2').classList.add('on'),4800);
+
+  // Birthday + end of line
+  setTimeout(()=>$('ml6').classList.add('on'),5400);
+  setTimeout(()=>$('ml7').classList.add('on'),6200);
+
+  // Footer and sig
+  setTimeout(()=>$('msg-footer').classList.add('on'),7000);
+  setTimeout(()=>$('msg-sig').classList.add('on'),7600);
 }
 </script>
 </body>
