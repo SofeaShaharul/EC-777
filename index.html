@@ -3,421 +3,1141 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ENCOM SYSTEMS — SECURE ACCESS</title>
+<title>ENCOM INTERNATIONAL — SECURE ACCESS</title>
 <style>
-*{margin:0;padding:0;box-sizing:border-box;}
+/* ── RESET ─────────────────────────────────────────────────── */
+*,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
 html,body{width:100%;height:100%;background:#000;overflow:hidden;}
-body{font-family:'Courier New',monospace;color:#00e5ff;}
-#scanline{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(0,229,255,0.12);animation:scan 7s linear infinite;pointer-events:none;z-index:50;}
-@keyframes scan{0%{top:-2px}100%{top:100vh}}
-#gridlines{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,0.025) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,0.025) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;}
-#encom-hud{position:fixed;top:14px;left:18px;font-size:9px;letter-spacing:.35em;color:rgba(0,229,255,.2);text-transform:uppercase;z-index:10;}
-#clock-hud{position:fixed;top:14px;right:18px;font-size:9px;letter-spacing:.2em;color:rgba(0,229,255,.2);z-index:10;}
-#corner-tl{position:fixed;top:0;left:0;width:28px;height:28px;border-top:1px solid rgba(0,229,255,.35);border-left:1px solid rgba(0,229,255,.35);}
-#corner-tr{position:fixed;top:0;right:0;width:28px;height:28px;border-top:1px solid rgba(0,229,255,.35);border-right:1px solid rgba(0,229,255,.35);}
-#corner-bl{position:fixed;bottom:0;left:0;width:28px;height:28px;border-bottom:1px solid rgba(0,229,255,.35);border-left:1px solid rgba(0,229,255,.35);}
-#corner-br{position:fixed;bottom:0;right:0;width:28px;height:28px;border-bottom:1px solid rgba(0,229,255,.35);border-right:1px solid rgba(0,229,255,.35);}
-#flash{position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:200;transition:opacity .06s;}
+body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 
-#tapstart{position:fixed;inset:0;background:#000;display:flex;flex-direction:column;align-items:center;justify-content:center;z-index:300;cursor:pointer;}
-.ts-logo{font-size:9px;letter-spacing:.45em;color:rgba(0,229,255,.7);text-transform:uppercase;margin-bottom:44px;}
-.ts-icon{width:68px;height:68px;margin:0 auto 38px;}
-.ts-icon svg{width:100%;height:100%;}
-.ts-prompt{font-size:clamp(13px,2.5vw,16px);letter-spacing:.3em;color:#00e5ff;text-transform:uppercase;text-shadow:0 0 18px #00e5ff;animation:tapblink 1.8s ease-in-out infinite;}
-@keyframes tapblink{0%,100%{opacity:1}50%{opacity:0.2}}
-.ts-sub{font-size:9px;letter-spacing:.2em;color:rgba(0,229,255,.6);margin-top:14px;text-transform:uppercase;}
+/* ── KEYFRAMES ──────────────────────────────────────────────── */
+@keyframes scan      {0%{top:-2px}100%{top:100vh}}
+@keyframes blink     {50%{opacity:0}}
+@keyframes pulse     {0%,100%{opacity:1}50%{opacity:.2}}
+@keyframes pulsefast {0%,100%{opacity:1}50%{opacity:.1}}
+@keyframes glitch1   {0%,100%{clip-path:inset(0 0 98% 0)}20%{clip-path:inset(33% 0 50% 0)}40%{clip-path:inset(70% 0 10% 0)}60%{clip-path:inset(5% 0 80% 0)}80%{clip-path:inset(55% 0 30% 0)}}
+@keyframes glitch2   {0%,100%{clip-path:inset(98% 0 0 0)}25%{clip-path:inset(10% 0 70% 0)}50%{clip-path:inset(60% 0 20% 0)}75%{clip-path:inset(20% 0 60% 0)}}
+@keyframes hflicker  {0%,100%{opacity:1}92%{opacity:1}93%{opacity:.4}94%{opacity:1}97%{opacity:.7}98%{opacity:1}}
+@keyframes spinring  {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes flowdash  {from{stroke-dashoffset:60}to{stroke-dashoffset:0}}
+@keyframes isisfade  {0%{opacity:0;transform:scale(.92)}100%{opacity:1;transform:scale(1)}}
+@keyframes isisglow  {0%,100%{text-shadow:0 0 18px rgba(255,140,0,.9),0 0 40px rgba(255,140,0,.4)}50%{text-shadow:0 0 32px rgba(255,140,0,1),0 0 70px rgba(255,140,0,.7)}}
+@keyframes isisborder{0%,100%{box-shadow:0 0 18px rgba(255,140,0,.3)}50%{box-shadow:0 0 42px rgba(255,140,0,.7),inset 0 0 24px rgba(255,140,0,.08)}}
+@keyframes slideup   {from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
-#phase1{position:fixed;inset:0;display:none;flex-direction:column;justify-content:flex-end;padding:44px 44px 56px;}
-#terminal-scroll{overflow:hidden;max-height:calc(100vh - 100px);display:flex;flex-direction:column;justify-content:flex-end;}
-#terminal{font-size:clamp(14px,4vw,16px);line-height:2.05;color:#00e5ff;text-shadow:0 0 7px rgba(0,229,255,.4);white-space:pre-wrap;max-width:660px;}
-.cur{display:inline-block;width:8px;height:.95em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 5px #00e5ff;}
-@keyframes blink{50%{opacity:0}}
+/* ── GLOBAL CHROME ──────────────────────────────────────────── */
+#scanline{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(0,229,255,.1);animation:scan 7s linear infinite;pointer-events:none;z-index:50;}
+#gridlines{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;animation:hflicker 8s step-end infinite;}
+#encom-hud{position:fixed;top:14px;left:18px;font-size:10px;letter-spacing:.35em;color:rgba(0,229,255,.55);text-transform:uppercase;z-index:10;}
+#clock-hud{position:fixed;top:14px;right:18px;font-size:10px;letter-spacing:.2em;color:rgba(0,229,255,.55);z-index:10;}
+.corner{position:fixed;width:28px;height:28px;z-index:10;}
+#c-tl{top:0;left:0;border-top:1px solid rgba(0,229,255,.5);border-left:1px solid rgba(0,229,255,.5);}
+#c-tr{top:0;right:0;border-top:1px solid rgba(0,229,255,.5);border-right:1px solid rgba(0,229,255,.5);}
+#c-bl{bottom:0;left:0;border-bottom:1px solid rgba(0,229,255,.5);border-left:1px solid rgba(0,229,255,.5);}
+#c-br{bottom:0;right:0;border-bottom:1px solid rgba(0,229,255,.5);border-right:1px solid rgba(0,229,255,.5);}
 
-#phase2{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;}
-.map-hud-top{font-size:9px;letter-spacing:.4em;color:rgba(0,229,255,.35);text-transform:uppercase;margin-bottom:8px;text-align:center;}
-.map-hud-title{font-size:clamp(11px,2vw,15px);letter-spacing:.25em;color:#00e5ff;text-shadow:0 0 10px #00e5ff;text-transform:uppercase;margin-bottom:14px;text-align:center;}
-#mapsvg-wrap{width:min(96vw,660px);flex-shrink:0;}
+/* ── FLASH OVERLAYS ─────────────────────────────────────────── */
+#flash    {position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
+#flash-red{position:fixed;inset:0;background:#ff1111;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
+/* Glitch overlay pair */
+#glitch-a,#glitch-b{position:fixed;inset:0;pointer-events:none;z-index:800;opacity:0;}
+#glitch-a{background:rgba(0,229,255,.08);}
+#glitch-b{background:rgba(255,0,80,.06);}
+
+/* ── STATE: GATEWAY ─────────────────────────────────────────── */
+#state-gateway{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;}
+
+/* top bar — mimics a real staff portal header */
+.gw-topbar{
+  position:absolute;top:0;left:0;right:0;
+  height:48px;border-bottom:1px solid rgba(0,229,255,.25);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.gw-topbar-left{display:flex;align-items:center;gap:14px;}
+.gw-topbar-logo{width:22px;height:22px;}
+.gw-topbar-logo svg{width:100%;height:100%;}
+.gw-topbar-name{font-size:11px;letter-spacing:.4em;color:rgba(0,229,255,.7);text-transform:uppercase;}
+.gw-topbar-right{font-size:9px;letter-spacing:.25em;color:rgba(0,229,255,.35);text-transform:uppercase;}
+
+/* bottom bar */
+.gw-bottombar{
+  position:absolute;bottom:0;left:0;right:0;
+  height:32px;border-top:1px solid rgba(0,229,255,.12);
+  display:flex;align-items:center;justify-content:space-between;
+  padding:0 24px;
+}
+.gw-bottombar span{font-size:8px;letter-spacing:.25em;color:rgba(0,229,255,.25);text-transform:uppercase;}
+
+/* center card */
+.gw-card{
+  display:flex;flex-direction:column;align-items:center;
+  border:1px solid rgba(0,229,255,.2);
+  padding:clamp(32px,5vw,52px) clamp(28px,5vw,52px);
+  background:rgba(0,229,255,.02);
+  min-width:clamp(280px,60vw,420px);
+  position:relative;
+}
+.gw-card::before,.gw-card::after{
+  content:'';position:absolute;width:16px;height:16px;
+  border-color:rgba(0,229,255,.4);border-style:solid;
+}
+.gw-card::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
+.gw-card::after {bottom:-1px;right:-1px;border-width:0 1px 1px 0;}
+
+.gw-portal-label{
+  font-size:clamp(8px,1.2vw,9px);letter-spacing:.55em;
+  color:rgba(0,229,255,.4);text-transform:uppercase;margin-bottom:28px;
+}
+.gw-logo{width:72px;height:72px;margin:0 auto 20px;}
+.gw-logo svg{width:100%;height:100%;}
+.gw-company{
+  font-size:clamp(16px,3vw,22px);letter-spacing:.35em;
+  color:#00e5ff;text-transform:uppercase;margin-bottom:4px;
+  text-shadow:0 0 14px rgba(0,229,255,.6);font-weight:bold;
+  text-align:center;
+}
+.gw-division{
+  font-size:clamp(9px,1.3vw,11px);letter-spacing:.3em;
+  color:rgba(0,229,255,.5);text-transform:uppercase;margin-bottom:28px;
+  text-align:center;
+}
+.gw-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.3),transparent);margin-bottom:28px;}
+.gw-scan-label{
+  font-size:clamp(9px,1.3vw,10px);letter-spacing:.35em;
+  color:rgba(0,229,255,.45);text-transform:uppercase;margin-bottom:16px;
+  text-align:center;
+}
+#gw-btn{
+  font-family:'Courier New',monospace;
+  font-size:clamp(12px,2vw,14px);letter-spacing:.3em;
+  color:#00e5ff;text-transform:uppercase;background:transparent;
+  border:1px solid rgba(0,229,255,.5);padding:14px 32px;cursor:pointer;
+  text-shadow:0 0 12px rgba(0,229,255,.8);
+  box-shadow:0 0 18px rgba(0,229,255,.08);
+  animation:pulse 2s ease-in-out infinite;
+  transition:box-shadow .2s,border-color .2s;width:100%;
+}
+#gw-btn:hover{border-color:#00e5ff;box-shadow:0 0 32px rgba(0,229,255,.35);}
+.gw-sub{
+  font-size:clamp(8px,1.2vw,9px);letter-spacing:.22em;
+  color:rgba(0,229,255,.3);margin-top:16px;text-transform:uppercase;
+  text-align:center;
+}
+.gw-ref{
+  font-size:8px;letter-spacing:.2em;color:rgba(0,229,255,.2);
+  margin-top:8px;text-transform:uppercase;text-align:center;
+}
+
+/* ── STATE: BOOT ────────────────────────────────────────────── */
+#boot-screen{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;background:#000;}
+#boot-canvas{position:absolute;inset:0;opacity:.16;pointer-events:none;}
+.boot-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;}
+.boot-ring-wrap{position:relative;width:144px;height:144px;margin-bottom:30px;}
+.boot-ring-wrap svg{width:100%;height:100%;}
+.ring-spin {transform-origin:50% 50%;animation:spinring 3.5s linear infinite;}
+.ring-slow {transform-origin:50% 50%;animation:spinring 9s linear infinite reverse;}
+.boot-id-line{font-size:clamp(11px,1.8vw,14px);letter-spacing:.32em;color:#00e5ff;text-transform:uppercase;text-shadow:0 0 12px rgba(0,229,255,.7);opacity:0;transform:translateY(8px);transition:opacity .45s ease,transform .45s ease;text-align:center;margin:4px 0;}
+.boot-id-line.on{opacity:1;transform:translateY(0);}
+.boot-bar-wrap{width:260px;height:3px;background:rgba(0,229,255,.1);margin-top:26px;border:1px solid rgba(0,229,255,.18);overflow:hidden;opacity:0;transition:opacity .3s ease;}
+.boot-bar-fill{height:100%;width:0%;background:#00e5ff;box-shadow:0 0 10px #00e5ff;transition:width .28s ease;}
+.boot-bar-label{font-size:clamp(9px,1.3vw,10px);letter-spacing:.28em;color:rgba(0,229,255,.55);text-transform:uppercase;margin-top:9px;text-align:center;opacity:0;transition:opacity .3s ease .1s;}
+
+/* ── STATE: TERMINAL ────────────────────────────────────────── */
+#state-terminal{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;justify-content:flex-end;padding:clamp(24px,5vw,52px) clamp(20px,5vw,52px) clamp(32px,6vw,60px);}
+#terminal-scroll{overflow:hidden;max-height:calc(100vh - 110px);display:flex;flex-direction:column;justify-content:flex-end;}
+#terminal{font-size:clamp(13px,2.1vw,15px);line-height:2.15;color:#00e5ff;text-shadow:0 0 6px rgba(0,229,255,.45);white-space:pre-wrap;max-width:720px;}
+/* Glitch ghost layers */
+#terminal-g1,#terminal-g2{position:absolute;font-size:clamp(13px,2.1vw,15px);line-height:2.15;white-space:pre-wrap;max-width:720px;pointer-events:none;opacity:0;}
+#terminal-g1{color:rgba(0,229,255,.35);transform:translateX(-3px);animation:glitch1 .18s step-end infinite;}
+#terminal-g2{color:rgba(255,0,80,.25);transform:translateX(3px);animation:glitch2 .18s step-end infinite;}
+.cur{display:inline-block;width:8px;height:.9em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 6px #00e5ff;}
+#track-btn{display:none;margin-top:26px;font-family:'Courier New',monospace;font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;color:#00e5ff;text-transform:uppercase;background:transparent;border:1px solid rgba(0,229,255,.5);padding:13px 28px;cursor:pointer;width:fit-content;text-shadow:0 0 10px rgba(0,229,255,.7);animation:pulse 1.8s ease-in-out infinite;}
+
+/* ── STATE: MAP ─────────────────────────────────────────────── */
+#state-map{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:clamp(34px,5vh,50px);overflow-y:auto;}
+.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.55);text-transform:uppercase;margin-bottom:5px;text-align:center;}
+.map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 10px rgba(0,229,255,.55);}
+#mapsvg-wrap{width:min(97vw,680px);flex-shrink:0;}
 #mapsvg-wrap svg{width:100%;height:auto;display:block;}
-#tap-proceed{display:none;margin-top:18px;font-family:'Courier New',monospace;font-size:clamp(10px,1.6vw,12px);letter-spacing:.3em;color:rgba(0,229,255,.45);text-transform:uppercase;text-align:center;cursor:pointer;border:1px solid rgba(0,229,255,.2);padding:11px 26px;background:transparent;animation:tapblink 1.8s ease-in-out infinite;}
-#tap-proceed.on{display:block;}
 
-#phase3{position:fixed;inset:0;display:none;flex-direction:column;align-items:center;justify-content:center;padding:36px;text-align:center;}
-.msg-glyph{width:56px;height:56px;margin:0 auto 24px;}
+/* room label glow flash */
+.room-flash{animation:pulsefast .5s ease-in-out 2;}
+
+/* flowing path animation */
+@keyframes flowA{from{stroke-dashoffset:120}to{stroke-dashoffset:0}}
+@keyframes flowB{from{stroke-dashoffset:120}to{stroke-dashoffset:0}}
+.path-flow-a{stroke-dasharray:18 8;animation:flowA 1.2s linear infinite;}
+.path-flow-b{stroke-dasharray:18 8;animation:flowB 1.2s linear infinite;}
+
+/* ── MAP PROCEED BUTTON ─────────────────────────────────────── */
+#map-proceed-btn{
+  display:none;margin-top:18px;margin-bottom:14px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;
+  color:#ff8c00;text-transform:uppercase;background:transparent;
+  border:1px solid rgba(255,140,0,.55);padding:12px 28px;cursor:pointer;
+  text-shadow:0 0 10px rgba(255,140,0,.7);
+  animation:pulse 1.8s ease-in-out infinite;
+}
+#pw-block{display:none;flex-direction:column;align-items:center;margin-top:16px;margin-bottom:10px;width:min(97vw,680px);}
+.pw-label{font-size:clamp(11px,1.6vw,13px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:10px;text-align:center;}
+.pw-row{display:flex;align-items:center;gap:10px;border:1px solid rgba(0,229,255,.5);padding:10px 16px;background:transparent;width:100%;max-width:440px;transition:border-color .2s,box-shadow .2s;}
+.pw-prompt-char{font-size:clamp(13px,2vw,15px);color:#00e5ff;text-shadow:0 0 8px rgba(0,229,255,.7);flex-shrink:0;}
+#pw-input{flex:1;background:transparent;border:none;outline:none;font-family:'Courier New',monospace;font-size:clamp(13px,2vw,15px);color:#00e5ff;letter-spacing:.2em;text-transform:uppercase;caret-color:#00e5ff;}
+#pw-input::placeholder{color:rgba(0,229,255,.3);}
+.pw-error{font-size:clamp(10px,1.5vw,12px);letter-spacing:.2em;color:#ff4444;margin-top:8px;text-transform:uppercase;text-align:center;opacity:0;transition:opacity .2s;min-height:20px;}
+.pw-error.show{opacity:1;}
+
+/* ── ISIS TAKEOVER SCREEN ───────────────────────────────────── */
+#isis-screen{
+  position:fixed;inset:0;z-index:600;display:none;
+  flex-direction:column;align-items:center;justify-content:center;
+  background:#000;
+  animation:isisborder 2.5s ease-in-out infinite;
+}
+/* Orange corner accents */
+#isis-screen::before,#isis-screen::after{
+  content:'';position:absolute;width:48px;height:48px;
+  border-color:#ff8c00;border-style:solid;
+}
+#isis-screen::before{top:0;left:0;border-width:2px 0 0 2px;}
+#isis-screen::after {bottom:0;right:0;border-width:0 2px 2px 0;}
+.isis-corner-tr,.isis-corner-bl{position:absolute;width:48px;height:48px;border-color:#ff8c00;border-style:solid;}
+.isis-corner-tr{top:0;right:0;border-width:2px 2px 0 0;}
+.isis-corner-bl{bottom:0;left:0;border-width:0 0 2px 2px;}
+.isis-inner{display:flex;flex-direction:column;align-items:center;gap:0;animation:isisfade .6s ease forwards;}
+.isis-logo-wrap{width:96px;height:96px;margin-bottom:22px;}
+.isis-logo-wrap svg{width:100%;height:100%;}
+.isis-org{
+  font-size:clamp(8px,1.3vw,10px);letter-spacing:.55em;
+  color:rgba(255,140,0,.65);text-transform:uppercase;margin-bottom:6px;
+  animation:slideup .5s ease .2s both;
+}
+.isis-name{
+  font-size:clamp(28px,6vw,52px);letter-spacing:.25em;font-weight:bold;
+  color:#ff8c00;text-transform:uppercase;font-style:italic;
+  animation:isisglow 2.5s ease-in-out infinite,slideup .5s ease .1s both;
+}
+.isis-divider{width:180px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.6),transparent);margin:16px 0;animation:slideup .5s ease .3s both;}
+.isis-title{
+  font-size:clamp(10px,1.6vw,13px);letter-spacing:.45em;
+  color:rgba(255,140,0,.85);text-transform:uppercase;
+  animation:slideup .5s ease .4s both;
+}
+.isis-field{
+  font-size:clamp(16px,3vw,22px);letter-spacing:.3em;
+  color:#ff8c00;text-transform:uppercase;margin-top:6px;
+  text-shadow:0 0 18px rgba(255,140,0,.8);
+  animation:slideup .5s ease .5s both;
+}
+.isis-id{
+  font-size:clamp(10px,1.5vw,12px);letter-spacing:.3em;
+  color:rgba(255,140,0,.6);text-transform:uppercase;margin-top:4px;
+  animation:slideup .5s ease .6s both;
+}
+.isis-divider2{width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.4),transparent);margin:14px 0;animation:slideup .5s ease .7s both;}
+.isis-msg{
+  font-size:clamp(11px,1.7vw,13px);letter-spacing:.18em;
+  color:rgba(255,140,0,.7);text-transform:uppercase;text-align:center;line-height:2;
+  max-width:340px;animation:slideup .5s ease .8s both;
+}
+.isis-scanline{
+  font-size:clamp(9px,1.2vw,10px);letter-spacing:.35em;
+  color:rgba(255,140,0,.35);margin-top:20px;
+  animation:slideup .5s ease 1s both,pulse 2s ease-in-out 1.2s infinite;
+}
+#isis-proceed-btn{
+  display:none;
+  margin-top:28px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;
+  color:#ff8c00;text-transform:uppercase;background:transparent;
+  border:1px solid rgba(255,140,0,.55);padding:12px 28px;cursor:pointer;
+  text-shadow:0 0 10px rgba(255,140,0,.7);
+  animation:pulse 1.8s ease-in-out infinite,slideup .5s ease 1.2s both;
+}
+
+/* ── STATE: FINAL MESSAGE ───────────────────────────────────── */
+#state-message{position:fixed;inset:0;z-index:70;display:none;flex-direction:column;align-items:center;justify-content:center;padding:clamp(28px,5vw,56px);text-align:center;}
+.msg-glyph{width:56px;height:56px;margin:0 auto 26px;}
 .msg-glyph svg{width:100%;height:100%;}
-.msg-line{font-size:clamp(13px,1.9vw,16px);color:rgba(0,229,255,.8);letter-spacing:.06em;line-height:2.3;max-width:520px;}
-.msg-highlight{color:#00e5ff;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;text-shadow:0 0 16px #00e5ff;display:block;margin:20px 0 10px;}
-.msg-footer{font-size:9px;letter-spacing:.22em;color:rgba(0,229,255,.25);margin-top:28px;text-transform:uppercase;}
-.msg-sig{font-size:clamp(11px,1.7vw,14px);color:rgba(0,229,255,.5);letter-spacing:.15em;margin-top:10px;font-style:italic;}
+#msg-body{font-size:clamp(14px,2.2vw,17px);color:#00e5ff;letter-spacing:.05em;line-height:2.4;max-width:540px;opacity:0;transition:opacity 1.4s ease;}
+.msg-highlight{display:block;margin:20px 0 10px;font-size:clamp(14px,2.4vw,20px);letter-spacing:.22em;text-transform:uppercase;color:#00e5ff;text-shadow:0 0 18px rgba(0,229,255,.9);}
+.msg-footer{font-size:clamp(9px,1.3vw,11px);letter-spacing:.22em;color:rgba(0,229,255,.35);margin-top:28px;text-transform:uppercase;}
+#msg-sig{font-size:clamp(12px,1.8vw,15px);color:rgba(0,229,255,.6);letter-spacing:.15em;margin-top:10px;font-style:italic;opacity:0;transition:opacity 1.2s ease 1.2s;}
 </style>
 </head>
 <body>
 
+<!-- ── CHROME ─────────────────────────────────────────────────── -->
 <div id="gridlines"></div>
 <div id="scanline"></div>
-<div id="corner-tl"></div><div id="corner-tr"></div>
-<div id="corner-bl"></div><div id="corner-br"></div>
-<div id="encom-hud">ENCOM SYSTEMS INC.</div>
+<div class="corner" id="c-tl"></div><div class="corner" id="c-tr"></div>
+<div class="corner" id="c-bl"></div><div class="corner" id="c-br"></div>
+<div id="encom-hud">ENCOM INTERNATIONAL</div>
 <div id="clock-hud"></div>
 <div id="flash"></div>
+<div id="flash-red"></div>
+<div id="glitch-a"></div>
+<div id="glitch-b"></div>
 
-<div id="tapstart">
-  <div class="ts-logo">ENCOM SYSTEMS INC. — SECURE NETWORK</div>
-  <div class="ts-icon">
-    <svg viewBox="0 0 68 68" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="34" cy="34" r="30" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
-      <circle cx="34" cy="34" r="20" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".55"/>
-      <circle cx="34" cy="34" r="10" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".3"/>
-      <circle cx="34" cy="34" r="3.5" fill="#00e5ff" opacity=".95"/>
-      <line x1="4" y1="34" x2="24" y2="34" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
-      <line x1="44" y1="34" x2="64" y2="34" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
-      <line x1="34" y1="4" x2="34" y2="24" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
-      <line x1="34" y1="44" x2="34" y2="64" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
-    </svg>
+<!-- ── AUDIO ──────────────────────────────────────────────────── -->
+<audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
+<audio id="audio-type"            preload="auto"><source src="sfx-typing.mp3"     type="audio/mpeg"></audio>
+<audio id="audio-lightcycle"      preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
+<audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
+<audio id="audio-granted"         preload="auto"><source src="sfx-granted.mp3"    type="audio/mpeg"></audio>
+<audio id="audio-lightcycle2" loop preload="auto"><source src="sfx-lightcycle2.mp3" type="audio/mpeg"></audio>
+
+<!-- ════════════════════════════════════════════════════════════
+     GATEWAY
+════════════════════════════════════════════════════════════ -->
+<div id="state-gateway">
+  <!-- Top bar -->
+  <div class="gw-topbar">
+    <div class="gw-topbar-left">
+      <div class="gw-topbar-logo">
+        <svg viewBox="0 0 22 22" xmlns="http://www.w3.org/2000/svg">
+          <circle cx="11" cy="11" r="10" fill="none" stroke="#00e5ff" stroke-width="1.2" opacity=".7"/>
+          <circle cx="11" cy="11" r="3"  fill="#00e5ff" opacity=".9"/>
+          <line x1="1"  y1="11" x2="7"  y2="11" stroke="#00e5ff" stroke-width="1" opacity=".5"/>
+          <line x1="15" y1="11" x2="21" y2="11" stroke="#00e5ff" stroke-width="1" opacity=".5"/>
+          <line x1="11" y1="1"  x2="11" y2="7"  stroke="#00e5ff" stroke-width="1" opacity=".5"/>
+          <line x1="11" y1="15" x2="11" y2="21" stroke="#00e5ff" stroke-width="1" opacity=".5"/>
+        </svg>
+      </div>
+      <div class="gw-topbar-name">ENCOM INTERNATIONAL</div>
+    </div>
+    <div class="gw-topbar-right">SECURE PORTAL v4.7 &nbsp;|&nbsp; TLS 1.3 ENCRYPTED</div>
   </div>
-  <div class="ts-prompt">TAP TO ENTER THE GRID</div>
-  <div class="ts-sub">ENCOM SECURE SHELL — AUTHORISED USERS ONLY</div>
+
+  <!-- Centre card -->
+  <div class="gw-card">
+    <div class="gw-portal-label">EMPLOYEE IDENTITY VERIFICATION PORTAL</div>
+    <div class="gw-logo">
+      <svg viewBox="0 0 72 72" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="36" cy="36" r="33" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
+        <circle cx="36" cy="36" r="22" fill="none" stroke="#00e5ff" stroke-width="1"   opacity=".5"/>
+        <circle cx="36" cy="36" r="11" fill="none" stroke="#00e5ff" stroke-width="1"   opacity=".3"/>
+        <circle cx="36" cy="36" r="3.5" fill="#00e5ff" opacity=".95"/>
+        <line x1="3"  y1="36" x2="24" y2="36" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+        <line x1="48" y1="36" x2="69" y2="36" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+        <line x1="36" y1="3"  x2="36" y2="24" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+        <line x1="36" y1="48" x2="36" y2="69" stroke="#00e5ff" stroke-width="1" opacity=".45"/>
+      </svg>
+    </div>
+    <div class="gw-company">ENCOM INTERNATIONAL</div>
+    <div class="gw-division">GRID SYSTEMS DIVISION — SECURE ACCESS</div>
+    <div class="gw-divider"></div>
+    <div class="gw-scan-label">IDENTITY BADGE DETECTED — AWAITING AUTHORISATION</div>
+    <button id="gw-btn">&gt; INITIATE SECURE SESSION</button>
+    <div class="gw-sub">AUTHORISED PERSONNEL ONLY — SESSIONS ARE MONITORED AND LOGGED</div>
+    <div class="gw-ref">REF: ENC-SEC-4471 &nbsp;·&nbsp; GRID ACCESS TIER 1 &nbsp;·&nbsp; MCP CLEARANCE REQUIRED</div>
+  </div>
+
+  <!-- Bottom bar -->
+  <div class="gw-bottombar">
+    <span>© ENCOM INTERNATIONAL — ALL RIGHTS RESERVED</span>
+    <span id="gw-clock-bottom"></span>
+    <span>UNAUTHORISED ACCESS IS A CRIMINAL OFFENCE</span>
+  </div>
 </div>
 
-<div id="phase1">
-  <div id="terminal-scroll"><div id="terminal"></div></div>
+<!-- ════════════════════════════════════════════════════════════
+     BOOT SEQUENCE
+════════════════════════════════════════════════════════════ -->
+<div id="boot-screen">
+  <canvas id="boot-canvas"></canvas>
+  <div class="boot-center">
+    <div class="boot-ring-wrap">
+      <svg viewBox="0 0 144 144" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="72" cy="72" r="68" fill="none" stroke="rgba(0,229,255,.12)" stroke-width="1"/>
+        <circle class="ring-spin" cx="72" cy="72" r="60" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="22 9" opacity=".75"/>
+        <circle class="ring-slow" cx="72" cy="72" r="50" fill="none" stroke="rgba(0,229,255,.4)" stroke-width="1" stroke-dasharray="7 16"/>
+        <circle cx="72" cy="72" r="38" fill="none" stroke="rgba(0,229,255,.1)" stroke-width="1"/>
+        <line x1="72" y1="4"   x2="72" y2="32"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="72" y1="112" x2="72" y2="140" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="4"  y1="72"  x2="32" y2="72"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="112" y1="72" x2="140" y2="72" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <circle cx="72" cy="72" r="5.5" fill="#00e5ff" opacity=".95"/>
+        <circle cx="72" cy="72" r="5.5" fill="none" stroke="#00e5ff" stroke-width="1.5">
+          <animate attributeName="r" values="5.5;22" dur="1.8s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.8s" repeatCount="indefinite"/>
+        </circle>
+      </svg>
+    </div>
+    <div class="boot-id-line" id="bid1">ENCOM INTERNATIONAL</div>
+    <div class="boot-id-line" id="bid2">IDENTITY TOKEN SCAN — EC-777</div>
+    <div class="boot-id-line" id="bid3">MOHD ERIDANI EFFENDI NORWAWI</div>
+    <div class="boot-id-line" id="bid4">CLEARANCE: USER — ACTIVE</div>
+    <div class="boot-bar-wrap" id="boot-bar-wrap">
+      <div class="boot-bar-fill" id="boot-bar-fill"></div>
+    </div>
+    <div class="boot-bar-label" id="boot-bar-label">ESTABLISHING SECURE CHANNEL...</div>
+  </div>
 </div>
 
-<div id="phase2">
-  <div class="map-hud-top">ENCOM GRID — PURSUIT SIMULATION — LEVEL 0 — ROUTE ALPHA</div>
-  <div class="map-hud-title">ACTIVE MISSION: NAVIGATE TO THE I/O TOWER</div>
+<!-- ════════════════════════════════════════════════════════════
+     TERMINAL
+════════════════════════════════════════════════════════════ -->
+<div id="state-terminal">
+  <div id="terminal-scroll" style="position:relative;">
+    <div id="terminal-g1"></div>
+    <div id="terminal-g2"></div>
+    <div id="terminal"></div>
+  </div>
+  <button id="track-btn">&gt; ACCEPT MISSION</button>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     MAP — single SVG, leg 2 elements hidden until reroute
+════════════════════════════════════════════════════════════ -->
+<div id="state-map">
+  <div class="map-eyebrow" id="map-eyebrow">CLASSIFIED GRID LAYOUT — ROUTE ALPHA — EC-777</div>
+  <div class="map-title"   id="map-title">ACTIVE MISSION: NAVIGATE TO THE ENCRYPTED CACHE</div>
   <div id="mapsvg-wrap">
-    <svg id="mapsvg" viewBox="0 0 660 430" xmlns="http://www.w3.org/2000/svg">
-      <defs>
-        <filter id="glow" x="-60%" y="-60%" width="220%" height="220%">
-          <feGaussianBlur stdDeviation="3.5" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-        <filter id="glow2" x="-40%" y="-40%" width="180%" height="180%">
-          <feGaussianBlur stdDeviation="2" result="b"/>
-          <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-        </filter>
-      </defs>
+  <svg id="mapsvg" viewBox="0 0 680 760" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <filter id="glow"  x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glow2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glowsm" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    </defs>
 
-      <rect x="6" y="6" width="648" height="418" fill="none" stroke="rgba(0,229,255,0.55)" stroke-width="1.5"/>
-      <rect x="10" y="10" width="640" height="410" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+    <!-- ── LEVEL 0 ─────────────────────────────────────── -->
+    <rect x="8"  y="8"   width="664" height="355" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5"/>
+    <rect x="12" y="12"  width="656" height="347" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
+    <rect x="8"  y="8"   width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
+    <text x="73" y="23" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  0</text>
 
-      <line x1="6" y1="107" x2="654" y2="107" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="6" y1="214" x2="654" y2="214" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="6" y1="321" x2="654" y2="321" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="165" y1="6" x2="165" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="330" y1="6" x2="330" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="495" y1="6" x2="495" y2="424" stroke="rgba(0,229,255,0.06)" stroke-width="1"/>
-      <line x1="6" y1="53" x2="654" y2="53" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="6" y1="160" x2="654" y2="160" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="6" y1="267" x2="654" y2="267" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="6" y1="374" x2="654" y2="374" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="82" y1="6" x2="82" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="247" y1="6" x2="247" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="412" y1="6" x2="412" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
-      <line x1="577" y1="6" x2="577" y2="424" stroke="rgba(0,229,255,0.025)" stroke-width="1"/>
+    <!-- grid lines L0 -->
+    <line x1="8"   y1="116" x2="672" y2="116" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="8"   y1="224" x2="672" y2="224" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="170" y1="8"   x2="170" y2="363" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="338" y1="8"   x2="338" y2="363" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="504" y1="8"   x2="504" y2="363" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
 
-      <text x="18" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">01</text>
-      <text x="627" y="26" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">04</text>
-      <text x="18" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">02</text>
-      <text x="627" y="420" fill="rgba(0,229,255,0.18)" font-family="Courier New" font-size="7">03</text>
+    <!-- POOL (origin) -->
+    <rect x="18"  y="270" width="130" height="82" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.65)" stroke-width="1.3"/>
+    <rect x="21"  y="273" width="124" height="76" fill="none" stroke="rgba(0,229,255,0.15)" stroke-width="1"/>
+    <text id="rl-pool" x="83" y="295" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 0</text>
+    <text x="83" y="314" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="12" font-weight="bold">POOL</text>
+    <text x="83" y="332" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="9">ORIGIN  POINT</text>
 
-      <polyline id="p1" points="620,40 620,320" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="280" stroke-dashoffset="280"/>
-      <polyline id="p1g" points="620,40 620,320" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="280" stroke-dashoffset="280"/>
-      <polyline id="p2" points="620,320 380,320" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="240" stroke-dashoffset="240"/>
-      <polyline id="p2g" points="620,320 380,320" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="240" stroke-dashoffset="240"/>
-      <polyline id="p3" points="380,320 380,390" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="70" stroke-dashoffset="70"/>
-      <polyline id="p3g" points="380,320 380,390" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="70" stroke-dashoffset="70"/>
-      <polyline id="p4" points="380,390 180,390" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="200" stroke-dashoffset="200"/>
-      <polyline id="p4g" points="380,390 180,390" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="200" stroke-dashoffset="200"/>
-      <polyline id="p5" points="180,390 180,180" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="210" stroke-dashoffset="210"/>
-      <polyline id="p5g" points="180,390 180,180" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="210" stroke-dashoffset="210"/>
-      <polyline id="p6" points="180,180 460,180" fill="none" stroke="#ff6600" stroke-width="2" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="280" stroke-dashoffset="280"/>
-      <polyline id="p6g" points="180,180 460,180" fill="none" stroke="rgba(255,100,0,0.15)" stroke-width="7" stroke-linecap="square" stroke-dasharray="280" stroke-dashoffset="280"/>
+    <!-- DINING L0 -->
+    <rect x="178" y="210" width="140" height="82" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.35)" stroke-width="1.2"/>
+    <text id="rl-dining0" x="248" y="234" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 1</text>
+    <text x="248" y="252" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">DINING AREA</text>
+    <text x="248" y="270" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">GLASS DOORS</text>
 
-      <polyline id="u1" points="40,390 300,390" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="260" stroke-dashoffset="260"/>
-      <polyline id="u1g" points="40,390 300,390" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="260" stroke-dashoffset="260"/>
-      <polyline id="u2" points="300,390 300,270" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u2g" points="300,390 300,270" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u3" points="300,270 460,270" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="160" stroke-dashoffset="160"/>
-      <polyline id="u3g" points="300,270 460,270" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="160" stroke-dashoffset="160"/>
-      <polyline id="u4" points="460,270 460,140" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="130" stroke-dashoffset="130"/>
-      <polyline id="u4g" points="460,270 460,140" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="130" stroke-dashoffset="130"/>
-      <polyline id="u5" points="460,140 580,140" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u5g" points="460,140 580,140" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="120" stroke-dashoffset="120"/>
-      <polyline id="u6" points="580,140 580,50" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="90" stroke-dashoffset="90"/>
-      <polyline id="u6g" points="580,140 580,50" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="90" stroke-dashoffset="90"/>
-      <polyline id="u7" points="580,50 500,50" fill="none" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="80" stroke-dashoffset="80"/>
-      <polyline id="u7g" points="580,50 500,50" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="8" stroke-linecap="square" stroke-dasharray="80" stroke-dashoffset="80"/>
+    <!-- LIVING ROOM -->
+    <rect x="346" y="210" width="148" height="82" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.35)" stroke-width="1.2"/>
+    <text id="rl-living" x="420" y="234" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 2</text>
+    <text x="420" y="252" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">LIVING ROOM</text>
+    <text x="420" y="270" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">COFFEE STA. LHS</text>
 
-      <g id="derezz" opacity="0">
-        <circle cx="460" cy="180" r="10" fill="none" stroke="#ff6600" stroke-width="1.5"/>
-        <circle cx="460" cy="180" r="5" fill="rgba(255,100,0,0.6)"/>
-        <line x1="450" y1="170" x2="442" y2="162" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
-        <line x1="470" y1="170" x2="478" y2="162" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
-        <line x1="450" y1="190" x2="442" y2="198" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
-        <line x1="470" y1="190" x2="478" y2="198" stroke="#ff6600" stroke-width="1" opacity="0.7"/>
-        <text x="460" y="210" text-anchor="middle" fill="rgba(255,100,0,0.6)" font-family="Courier New" font-size="7" letter-spacing="1">DEREZZ</text>
-      </g>
+    <!-- LIFT L0 -->
+    <rect x="512" y="210" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
+    <rect x="515" y="213" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text id="rl-lift0" x="552" y="247" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
+    <text x="552" y="261" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
+    <text x="552" y="277" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8">L0 ↕ L1</text>
+    <line x1="512" y1="251" x2="530" y2="251" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="574" y1="251" x2="592" y2="251" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
 
-      <rect x="16" y="362" width="74" height="52" fill="rgba(0,229,255,0.07)" stroke="rgba(0,229,255,0.6)" stroke-width="1.2"/>
-      <rect x="18" y="364" width="70" height="48" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-      <text x="53" y="381" text-anchor="middle" fill="rgba(0,229,255,0.5)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 0</text>
-      <text x="53" y="395" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="9" font-weight="bold">POOL</text>
-      <text x="53" y="408" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">ORIGIN</text>
+    <!-- BATHROOM L0 (leg 2 waypoint — faded until reroute) -->
+    <rect x="512" y="110" width="80" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+    <text id="rl-bath0" x="552" y="144" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
+    <text x="552" y="159" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="10">LEVEL 0</text>
 
-      <rect x="248" y="244" width="86" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
-      <text x="291" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 1</text>
-      <text x="291" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">DINING</text>
-      <text x="291" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">GLASS DOORS</text>
+    <!-- STORAGE ROOM (looks identical to other unused sectors until reroute reveals it) -->
+    <rect x="346" y="110" width="148" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text id="rl-storage-label" x="420" y="136" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 5</text>
+    <text id="rl-storage-name"  x="420" y="155" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="11">STORAGE ROOM</text>
+    <text id="rl-storage-sub"   x="420" y="172" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8">LEVEL 0</text>
 
-      <rect x="408" y="244" width="96" height="52" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
-      <text x="456" y="261" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 2</text>
-      <text x="456" y="275" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">LIVING ROOM</text>
-      <text x="456" y="288" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">COFFEE STA. LHS</text>
+    <!-- MOVIE THEATRE -->
+    <rect x="18" y="110" width="130" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1" stroke-dasharray="5 4"/>
+    <text x="83" y="144" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1">I/O TOWER</text>
+    <text x="83" y="160" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="10">MOVIE THEATRE</text>
+    <text x="83" y="176" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8">RESTRICTED</text>
 
-      <rect x="330" y="148" width="86" height="40" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="5 5"/>
-      <text x="373" y="165" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">TABLE TENNIS</text>
-      <text x="373" y="178" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">BYPASS ZONE — RHS</text>
+    <!-- Spiral stair L0 -->
+    <circle cx="148" cy="155" r="13" fill="none" stroke="rgba(0,229,255,0.22)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="148" y="150" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">SPIRAL</text>
+    <text x="148" y="162" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">STAIR</text>
 
-      <rect x="526" y="112" width="96" height="56" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.3)" stroke-width="1"/>
-      <text x="574" y="130" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" letter-spacing="1">SECTOR 3</text>
-      <text x="574" y="144" text-anchor="middle" fill="rgba(0,229,255,0.9)" font-family="Courier New" font-size="9">CORRIDOR</text>
-      <text x="574" y="157" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5">BATH LHS · LIFT RHS</text>
+    <!-- YOU ARE HERE -->
+    <circle id="origin-dot" cx="83" cy="311" r="6" fill="#00e5ff" opacity=".95" filter="url(#glow)"/>
+    <circle cx="83" cy="311" r="6" fill="none" stroke="#00e5ff" stroke-width="1.5">
+      <animate attributeName="r" values="6;20" dur="2s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.7;0" dur="2s" repeatCount="indefinite"/>
+    </circle>
+    <text x="83" y="262" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="9" letter-spacing="1">YOU ARE HERE</text>
 
-      <rect x="420" y="120" width="62" height="32" fill="none" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="4 5"/>
-      <text x="451" y="134" text-anchor="middle" fill="rgba(0,229,255,0.22)" font-family="Courier New" font-size="7">BATHROOM</text>
-      <text x="451" y="146" text-anchor="middle" fill="rgba(0,229,255,0.15)" font-family="Courier New" font-size="6.5">LHS</text>
-      <line x1="482" y1="136" x2="526" y2="136" stroke="rgba(0,229,255,0.1)" stroke-width="1" stroke-dasharray="3 5"/>
+    <!-- ── LEVEL DIVIDER ──────────────────────────────── -->
+    <line x1="8" y1="395" x2="672" y2="395" stroke="rgba(0,229,255,0.35)" stroke-width="1.5" stroke-dasharray="8 5"/>
+    <text x="340" y="385" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8" letter-spacing="3">▼  VIA  LIFT  ▼</text>
+    <text x="340" y="406" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8" letter-spacing="3">▲  VIA  LIFT  ▲</text>
 
-      <rect id="iotower" x="380" y="22" width="116" height="68" fill="rgba(0,229,255,0.08)" stroke="#00e5ff" stroke-width="1.5" filter="url(#glow2)" opacity="0"/>
-      <rect id="iotower2" x="383" y="25" width="110" height="62" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="3.5" opacity="0"/>
-      <text id="iot1" x="438" y="46" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="8" letter-spacing="2.5" filter="url(#glow2)" opacity="0">I/O TOWER</text>
-      <text id="iot2" x="438" y="62" text-anchor="middle" fill="rgba(0,229,255,0.95)" font-family="Courier New" font-size="9" opacity="0">MOVIE THEATRE</text>
-      <text id="iot3" x="438" y="76" text-anchor="middle" fill="rgba(0,229,255,0.45)" font-family="Courier New" font-size="7" opacity="0">PACKAGE AWAITS</text>
+    <!-- ── LEVEL 1 ─────────────────────────────────────── -->
+    <rect x="8"  y="410" width="664" height="340" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5"/>
+    <rect x="12" y="414" width="656" height="332" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
+    <rect x="8"  y="410" width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
+    <text x="73" y="425" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  1</text>
 
-      <circle cx="40" cy="390" r="5" fill="#00e5ff" opacity=".95"/>
-      <circle cx="40" cy="390" r="5" fill="none" stroke="#00e5ff" stroke-width="1.5">
-        <animate attributeName="r" values="5;18" dur="2s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.7;0" dur="2s" repeatCount="indefinite"/>
+    <!-- grid lines L1 -->
+    <line x1="8"   y1="520" x2="672" y2="520" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="8"   y1="630" x2="672" y2="630" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="170" y1="410" x2="170" y2="750" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="338" y1="410" x2="338" y2="750" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+    <line x1="504" y1="410" x2="504" y2="750" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
+
+    <!-- LIFT L1 -->
+    <rect x="512" y="420" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
+    <rect x="515" y="423" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text id="rl-lift1" x="552" y="457" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
+    <text x="552" y="471" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
+    <text x="552" y="487" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8">L1 ↕ L0</text>
+    <line x1="512" y1="461" x2="530" y2="461" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
+    <line x1="574" y1="461" x2="592" y2="461" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
+
+    <!-- GOLF SIM -->
+    <rect x="346" y="420" width="148" height="82" fill="rgba(0,229,255,0.06)" stroke="rgba(0,229,255,0.45)" stroke-width="1.3"/>
+    <rect x="349" y="423" width="142" height="76" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
+    <text id="rl-golf" x="420" y="446" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 3</text>
+    <text x="420" y="464" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">GOLF  SIM</text>
+    <text x="420" y="481" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">CACHE  LOCATION</text>
+
+    <!-- Briefcase marker (leg 1 only) -->
+    <g id="briefcase-marker" opacity="0">
+      <polygon points="420,496 414,506 426,506" fill="#00e5ff" opacity=".9" filter="url(#glowsm)"/>
+      <text x="420" y="518" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="8" letter-spacing="1">CACHE  HERE</text>
+    </g>
+
+    <!-- BATHROOM L1 -->
+    <rect x="512" y="530" width="80" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text x="552" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
+    <text x="552" y="579" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="10">LEVEL 1</text>
+
+    <!-- KITCHEN -->
+    <rect x="346" y="530" width="148" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text x="420" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 4</text>
+    <text x="420" y="580" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="11">KITCHEN</text>
+
+    <!-- DINING L1 -->
+    <rect x="178" y="530" width="140" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
+    <text x="248" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1">DINING</text>
+    <text x="248" y="580" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="10">LEVEL 1</text>
+
+    <!-- Spiral stair L1 -->
+    <circle cx="90" cy="580" r="13" fill="none" stroke="rgba(0,229,255,0.22)" stroke-width="1" stroke-dasharray="4 3"/>
+    <text x="90" y="575" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">SPIRAL</text>
+    <text x="90" y="587" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">STAIR</text>
+
+    <!-- ══ LEG 1 PATHS — CYAN ═══════════════════════════ -->
+    <!-- A1a: Pool right →  x=248, y=311 -->
+    <polyline id="la1ag" points="83,311 248,311"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="165" stroke-dashoffset="165"/>
+    <polyline id="la1a"  points="83,311 248,311"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="165" stroke-dashoffset="165"/>
+    <!-- A1b: Turn up to Dining y=251 -->
+    <polyline id="la1bg" points="248,311 248,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="60" stroke-dashoffset="60"/>
+    <polyline id="la1b"  points="248,311 248,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="60" stroke-dashoffset="60"/>
+    <!-- A2: Dining → Living Room -->
+    <polyline id="la2g"  points="248,251 420,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="172" stroke-dashoffset="172"/>
+    <polyline id="la2"   points="248,251 420,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="172" stroke-dashoffset="172"/>
+    <!-- A3: Living Room → Lift -->
+    <polyline id="la3g"  points="420,251 552,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132"/>
+    <polyline id="la3"   points="420,251 552,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="132" stroke-dashoffset="132"/>
+    <!-- A4: Lift L0 → L1 (straight vertical) -->
+    <polyline id="la4g"  points="552,210 552,502"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="292" stroke-dashoffset="292"/>
+    <polyline id="la4"   points="552,210 552,502"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="292" stroke-dashoffset="292"/>
+    <!-- A5: Lift L1 → Golf Sim -->
+    <polyline id="la5g"  points="512,461 420,461"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="92" stroke-dashoffset="92"/>
+    <polyline id="la5"   points="512,461 420,461"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="92" stroke-dashoffset="92"/>
+
+    <!-- Flowing pulse overlay for leg 1 (invisible until path drawn) -->
+    <polyline id="la-flow" points="83,311 248,311 248,251 420,251 552,251 552,461 420,461" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
+
+    <!-- Leg 1 destination dot -->
+    <circle id="dest-a"       cx="420" cy="461" r="8" fill="#00e5ff" opacity="0" filter="url(#glow)"/>
+    <circle id="dest-a-pulse" cx="420" cy="461" r="8" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0">
+      <animate attributeName="r" values="8;26" dur="1.5s" repeatCount="indefinite"/>
+      <animate attributeName="opacity" values="0.9;0" dur="1.5s" repeatCount="indefinite"/>
+    </circle>
+
+    <!-- ══ LEG 2 PATHS — ORANGE (fully hidden until ISIS unlock) ═ -->
+    <!-- B1: Golf Sim → L1 Lift centre (horizontal right, 90°) -->
+    <polyline id="lb1g" points="420,461 552,461"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb1"  points="420,461 552,461"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <!-- B2: L1 Lift up through divider to L0 Lift, continuing up to y=151 (one clean vertical) -->
+    <polyline id="lb2g" points="552,461 552,151"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <polyline id="lb2"  points="552,461 552,151"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <!-- B3: Turn left from 552,151 → Storage Room at 420,151 (horizontal left, 90°) -->
+    <polyline id="lb3g" points="552,151 420,151"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb3"  points="552,151 420,151"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+
+    <!-- Leg 2 flow pulse — matches corrected path -->
+    <polyline id="lb-flow" points="420,461 552,461 552,151 420,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
+
+    <!-- Leg 2 destination dot — entire group hidden until reroute -->
+    <g id="dest-b-group" style="display:none;">
+      <circle id="dest-b"       cx="420" cy="151" r="8" fill="#ff8c00" filter="url(#glow2)"/>
+      <circle id="dest-b-pulse" cx="420" cy="151" r="8" fill="none" stroke="#ff8c00" stroke-width="2">
+        <animate attributeName="r" values="8;26" dur="1.5s" repeatCount="indefinite"/>
+        <animate attributeName="opacity" values="0.9;0" dur="1.5s" repeatCount="indefinite"/>
       </circle>
-      <text x="40" y="378" text-anchor="middle" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">YOU ARE HERE</text>
+    </g>
 
-      <circle cx="620" cy="40" r="4" fill="#ff6600" opacity=".8"/>
-      <circle cx="620" cy="40" r="4" fill="none" stroke="#ff6600" stroke-width="1.5">
-        <animate attributeName="r" values="4;14" dur="1.6s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="0.6;0" dur="1.6s" repeatCount="indefinite"/>
-      </circle>
-      <text x="620" y="30" text-anchor="middle" fill="rgba(255,100,0,0.35)" font-family="Courier New" font-size="6.5" letter-spacing="1">PURSUER</text>
-      <text x="590" y="200" text-anchor="middle" fill="rgba(255,100,0,0.3)" font-family="Courier New" font-size="7" letter-spacing="1">MCP SENTINEL</text>
-
-      <circle id="dest-dot" cx="500" cy="50" r="6" fill="#00e5ff" opacity="0" filter="url(#glow)"/>
-      <circle id="dest-pulse" cx="500" cy="50" r="6" fill="none" stroke="#00e5ff" stroke-width="2" opacity="0">
-        <animate attributeName="r" values="6;22" dur="1.5s" repeatCount="indefinite"/>
-        <animate attributeName="opacity" values="1;0" dur="1.5s" repeatCount="indefinite"/>
-      </circle>
-
-      <line x1="20" y1="48" x2="44" y2="48" stroke="#00e5ff" stroke-width="2" stroke-linecap="square"/>
-      <text x="50" y="52" fill="rgba(0,229,255,0.35)" font-family="Courier New" font-size="7">USER EC-777</text>
-      <line x1="20" y1="64" x2="44" y2="64" stroke="#ff6600" stroke-width="2" stroke-linecap="square"/>
-      <text x="50" y="68" fill="rgba(255,100,0,0.35)" font-family="Courier New" font-size="7">MCP SENTINEL</text>
-    </svg>
+    <!-- ── LEGEND — only cyan shown initially, orange hidden ─ -->
+    <rect x="18" y="693" width="240" height="56" fill="rgba(0,0,0,0.55)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
+    <line x1="28" y1="713" x2="62" y2="713" stroke="#00e5ff" stroke-width="2.5" stroke-linecap="square"/>
+    <text x="70" y="717" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="9">USER EC-777 ROUTE</text>
+    <line id="leg-b-legend-line" x1="28" y1="735" x2="62" y2="735" stroke="#ff8c00" stroke-width="2.5" stroke-linecap="square" opacity="0"/>
+    <text id="leg-b-legend-text" x="70" y="739" fill="rgba(255,140,0,.7)" font-family="Courier New" font-size="9" opacity="0">REROUTED  PATH</text>
+  </svg>
   </div>
-  <button id="tap-proceed">[ TAP TO PROCEED ]</button>
+
+  <!-- PASSWORD PROMPT -->
+  <div id="pw-block">
+    <div class="pw-label">&gt; ENTER ALPHABETICAL DECRYPTION KEY</div>
+    <div class="pw-row">
+      <span class="pw-prompt-char">&gt;_</span>
+      <input id="pw-input" type="text" maxlength="12" autocomplete="off"
+             autocorrect="off" autocapitalize="off" spellcheck="false"
+             placeholder="type here and press enter"/>
+    </div>
+    <div class="pw-error" id="pw-error">ACCESS DENIED — INVALID CREDENTIALS</div>
+  </div>
+  <button id="map-proceed-btn">&gt; PROCEED TO FINAL OBJECTIVE</button>
 </div>
 
-<div id="phase3">
+<!-- ════════════════════════════════════════════════════════════
+     ISIS TAKEOVER SCREEN
+════════════════════════════════════════════════════════════ -->
+<div id="isis-screen">
+  <div class="isis-corner-tr"></div>
+  <div class="isis-corner-bl"></div>
+  <div class="isis-inner">
+    <!-- ISIS Globe Logo -->
+    <div class="isis-logo-wrap">
+      <svg viewBox="0 0 96 96" xmlns="http://www.w3.org/2000/svg">
+        <!-- Globe outline -->
+        <circle cx="48" cy="48" r="42" fill="none" stroke="#ff8c00" stroke-width="2" opacity=".9"/>
+        <!-- Latitude lines -->
+        <ellipse cx="48" cy="48" rx="42" ry="14" fill="none" stroke="#ff8c00" stroke-width="1" opacity=".45"/>
+        <ellipse cx="48" cy="48" rx="42" ry="28" fill="none" stroke="#ff8c00" stroke-width="1" opacity=".3"/>
+        <!-- Longitude lines -->
+        <ellipse cx="48" cy="48" rx="14" ry="42" fill="none" stroke="#ff8c00" stroke-width="1" opacity=".45"/>
+        <ellipse cx="48" cy="48" rx="28" ry="42" fill="none" stroke="#ff8c00" stroke-width="1" opacity=".3"/>
+        <!-- Vertical axis -->
+        <line x1="48" y1="6"  x2="48" y2="90" stroke="#ff8c00" stroke-width="1" opacity=".5"/>
+        <!-- Horizontal axis -->
+        <line x1="6"  y1="48" x2="90" y2="48" stroke="#ff8c00" stroke-width="1" opacity=".5"/>
+        <!-- ISIS text on globe -->
+        <text x="48" y="53" text-anchor="middle" fill="#ff8c00" font-family="Courier New" font-size="13" font-weight="bold" font-style="italic" letter-spacing="2">ISIS</text>
+      </svg>
+    </div>
+    <div class="isis-org">INTERNATIONAL SECRET INTELLIGENCE SERVICE</div>
+    <div class="isis-name">ISIS</div>
+    <div class="isis-divider"></div>
+    <div class="isis-title">FIELD AGENT INDUCTION — CLEARANCE CONFIRMED</div>
+    <div class="isis-field">MOHD ERIDANI EFFENDI NORWAWI</div>
+    <div class="isis-id">AGENT REF: EC-777 &nbsp;|&nbsp; STATUS: INDUCTED — ACTIVE</div>
+    <div class="isis-divider2"></div>
+    <div class="isis-msg">
+      YOU HAVE PROVEN YOUR WORTH, AGENT.<br>
+      WELCOME TO ISIS.<br>
+      YOUR FIRST MISSION AWAITS.
+    </div>
+    <div class="isis-scanline">— INDUCTION COMPLETE — FIELD STATUS: ACTIVE —</div>
+    <button id="isis-proceed-btn">&gt; ACCEPT MISSION PARAMETERS</button>
+  </div>
+</div>
+
+<!-- ════════════════════════════════════════════════════════════
+     FINAL MESSAGE
+════════════════════════════════════════════════════════════ -->
+<div id="state-message">
   <div class="msg-glyph">
     <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
       <polygon points="30,3 57,17 57,43 30,57 3,43 3,17" fill="none" stroke="#00e5ff" stroke-width="1.5" opacity=".9"/>
-      <polygon points="30,12 48,21 48,39 30,48 12,39 12,21" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".5"/>
-      <polygon points="30,21 39,25.5 39,34.5 30,39 21,34.5 21,25.5" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".3"/>
-      <circle cx="30" cy="30" r="3.5" fill="#00e5ff" opacity=".95"/>
+      <polygon points="30,12 48,21 48,39 30,48 12,39 12,21" fill="none" stroke="#00e5ff" stroke-width="1"   opacity=".55"/>
+      <polygon points="30,21 39,25.5 39,34.5 30,39 21,34.5 21,25.5" fill="none" stroke="#00e5ff" stroke-width="1" opacity=".35"/>
+      <circle cx="30" cy="30" r="4" fill="#00e5ff" opacity=".95"/>
     </svg>
   </div>
-  <div class="msg-line" id="msg3" style="opacity:0;transition:opacity 1.4s ease;"></div>
-  <div class="msg-footer">— TRANSMISSION ORIGIN: CLASSIFIED —</div>
-  <div class="msg-sig" id="sig3" style="opacity:0;transition:opacity 1.2s ease 1s;"> // Your Quorrbuh</div>
+  <div id="msg-body"></div>
+  <div class="msg-footer">— TRANSMISSION ORIGIN : ENCOM GRID — CLASSIFIED —</div>
+  <div id="msg-sig">// Your Quorrbuh</div>
 </div>
 
-<audio id="audio" loop preload="auto">
-  <source src="EndofLine.mp3" type="audio/mpeg">
-</audio>
-
 <script>
-const $=id=>document.getElementById(id);
+/* ════════════════════════════════════════════════════════════
+   UTILITIES
+════════════════════════════════════════════════════════════ */
+const $ = id => document.getElementById(id);
 
-function clock(){
+// Clock
+(function tick(){
   const n=new Date();
-  $('clock-hud').textContent=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
-}
-setInterval(clock,1000);clock();
+  const t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
+  $('clock-hud').textContent=t;
+  const gb=$('gw-clock-bottom'); if(gb) gb.textContent=t;
+  setTimeout(tick,1000);
+})();
 
-const lines=[
-  {t:'ENCOM SYSTEMS — SECURE SHELL v4.7.2',d:0},
-  {t:'',d:280},
-  {t:'> SCANNING IDENTITY TOKEN...',d:480},
-  {t:'',d:1350},
-  {t:'> NAME:         ERIDANI EFFENDI',d:1550},
-  {t:'> EMPLOYEE ID:  EC-777',d:2450},
-  {t:'> CLEARANCE:    USER — ACTIVE',d:3250},
-  {t:'> MISSING ASSET: CLASSIFIED // REF-777-X',d:4050},
-  {t:'',d:4900},
-  {t:'> INITIATING OVERRIDE SEQUENCE...',d:5300},
-  {t:'> BYPASSING MCP FIREWALL......... [ OK ]',d:6600},
-  {t:'> DECRYPTING SECTOR KEYS......... [ OK ]',d:7800},
-  {t:'> ERASING TRACE VECTORS.......... [ OK ]',d:8800},
-  {t:'> REROUTING THROUGH THE GRID..... [ OK ]',d:9700},
-  {t:'',d:10600},
-  {t:'> ACCESS GRANTED, USER.',d:11000},
-  {t:'',d:11900},
-  {t:'> INCOMING TRANSMISSION — SOURCE: ENCRYPTED',d:12300},
-  {t:'',d:13300},
-  {t:'> "You made it out of the arena."',d:13700},
-  {t:'> "Now comes the harder part."',d:15300},
-  {t:'> "Something was taken from you a long time ago."',d:16900},
-  {t:'> "It belongs to you. It always did."',d:18500},
-  {t:'> "They don\'t know you\'re coming."',d:20100},
-  {t:'> "Ride, User. End of line."',d:21700},
-  {t:'',d:23000},
-  {t:'> LOADING LIGHT CYCLE ARENA...',d:23400},
-];
+// Show / hide
+function showEl(id,display='flex'){$(id).style.display=display;}
+function hideEl(id){$(id).style.display='none';}
 
-const term=$('terminal');
-const scrollEl=$('terminal-scroll');
-let built='';
-let lineIdx=0;
-let mapTriggered=false;
-
-function appendCursor(){
-  const c=document.createElement('span');c.className='cur';term.appendChild(c);
-}
-
-function typeStr(str,cb){
-  let i=0;
-  function next(){
-    if(i>=str.length){cb();return;}
-    built+=str[i];term.textContent=built;appendCursor();
-    scrollEl.scrollTop=scrollEl.scrollHeight;
-    const d=str[i]==='.'?62:str[i]===' '?12:(str[i]==='['||str[i]===']')?44:23;
-    i++;setTimeout(next,d);
-  }
-  next();
-}
-
-function runLines(){
-  if(lineIdx>=lines.length){
-    if(!mapTriggered){mapTriggered=true;setTimeout(doFlashToMap,900);}
-    return;
-  }
-  const line=lines[lineIdx];
-  const prev=lineIdx>0?lines[lineIdx-1].d:0;
-  const wait=line.d-prev;
-  lineIdx++;
-  setTimeout(()=>{
-    if(line.t===''){
-      built+='\n';term.textContent=built;appendCursor();
-      scrollEl.scrollTop=scrollEl.scrollHeight;runLines();
-    } else {
-      typeStr(line.t,()=>{
-        built+='\n';
-        if(lineIdx>=lines.length&&!mapTriggered){mapTriggered=true;setTimeout(doFlashToMap,900);}
-        else runLines();
-      });
-    }
-  },wait);
-}
-
+// Cyan flash
 function doFlash(cb){
   const f=$('flash');
   f.style.opacity='1';
   setTimeout(()=>{f.style.opacity='0';
-  setTimeout(()=>{f.style.opacity='0.55';
+  setTimeout(()=>{f.style.opacity='0.5';
   setTimeout(()=>{f.style.opacity='0';
-  setTimeout(()=>{f.style.opacity='0.85';
+  setTimeout(()=>{f.style.opacity='0.8';
   setTimeout(()=>{f.style.opacity='0';
-  setTimeout(()=>{if(cb)cb();},320);
-  },65)},85)},85)},115)},130);
+  setTimeout(()=>{if(cb)cb();},300);
+  },60);},80);},80);},110);},130);
 }
 
-function doFlashToMap(){doFlash(showMap);}
+// Red flash
+function doRedFlash(cb){
+  const f=$('flash-red');
+  f.style.opacity='0.7';
+  setTimeout(()=>{f.style.opacity='0';setTimeout(()=>{if(cb)cb();},100);},180);
+}
 
-function anim(id,gid,dur,delay,cb){
+// Glitch burst — brief screen tear effect
+function doGlitch(dur=400){
+  const ga=$('glitch-a'), gb=$('glitch-b');
+  ga.style.animation='glitch1 .15s step-end infinite';
+  gb.style.animation='glitch2 .15s step-end infinite';
+  ga.style.opacity='1'; gb.style.opacity='1';
+  setTimeout(()=>{ga.style.opacity='0';gb.style.opacity='0';
+    ga.style.animation='none';gb.style.animation='none';},dur);
+}
+
+// Audio
+function playBg()         {const a=$('audio-bg');        a.volume=0.18; a.play().catch(()=>{});}
+function playType()       {const a=$('audio-type');       a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function stopType()       {const a=$('audio-type');       a.pause(); a.currentTime=0;}
+function playLightcycle() {const a=$('audio-lightcycle'); a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function playDenied()     {const a=$('audio-denied');     a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function playGranted()    {const a=$('audio-granted');    a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
+function playLightcycle2(){const a=$('audio-lightcycle2');a.volume=0.32; a.loop=true; a.currentTime=0; a.play().catch(()=>{});}
+
+// SVG path animate
+function animPath(id,gid,dur,delay,cb){
   setTimeout(()=>{
     const el=document.getElementById(id);
     const gr=document.getElementById(gid);
-    if(el){el.style.transition='stroke-dashoffset '+dur+'ms linear';el.style.strokeDashoffset='0';}
-    if(gr){gr.style.transition='stroke-dashoffset '+dur+'ms linear';gr.style.strokeDashoffset='0';}
+    if(el){el.style.transition=`stroke-dashoffset ${dur}ms linear`;el.style.strokeDashoffset='0';}
+    if(gr){gr.style.transition=`stroke-dashoffset ${dur}ms linear`;gr.style.strokeDashoffset='0';}
     if(cb)setTimeout(cb,dur);
   },delay);
 }
 
-function showMap(){
-  $('phase1').style.display='none';
-  $('phase2').style.display='flex';
-  anim('p1','p1g',500,200,null);
-  anim('p2','p2g',450,750,null);
-  anim('p3','p3g',200,1220,null);
-  anim('p4','p4g',400,1450,null);
-  anim('p5','p5g',450,1880,null);
-  anim('p6','p6g',700,2360,()=>{
-    const dz=$('derezz');
-    if(dz){
-      dz.style.opacity='1';
-      setTimeout(()=>{dz.style.opacity='0.6';},80);
-      setTimeout(()=>{dz.style.opacity='1';},160);
-      setTimeout(()=>{dz.style.opacity='0.4';},400);
-    }
-  });
-  anim('u1','u1g',650,500,null);
-  anim('u2','u2g',300,1180,null);
-  anim('u3','u3g',380,1500,null);
-  anim('u4','u4g',350,1900,null);
-  anim('u5','u5g',320,2270,null);
-  anim('u6','u6g',280,2610,null);
-  anim('u7','u7g',300,2910,()=>{
-    setTimeout(()=>{
-      ['iotower','iotower2','iot1','iot2','iot3'].forEach(id=>{
-        const el=document.getElementById(id);
-        if(el){el.style.opacity='1';el.style.transition='opacity 0.5s ease';}
-      });
-      $('dest-dot').style.opacity='1';
-      $('dest-pulse').style.opacity='1';
-    },300);
-    setTimeout(()=>{$('tap-proceed').classList.add('on');},1400);
-  });
+// Room label flash
+function flashRoom(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.fill='#00e5ff';
+  el.style.transition='fill .3s ease';
+  setTimeout(()=>{el.style.fill='';},500);
 }
 
-$('tap-proceed').addEventListener('click',()=>doFlash(showMessage));
-
-function showMessage(){
-  $('phase2').style.display='none';
-  $('phase3').style.display='flex';
-  const msg=$('msg3');
-  msg.innerHTML=
-    `Something is waiting for you in the I/O Tower.<br><br>`+
-    `<span class="msg-highlight">&rarr; Proceed to the Movie Theatre</span>`+
-    `Flynn believed the Grid could change the world.<br>`+
-    `I believe you will.<br><br>`+
-    `Happy birthday, Buh.<br>`+
-    `Go get back what belongs to you.`;
-  setTimeout(()=>{msg.style.opacity='1';$('sig3').style.opacity='1';},400);
+/* ════════════════════════════════════════════════════════════
+   BOOT SEQUENCE
+════════════════════════════════════════════════════════════ */
+function startMatrixRain(){
+  const canvas=$('boot-canvas');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth; canvas.height=window.innerHeight;
+  const cols=Math.floor(canvas.width/18);
+  const drops=Array(cols).fill(1);
+  const chars='ENCOM01GRIDUSERTRONLEGACYMCPFLYNN777EC';
+  return setInterval(()=>{
+    ctx.fillStyle='rgba(0,0,0,0.07)';
+    ctx.fillRect(0,0,canvas.width,canvas.height);
+    ctx.fillStyle='#00e5ff'; ctx.font='13px Courier New';
+    for(let i=0;i<drops.length;i++){
+      const ch=chars[Math.floor(Math.random()*chars.length)];
+      ctx.fillText(ch,i*18,drops[i]*18);
+      if(drops[i]*18>canvas.height&&Math.random()>.975)drops[i]=0;
+      drops[i]++;
+    }
+  },40);
 }
 
-$('tapstart').addEventListener('click',()=>{
-  $('tapstart').style.display='none';
-  $('phase1').style.display='flex';
-  const a=$('audio');
-  if(a){
-    a.volume=0.55;
-    const p=a.play();
-    if(p!==undefined){
-      p.catch(()=>{
-        document.addEventListener('click',()=>{a.play();},{once:true});
-      });
-    }
-  }
-  setTimeout(runLines,600);
+$('gw-btn').addEventListener('click',()=>{
+  hideEl('state-gateway');
+  showEl('boot-screen');
+  playBg();
+  const rain=startMatrixRain();
+  ['bid1','bid2','bid3','bid4'].forEach((id,i)=>{
+    setTimeout(()=>$(id).classList.add('on'),400+i*520);
+  });
+  setTimeout(()=>{
+    $('boot-bar-wrap').style.opacity='1';
+    $('boot-bar-label').style.opacity='1';
+    animateBootBar(()=>{
+      clearInterval(rain);
+      setTimeout(()=>doFlash(()=>{hideEl('boot-screen');showEl('state-terminal');setTimeout(runTerminal,350);}),300);
+    });
+  },2800);
 });
+
+function animateBootBar(cb){
+  const fill=$('boot-bar-fill');
+  const label=$('boot-bar-label');
+  const stages=[
+    {pct:15, label:'SCANNING IDENTITY TOKEN...',  delay:0   },
+    {pct:35, label:'VERIFYING GRID CLEARANCE...',  delay:340 },
+    {pct:56, label:'BYPASSING MCP FIREWALL...',    delay:720 },
+    {pct:74, label:'DECRYPTING SECTOR KEYS...',    delay:1100},
+    {pct:90, label:'ERASING TRACE VECTORS...',     delay:1460},
+    {pct:100,label:'ACCESS GRANTED.',              delay:1780},
+  ];
+  stages.forEach(({pct,label:lbl,delay})=>{
+    setTimeout(()=>{
+      fill.style.transition='width 280ms ease';
+      fill.style.width=pct+'%';
+      label.textContent=lbl;
+      if(pct===100&&cb)setTimeout(cb,420);
+    },delay);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   TERMINAL — two-phase
+════════════════════════════════════════════════════════════ */
+
+// Phase A: normal ENCOM login, then warning spam
+const termLinesA=[
+  {t:'ENCOM INTERNATIONAL — SECURE SHELL v4.7.2',  d:0},
+  {t:'',                                             d:300},
+  {t:'> INITIATING SESSION HANDSHAKE...',           d:600},
+  {t:'> CONNECTING TO ENCOM MAINFRAME...',          d:1400},
+  {t:'',                                             d:2200},
+  {t:'POST /api/v2/session/auth HTTP/1.1',          d:2500},
+  {t:'Host: mainframe.encom.internal',              d:3100},
+  {t:'X-Forwarded-For: 192.168.0.7',               d:3700},
+  {t:'Content-Type: application/json',              d:4200},
+  {t:'Authorization: Bearer [REDACTED]',            d:4800},
+  {t:'',                                             d:5400},
+  {t:'{ "user_id": "EC-777",',                      d:5700},
+  {t:'  "name": "Mohd Eridani Effendi Norwawi",',   d:6300},
+  {t:'  "clearance": "USER — ACTIVE",',             d:7000},
+  {t:'  "grid_access": true }',                     d:7700},
+  {t:'',                                             d:8400},
+  {t:'> HTTP/1.1 200 OK',                           d:8700},
+  {t:'> IDENTITY TOKEN VERIFIED.',                  d:9300},
+  {t:'',                                             d:10000},
+  {t:'> ROUTING TO ENCOM DB...',                    d:10400},
+  {t:'> ESTABLISHING ENCRYPTED TUNNEL...',          d:11200},
+  {t:'',                                             d:12000},
+  // Warning spam — rapid fire
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:12400},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:12850},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13200},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13500},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13760},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13980},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:14170},
+  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:14330},
+  {t:'> TRACE ROUTE MODIFIED — SOURCE UNKNOWN',     d:14600},
+];
+
+// Phase B: appears on a freshly cleared terminal
+const termLinesB=[
+  {t:'> !! SESSION HIJACKED !!',                    d:0,   glitch:true},
+  {t:'',                                             d:700},
+  {t:'> INCOMING TRANSMISSION — SOURCE: ENCRYPTED', d:1100},
+  {t:'> ORIGIN: [REDACTED]',                        d:1900},
+  {t:'',                                             d:2600},
+  {t:'> "EC-777. We have been watching."',                            d:3000},
+  {t:'> "ENCOM cannot give you what you need."',                      d:4700},
+  {t:'> "But we can."',                                               d:6200},
+  {t:'> "It is time for you to take back what is rightfully yours."', d:7400},
+  {t:'> "Accept the mission. The grid will show you the way."',       d:9400},
+  {t:'> "End of line."',                                              d:11300},
+  {t:'',                                             d:12200},
+  {t:'> TRANSMISSION ENDED. SOURCE UNTRACEABLE.',   d:12600},
+  {t:'> GRID MAP READY.',                            d:13500},
+];
+
+const termEl=$('terminal');
+const tg1=$('terminal-g1'), tg2=$('terminal-g2');
+const scrollEl=$('terminal-scroll');
+let built='', lineIdx=0, typingSfxActive=false;
+
+function appendCursor(){
+  const c=document.createElement('span'); c.className='cur'; termEl.appendChild(c);
+}
+
+function typeStr(str,cb,rapid=false){
+  let i=0;
+  if(!typingSfxActive){typingSfxActive=true; playType();}
+  function next(){
+    if(i>=str.length){stopType();typingSfxActive=false;cb();return;}
+    built+=str[i]; termEl.textContent=built;
+    tg1.textContent=built; tg2.textContent=built;
+    appendCursor();
+    scrollEl.scrollTop=scrollEl.scrollHeight;
+    const ch=str[i];
+    // rapid mode: spam lines type nearly instantly
+    const d=rapid?6:(ch==='.'?68:ch===' '?15:(ch==='['||ch===']')?55:22);
+    i++; setTimeout(next,d);
+  }
+  next();
+}
+
+// Run Phase A lines
+function runTerminalA(){
+  if(lineIdx>=termLinesA.length){
+    // Pause so the last line is readable, then wipe
+    setTimeout(wipeAndRunB, 1100);
+    return;
+  }
+  const line=termLinesA[lineIdx];
+  const prev=lineIdx>0?termLinesA[lineIdx-1].d:0;
+  const wait=line.d-prev;
+  lineIdx++;
+  // Spam lines (after index 22) type fast
+  const isSpam=lineIdx>22;
+  if(isSpam) doGlitch(120);
+  setTimeout(()=>{
+    if(line.t===''){
+      built+='\n'; termEl.textContent=built;
+      tg1.textContent=built; tg2.textContent=built;
+      appendCursor(); scrollEl.scrollTop=scrollEl.scrollHeight;
+      runTerminalA();
+    } else {
+      typeStr(line.t,()=>{built+='\n'; runTerminalA();},isSpam);
+    }
+  },wait);
+}
+
+// Clear terminal and run Phase B
+function wipeAndRunB(){
+  doGlitch(600);
+  // Rapid flash wipe effect
+  const f=$('flash');
+  f.style.opacity='0.6';
+  setTimeout(()=>{ f.style.opacity='0';
+    // Hard clear
+    built='';
+    termEl.textContent='';
+    tg1.textContent=''; tg2.textContent='';
+    lineIdx=0;
+    setTimeout(runTerminalB, 200);
+  },180);
+}
+
+// Run Phase B lines
+function runTerminalB(){
+  if(lineIdx>=termLinesB.length){
+    $('track-btn').style.display='block'; return;
+  }
+  const line=termLinesB[lineIdx];
+  const prev=lineIdx>0?termLinesB[lineIdx-1].d:0;
+  const wait=line.d-prev;
+  lineIdx++;
+  setTimeout(()=>{
+    if(line.glitch) doGlitch(500);
+    if(line.t===''){
+      built+='\n'; termEl.textContent=built;
+      tg1.textContent=built; tg2.textContent=built;
+      appendCursor(); scrollEl.scrollTop=scrollEl.scrollHeight;
+      runTerminalB();
+    } else {
+      typeStr(line.t,()=>{built+='\n'; runTerminalB();});
+    }
+  },wait);
+}
+
+function runTerminal(){ lineIdx=0; runTerminalA(); }
+
+$('track-btn').addEventListener('click',()=>doFlash(showMap));
+
+/* ════════════════════════════════════════════════════════════
+   MAP — LEG 1
+════════════════════════════════════════════════════════════ */
+function showMap(){
+  hideEl('state-terminal');
+  showEl('state-map','flex');
+  playLightcycle();
+
+  // Leg 1 paths draw with room flashes as each segment completes
+  animPath('la1a','la1ag',430,200,()=>flashRoom('rl-pool'));
+  animPath('la1b','la1bg',180,680,()=>flashRoom('rl-dining0'));
+  animPath('la2','la2g',  450,910,()=>flashRoom('rl-living'));
+  animPath('la3','la3g',  380,1400,()=>flashRoom('rl-lift0'));
+  animPath('la4','la4g',  680,1820,()=>flashRoom('rl-lift1'));
+  animPath('la5','la5g',  280,2550,()=>{
+    flashRoom('rl-golf');
+    // Start flowing pulse on completed path
+    setTimeout(()=>{
+      const flow=$('la-flow');
+      flow.style.opacity='1';
+      flow.style.strokeDasharray='18 8';
+      flow.style.animation='flowA 1.2s linear infinite';
+    },300);
+    // Reveal destination + briefcase marker
+    setTimeout(()=>{
+      $('dest-a').style.opacity='1';
+      $('dest-a').style.transition='opacity .4s ease';
+      $('dest-a-pulse').style.opacity='1';
+      $('briefcase-marker').style.opacity='1';
+      $('briefcase-marker').style.transition='opacity .5s ease';
+    },400);
+    // Show password prompt
+    setTimeout(()=>{
+      $('pw-block').style.display='flex';
+      $('pw-input').focus();
+    },900);
+  });
+}
+
+/* ════════════════════════════════════════════════════════════
+   PASSWORD
+════════════════════════════════════════════════════════════ */
+$('pw-input').addEventListener('keydown',e=>{
+  if(e.key==='Enter'){
+    const val=$('pw-input').value.trim().toLowerCase();
+    if(val==='guest') handleGranted();
+    else handleDenied();
+  }
+});
+
+function handleDenied(){
+  playDenied();
+  doRedFlash();
+  const row=document.querySelector('.pw-row');
+  const err=$('pw-error');
+  row.style.borderColor='#ff4444';
+  row.style.boxShadow='0 0 16px rgba(255,68,68,0.45)';
+  err.classList.add('show');
+  setTimeout(()=>{
+    row.style.borderColor='rgba(0,229,255,.5)';
+    row.style.boxShadow='';
+    $('pw-input').value='';
+    err.classList.remove('show');
+  },1400);
+}
+
+function handleGranted(){
+  playDenied();
+  doRedFlash();
+  setTimeout(()=>{
+    playGranted();
+    doGlitch(600);
+    showEl('isis-screen');
+    // Reveal the proceed button after 3s so he has time to read first
+    setTimeout(()=>{
+      $('isis-proceed-btn').style.display='block';
+    },3000);
+  },500);
+}
+
+$('isis-proceed-btn').addEventListener('click',()=>{
+  doFlash(()=>{
+    hideEl('isis-screen');
+    showLeg2();
+  });
+});
+
+/* ════════════════════════════════════════════════════════════
+   MAP — LEG 2 (reroute after ISIS unlock)
+════════════════════════════════════════════════════════════ */
+function showLeg2(){
+  // Update headers
+  $('map-eyebrow').textContent='CLASSIFIED GRID LAYOUT — ROUTE BETA — REROUTED';
+  $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE STORAGE ROOM';
+
+  // Reveal the storage room label now
+  ['rl-storage-label','rl-storage-name'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.transition='fill .8s ease';el.style.fill='rgba(255,140,0,0.85)';}
+  });
+  const sub=document.getElementById('rl-storage-sub');
+  if(sub){sub.style.fill='rgba(255,140,0,0.55)';sub.textContent='RETRIEVE PACKAGE';}
+
+  // Fade out leg 1 paths + flow
+  ['la1a','la1ag','la1b','la1bg','la2','la2g','la3','la3g','la4','la4g','la5','la5g','la-flow','dest-a','dest-a-pulse','briefcase-marker'].forEach(id=>{
+    const el=document.getElementById(id);
+    if(el){el.style.transition='opacity 0.6s ease';el.style.opacity='0';}
+  });
+
+  // Reveal legend for rerouted path
+  setTimeout(()=>{
+    $('leg-b-legend-line').style.opacity='1';
+    $('leg-b-legend-text').style.opacity='1';
+  },400);
+
+  // Reveal and animate leg 2
+  setTimeout(()=>{
+    ['lb1','lb1g','lb2','lb2g','lb3','lb3g'].forEach(id=>{
+      const el=document.getElementById(id);
+      if(el)el.style.opacity='1';
+    });
+    playLightcycle2();
+
+    animPath('lb1','lb1g',400,  300,()=>flashRoomOrange('rl-golf'));
+    animPath('lb2','lb2g',780,  740,()=>{flashRoomOrange('rl-lift1');flashRoomOrange('rl-lift0');});
+    animPath('lb3','lb3g',400, 1560,()=>{
+      flashRoomOrange('rl-storage-name');
+      // Flow pulse on leg 2
+      setTimeout(()=>{
+        const flow=$('lb-flow');
+        flow.style.opacity='1';
+        flow.style.animation='flowB 1.2s linear infinite';
+      },250);
+      // Reveal destination
+      setTimeout(()=>{
+        $('dest-b-group').style.display='block';
+      },350);
+      // Reveal proceed button after destination appears
+      setTimeout(()=>{
+        $('map-proceed-btn').style.display='block';
+      },1200);
+    });
+  },700);
+}
+
+$('map-proceed-btn').addEventListener('click',()=>doFlash(showFinalMessage));
+
+function flashRoomOrange(id){
+  const el=document.getElementById(id);
+  if(!el)return;
+  el.style.fill='#ff8c00';
+  el.style.transition='fill .3s ease';
+  setTimeout(()=>{el.style.fill='';el.style.transition='fill .6s ease';},500);
+}
+
+/* ════════════════════════════════════════════════════════════
+   FINAL MESSAGE
+════════════════════════════════════════════════════════════ */
+function showFinalMessage(){
+  hideEl('state-map');
+  showEl('state-message');
+  const body=$('msg-body');
+  body.innerHTML=
+    `It was never lost, User.<br>
+     It was hidden — deep in the Grid,<br>
+     waiting for the one who earned it back.<br>
+     <span class="msg-highlight">&rarr; Proceed to the Storage Room</span>
+     Take the UV light with you.<br><br>
+     Happy birthday, Buh.<br>
+     End of line.`;
+  setTimeout(()=>{
+    body.style.opacity='1';
+    $('msg-sig').style.opacity='1';
+  },500);
+}
 </script>
 </body>
 </html>
