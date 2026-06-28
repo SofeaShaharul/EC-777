@@ -157,7 +157,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 
 /* ── STATE: MAP ─────────────────────────────────────────────── */
 #state-map{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:clamp(34px,5vh,50px);overflow-y:auto;}
-.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.55);text-transform:uppercase;margin-bottom:5px;text-align:center;}
+.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.75);text-transform:uppercase;margin-bottom:5px;text-align:center;}
 .map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 10px rgba(0,229,255,.55);}
 #mapsvg-wrap{width:min(97vw,680px);flex-shrink:0;}
 #mapsvg-wrap svg{width:100%;height:auto;display:block;}
@@ -212,7 +212,8 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 .isis-logo-wrap svg{width:100%;height:100%;}
 .isis-org{
   font-size:clamp(8px,1.3vw,10px);letter-spacing:.55em;
-  color:rgba(255,140,0,.65);text-transform:uppercase;margin-bottom:6px;
+  color:rgba(255,140,0,.8);text-transform:uppercase;margin-bottom:6px;
+  text-align:center;width:100%;
   animation:slideup .5s ease .2s both;
 }
 .isis-name{
@@ -222,19 +223,22 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 }
 .isis-divider{width:180px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.6),transparent);margin:16px 0;animation:slideup .5s ease .3s both;}
 .isis-title{
-  font-size:clamp(10px,1.6vw,13px);letter-spacing:.45em;
-  color:rgba(255,140,0,.85);text-transform:uppercase;
+  font-size:clamp(10px,1.6vw,13px);letter-spacing:.3em;
+  color:rgba(255,140,0,.9);text-transform:uppercase;
+  text-align:center;width:100%;
   animation:slideup .5s ease .4s both;
 }
 .isis-field{
-  font-size:clamp(16px,3vw,22px);letter-spacing:.3em;
+  font-size:clamp(15px,2.8vw,22px);letter-spacing:.25em;
   color:#ff8c00;text-transform:uppercase;margin-top:6px;
+  text-align:center;width:100%;
   text-shadow:0 0 18px rgba(255,140,0,.8);
   animation:slideup .5s ease .5s both;
 }
 .isis-id{
-  font-size:clamp(10px,1.5vw,12px);letter-spacing:.3em;
-  color:rgba(255,140,0,.6);text-transform:uppercase;margin-top:4px;
+  font-size:clamp(10px,1.5vw,12px);letter-spacing:.25em;
+  color:rgba(255,140,0,.75);text-transform:uppercase;margin-top:4px;
+  text-align:center;width:100%;
   animation:slideup .5s ease .6s both;
 }
 .isis-divider2{width:120px;height:1px;background:linear-gradient(90deg,transparent,rgba(255,140,0,.4),transparent);margin:14px 0;animation:slideup .5s ease .7s both;}
@@ -259,7 +263,28 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   animation:pulse 1.8s ease-in-out infinite,slideup .5s ease 1.2s both;
 }
 
-/* ── STATE: FINAL MESSAGE — GRAND REVEAL ────────────────────── */
+/* ── GATEWAY SCAN BAR ────────────────────────────────────────── */
+@keyframes gwscan{0%{top:48px;opacity:.7}100%{top:calc(100% - 32px);opacity:.3}}
+#gw-scan-bar{
+  position:absolute;left:0;right:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.6),rgba(0,229,255,.9),rgba(0,229,255,.6),transparent);
+  animation:gwscan 3.5s ease-in-out infinite alternate;
+  pointer-events:none;
+}
+/* ── FINAL PAGE HEX CANVAS ───────────────────────────────────── */
+#msg-hex-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.07;}
+/* ── ISIS ENHANCED ───────────────────────────────────────────── */
+.isis-inner{display:flex;flex-direction:column;align-items:center;gap:0;animation:isisfade .6s ease forwards;width:100%;max-width:440px;padding:0 24px;}
+.isis-msg{
+  font-size:clamp(12px,1.8vw,14px);letter-spacing:.18em;
+  color:rgba(255,140,0,.85);text-transform:uppercase;text-align:center;line-height:2.2;
+  max-width:340px;width:100%;animation:slideup .5s ease .8s both;
+}
+.isis-scanline{
+  font-size:clamp(9px,1.2vw,10px);letter-spacing:.35em;
+  color:rgba(255,140,0,.5);margin-top:20px;text-align:center;
+  animation:slideup .5s ease 1s both,pulse 2s ease-in-out 1.2s infinite;
+}
 @keyframes revealLine  {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes discSpin    {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes discPulse   {0%,100%{filter:drop-shadow(0 0 8px #00e5ff) drop-shadow(0 0 20px rgba(0,229,255,.4))}50%{filter:drop-shadow(0 0 18px #00e5ff) drop-shadow(0 0 50px rgba(0,229,255,.8))}}
@@ -418,6 +443,8 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <div class="gw-topbar-right">SECURE PORTAL v4.7 &nbsp;|&nbsp; TLS 1.3 ENCRYPTED</div>
   </div>
 
+  <div id="gw-scan-bar"></div>
+
   <!-- Centre card -->
   <div class="gw-card">
     <div class="gw-portal-label">EMPLOYEE IDENTITY VERIFICATION PORTAL</div>
@@ -526,52 +553,47 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <!-- POOL (origin) -->
     <rect x="18"  y="270" width="130" height="82" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.65)" stroke-width="1.3"/>
     <rect x="21"  y="273" width="124" height="76" fill="none" stroke="rgba(0,229,255,0.15)" stroke-width="1"/>
-    <text id="rl-pool" x="83" y="295" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 0</text>
+    <text id="rl-pool" x="83" y="295" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 0</text>
     <text x="83" y="314" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="12" font-weight="bold">POOL</text>
-    <text x="83" y="332" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="9">ORIGIN  POINT</text>
+    <text x="83" y="332" text-anchor="middle" fill="rgba(0,229,255,.8)" font-family="Courier New" font-size="9">ORIGIN  POINT</text>
 
     <!-- DINING L0 -->
     <rect x="178" y="210" width="140" height="82" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.35)" stroke-width="1.2"/>
-    <text id="rl-dining0" x="248" y="234" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 1</text>
+    <text id="rl-dining0" x="248" y="234" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 1</text>
     <text x="248" y="252" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">DINING AREA</text>
-    <text x="248" y="270" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">GLASS DOORS</text>
+    <text x="248" y="270" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="8">GLASS DOORS</text>
 
     <!-- LIVING ROOM -->
     <rect x="346" y="210" width="148" height="82" fill="rgba(0,229,255,0.05)" stroke="rgba(0,229,255,0.35)" stroke-width="1.2"/>
-    <text id="rl-living" x="420" y="234" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 2</text>
+    <text id="rl-living" x="420" y="234" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 2</text>
     <text x="420" y="252" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">LIVING ROOM</text>
-    <text x="420" y="270" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">COFFEE STA. LHS</text>
+    <text x="420" y="270" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="8">COFFEE STA. LHS</text>
 
     <!-- LIFT L0 -->
     <rect x="512" y="210" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
     <rect x="515" y="213" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text id="rl-lift0" x="552" y="247" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
+    <text id="rl-lift0" x="552" y="247" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
     <text x="552" y="261" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
-    <text x="552" y="277" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8">L0 ↕ L1</text>
+    <text x="552" y="277" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8">L0 ↕ L1</text>
     <line x1="512" y1="251" x2="530" y2="251" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
     <line x1="574" y1="251" x2="592" y2="251" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
 
     <!-- BATHROOM L0 (leg 2 waypoint — faded until reroute) -->
     <rect x="512" y="110" width="80" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
-    <text id="rl-bath0" x="552" y="144" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
-    <text x="552" y="159" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="10">LEVEL 0</text>
+    <text id="rl-bath0" x="552" y="144" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
+    <text x="552" y="159" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="10">LEVEL 0</text>
 
     <!-- STORAGE ROOM (looks identical to other unused sectors until reroute reveals it) -->
     <rect x="346" y="110" width="148" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text id="rl-storage-label" x="420" y="136" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 5</text>
-    <text id="rl-storage-name"  x="420" y="155" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="11">STORAGE ROOM</text>
-    <text id="rl-storage-sub"   x="420" y="172" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8">LEVEL 0</text>
+    <text id="rl-storage-label" x="420" y="136" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 5</text>
+    <text id="rl-storage-name"  x="420" y="155" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="11">STORAGE ROOM</text>
+    <text id="rl-storage-sub"   x="420" y="172" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8">LEVEL 0</text>
 
     <!-- MOVIE THEATRE -->
     <rect x="18" y="110" width="130" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1" stroke-dasharray="5 4"/>
-    <text x="83" y="144" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="8" letter-spacing="1">I/O TOWER</text>
-    <text x="83" y="160" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="10">MOVIE THEATRE</text>
-    <text x="83" y="176" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8">RESTRICTED</text>
-
-    <!-- Spiral stair L0 -->
-    <circle cx="148" cy="155" r="13" fill="none" stroke="rgba(0,229,255,0.22)" stroke-width="1" stroke-dasharray="4 3"/>
-    <text x="148" y="150" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">SPIRAL</text>
-    <text x="148" y="162" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">STAIR</text>
+    <text x="83" y="144" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">I/O TOWER</text>
+    <text x="83" y="160" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="10">MOVIE THEATRE</text>
+    <text x="83" y="176" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="8">RESTRICTED</text>
 
     <!-- YOU ARE HERE -->
     <circle id="origin-dot" cx="83" cy="311" r="6" fill="#00e5ff" opacity=".95" filter="url(#glow)"/>
@@ -602,18 +624,18 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <!-- LIFT L1 -->
     <rect x="512" y="420" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
     <rect x="515" y="423" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text id="rl-lift1" x="552" y="457" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
+    <text id="rl-lift1" x="552" y="457" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
     <text x="552" y="471" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
-    <text x="552" y="487" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8">L1 ↕ L0</text>
+    <text x="552" y="487" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8">L1 ↕ L0</text>
     <line x1="512" y1="461" x2="530" y2="461" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
     <line x1="574" y1="461" x2="592" y2="461" stroke="rgba(0,229,255,.3)" stroke-width="1" stroke-dasharray="3 3"/>
 
     <!-- GOLF SIM -->
     <rect x="346" y="420" width="148" height="82" fill="rgba(0,229,255,0.06)" stroke="rgba(0,229,255,0.45)" stroke-width="1.3"/>
     <rect x="349" y="423" width="142" height="76" fill="none" stroke="rgba(0,229,255,0.12)" stroke-width="1"/>
-    <text id="rl-golf" x="420" y="446" text-anchor="middle" fill="rgba(0,229,255,.5)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 3</text>
+    <text id="rl-golf" x="420" y="446" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 3</text>
     <text x="420" y="464" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="11">GOLF  SIM</text>
-    <text x="420" y="481" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="8">CACHE  LOCATION</text>
+    <text x="420" y="481" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="8">CACHE  LOCATION</text>
 
     <!-- Briefcase marker (leg 1 only) -->
     <g id="briefcase-marker" opacity="0">
@@ -623,23 +645,18 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 
     <!-- BATHROOM L1 -->
     <rect x="512" y="530" width="80" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text x="552" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
-    <text x="552" y="579" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="10">LEVEL 1</text>
+    <text x="552" y="564" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">BATHROOM</text>
+    <text x="552" y="579" text-anchor="middle" fill="rgba(0,229,255,.8)" font-family="Courier New" font-size="10">LEVEL 1</text>
 
     <!-- KITCHEN -->
     <rect x="346" y="530" width="148" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text x="420" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 4</text>
-    <text x="420" y="580" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="11">KITCHEN</text>
+    <text x="420" y="564" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 4</text>
+    <text x="420" y="580" text-anchor="middle" fill="rgba(0,229,255,.8)" font-family="Courier New" font-size="11">KITCHEN</text>
 
     <!-- DINING L1 -->
     <rect x="178" y="530" width="140" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
-    <text x="248" y="564" text-anchor="middle" fill="rgba(0,229,255,.4)" font-family="Courier New" font-size="8" letter-spacing="1">DINING</text>
-    <text x="248" y="580" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="10">LEVEL 1</text>
-
-    <!-- Spiral stair L1 -->
-    <circle cx="90" cy="580" r="13" fill="none" stroke="rgba(0,229,255,0.22)" stroke-width="1" stroke-dasharray="4 3"/>
-    <text x="90" y="575" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">SPIRAL</text>
-    <text x="90" y="587" text-anchor="middle" fill="rgba(0,229,255,.35)" font-family="Courier New" font-size="7">STAIR</text>
+    <text x="248" y="564" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">DINING</text>
+    <text x="248" y="580" text-anchor="middle" fill="rgba(0,229,255,.8)" font-family="Courier New" font-size="10">LEVEL 1</text>
 
     <!-- ══ LEG 1 PATHS — CYAN ═══════════════════════════ -->
     <!-- A1a: Pool right →  x=248, y=311 -->
@@ -751,7 +768,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <div class="isis-id">AGENT REF: EC-777 &nbsp;|&nbsp; STATUS: INDUCTED — ACTIVE</div>
     <div class="isis-divider2"></div>
     <div class="isis-msg">
-      YOU HAVE PROVEN YOUR WORTH, AGENT.<br>
+      YOU HAVE PROVEN YOUR WORTH, DANI.<br>
       WELCOME TO ISIS.<br>
       YOUR FIRST MISSION AWAITS.
     </div>
@@ -765,6 +782,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 ════════════════════════════════════════════════════════════ -->
 <div id="state-message">
   <canvas id="msg-particles"></canvas>
+  <canvas id="msg-hex-canvas"></canvas>
   <div id="msg-frame">
     <div class="msg-frame-corner-tr"></div>
     <div class="msg-frame-corner-bl"></div>
@@ -1341,22 +1359,68 @@ function launchParticles(){
   draw();
 }
 
+// Hex grid background for final page
+function drawHexGrid(){
+  const canvas=$('msg-hex-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  const size=32, w=size*2, h=Math.sqrt(3)*size;
+  ctx.strokeStyle='#00e5ff';
+  ctx.lineWidth=1;
+  function hexPath(cx,cy){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const angle=Math.PI/180*(60*i-30);
+      const x=cx+size*Math.cos(angle);
+      const y=cy+size*Math.sin(angle);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+    ctx.stroke();
+  }
+  const cols=Math.ceil(canvas.width/w)+2;
+  const rows=Math.ceil(canvas.height/h)+2;
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      const x=c*w*0.75;
+      const y=r*h+(c%2===0?0:h/2);
+      hexPath(x,y);
+    }
+  }
+}
+
 function showFinalMessage(){
   hideEl('state-map');
   showEl('state-message');
+  drawHexGrid();
 
-  // Music crossfade: fade out EndofLine, fade in EndTitles
+  // Music crossfade: fade out EndofLine quickly, then start EndTitles
   const bg=$('audio-bg');
   const end=$('audio-end');
+  // Hard stop bg immediately on mobile (volume ramp unreliable)
+  const startVol=bg.volume||0.18;
+  let steps=0;
+  const totalSteps=20;
+  const fadeOut=setInterval(()=>{
+    steps++;
+    bg.volume=Math.max(0, startVol*(1-steps/totalSteps));
+    if(steps>=totalSteps){
+      clearInterval(fadeOut);
+      bg.pause();
+      bg.volume=0;
+    }
+  },50); // 50ms × 20 steps = 1 second fade
+  // Start EndTitles immediately at low vol and ramp up
   end.volume=0;
   end.play().catch(()=>{});
-  let vol=0;
-  const fadeInterval=setInterval(()=>{
-    if(bg.volume>0.02) bg.volume=Math.max(0,bg.volume-0.015);
-    else { bg.pause(); bg.volume=0; }
-    if(vol<0.18){ vol=Math.min(0.18,vol+0.008); end.volume=vol; }
-    if(bg.paused&&vol>=0.18) clearInterval(fadeInterval);
-  },80);
+  let evol=0;
+  const fadeIn=setInterval(()=>{
+    evol=Math.min(0.22,evol+0.011);
+    end.volume=evol;
+    if(evol>=0.22)clearInterval(fadeIn);
+  },50);
 
   // Frame corners animate in
   const frame=$('msg-frame');
