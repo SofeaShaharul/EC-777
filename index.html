@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
-<title>ENCOM INTERNATIONAL — SECURE ACCESS</title>
+<title>ENCOM INTERNATIONAL: SECURE ACCESS</title>
 <style>
 /* ── RESET ─────────────────────────────────────────────────── */
 *,*::before,*::after{margin:0;padding:0;box-sizing:border-box;}
@@ -155,10 +155,158 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 .cur{display:inline-block;width:8px;height:.9em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 6px #00e5ff;}
 #track-btn{display:none;margin-top:26px;font-family:'Courier New',monospace;font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;color:#00e5ff;text-transform:uppercase;background:transparent;border:1px solid rgba(0,229,255,.5);padding:13px 28px;cursor:pointer;width:fit-content;text-shadow:0 0 10px rgba(0,229,255,.7);animation:pulse 1.8s ease-in-out infinite;}
 
+/* ── THEATRICAL BREACH SEQUENCE ──────────────────────────────── */
+@keyframes screenShake{
+  0%,100%{transform:translate(0,0);}
+  10%{transform:translate(-3px,2px);}
+  20%{transform:translate(4px,-2px);}
+  30%{transform:translate(-2px,3px);}
+  40%{transform:translate(3px,-3px);}
+  50%{transform:translate(-4px,1px);}
+  60%{transform:translate(2px,-4px);}
+  70%{transform:translate(-3px,2px);}
+  80%{transform:translate(3px,3px);}
+  90%{transform:translate(-2px,-2px);}
+}
+body.shaking{animation:screenShake .45s linear;}
+
+#breach-overlay{
+  position:fixed;inset:0;z-index:850;
+  display:flex;align-items:center;justify-content:center;
+  pointer-events:none;opacity:0;
+}
+#breach-svg{width:min(90vw,500px);height:min(90vw,500px);}
+
+@keyframes breachRingExpand{
+  0%{r:0;opacity:1;stroke-width:6;}
+  100%{r:340;opacity:0;stroke-width:1;}
+}
+@keyframes breachCoreFlicker{
+  0%,100%{opacity:1;}
+  20%{opacity:.3;}
+  40%{opacity:1;}
+  60%{opacity:.5;}
+  80%{opacity:1;}
+}
+.breach-ring{animation:breachRingExpand 1.1s cubic-bezier(.2,.7,.3,1) forwards;}
+.breach-core{animation:breachCoreFlicker .3s linear infinite;}
+
+/* Intruder grid sweep — orange grid wipes across the screen */
+#intruder-sweep{
+  position:fixed;inset:0;z-index:840;
+  background-image:
+    linear-gradient(rgba(255,80,0,.5) 1px,transparent 1px),
+    linear-gradient(90deg,rgba(255,80,0,.5) 1px,transparent 1px);
+  background-size:36px 36px;
+  opacity:0;pointer-events:none;
+  clip-path:inset(0 100% 0 0);
+}
+#intruder-sweep.sweep{
+  animation:sweepAcross .6s ease-out forwards;
+}
+@keyframes sweepAcross{
+  0%{opacity:.85;clip-path:inset(0 100% 0 0);}
+  60%{opacity:.85;clip-path:inset(0 0 0 0);}
+  100%{opacity:0;clip-path:inset(0 0 0 0);}
+}
+
+/* ── ACCESS BREACH SUCCESS (password unlock, before ISIS) ────── */
+#access-breach{
+  position:fixed;inset:0;z-index:870;
+  display:none;align-items:center;justify-content:center;
+  background:#000;
+}
+#access-breach.show{display:flex;}
+#breach-success-svg{width:min(92vw,520px);height:min(92vw,520px);}
+
+@keyframes hexLockExpand{
+  0%{opacity:0;transform:scale(.3) rotate(-15deg);}
+  60%{opacity:1;transform:scale(1.06) rotate(2deg);}
+  100%{opacity:1;transform:scale(1) rotate(0deg);}
+}
+@keyframes hexLockSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
+@keyframes coreFlashIn{
+  0%{opacity:0;transform:scale(0);}
+  50%{opacity:1;transform:scale(1.3);}
+  100%{opacity:1;transform:scale(1);}
+}
+@keyframes stampIn{
+  0%{opacity:0;transform:scale(1.4);letter-spacing:.6em;}
+  60%{opacity:1;transform:scale(.95);}
+  100%{opacity:1;transform:scale(1);letter-spacing:.3em;}
+}
+@keyframes lineSweepDown{
+  0%{transform:scaleY(0);transform-origin:top;}
+  100%{transform:scaleY(1);transform-origin:top;}
+}
+
+.hexlock-frame{animation:hexLockExpand .6s cubic-bezier(.2,.8,.3,1) forwards;}
+.hexlock-spin-cw{transform-origin:center;animation:hexLockSpin 6s linear infinite;}
+.hexlock-spin-ccw{transform-origin:center;animation:hexLockSpin 9s linear infinite reverse;}
+.hexlock-core{animation:coreFlashIn .5s ease .5s both;}
+
+#breach-stamp{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) translateY(-90px);
+  width:90vw;max-width:480px;
+  text-align:center;
+  font-family:'Courier New',monospace;
+  font-size:clamp(16px,4.5vw,30px);letter-spacing:.3em;
+  color:#00e5ff;text-transform:uppercase;font-weight:bold;
+  text-shadow:0 0 22px rgba(0,229,255,1),0 0 50px rgba(0,229,255,.5);
+  opacity:0;
+  animation:stampIn .6s ease 1.1s forwards;
+}
+#breach-substamp{
+  position:absolute;
+  top:50%;left:50%;
+  transform:translate(-50%,-50%) translateY(40px);
+  width:90vw;max-width:420px;
+  text-align:center;
+  font-family:'Courier New',monospace;
+  font-size:clamp(9px,2vw,11px);letter-spacing:.35em;
+  color:rgba(0,229,255,.6);text-transform:uppercase;
+  opacity:0;
+  animation:stampIn .5s ease 1.5s forwards;
+}
+#breach-sweep-line{
+  position:absolute;
+  top:0;left:50%;
+  width:2px;height:100%;
+  transform:translateX(-50%);
+  background:linear-gradient(180deg,transparent,#00e5ff,transparent);
+  box-shadow:0 0 16px #00e5ff;
+  animation:lineSweepDown .5s ease-out forwards;
+  opacity:.8;
+}
+
 /* ── STATE: MAP ─────────────────────────────────────────────── */
 #state-map{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding-top:clamp(34px,5vh,50px);overflow-y:auto;}
 .map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.75);text-transform:uppercase;margin-bottom:5px;text-align:center;}
 .map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 10px rgba(0,229,255,.55);}
+
+/* UV LIGHT REMINDER — hard to miss, sits right under the map title */
+@keyframes uvpulse{0%,100%{box-shadow:0 0 14px rgba(255,140,0,.35),inset 0 0 14px rgba(255,140,0,.08);border-color:rgba(255,140,0,.5);}50%{box-shadow:0 0 28px rgba(255,140,0,.65),inset 0 0 24px rgba(255,140,0,.16);border-color:rgba(255,140,0,.85);}}
+#uv-reminder{
+  display:none;
+  align-items:center;justify-content:center;gap:10px;
+  border:1px solid rgba(255,140,0,.5);
+  background:rgba(255,140,0,.05);
+  padding:clamp(10px,2vw,14px) clamp(16px,3vw,24px);
+  margin-bottom:clamp(14px,2.5vw,20px);
+  width:min(94vw,560px);
+  animation:uvpulse 2s ease-in-out infinite;
+}
+#uv-reminder.on{display:flex;}
+.uv-reminder-icon{width:18px;height:18px;flex-shrink:0;}
+.uv-reminder-icon svg{width:100%;height:100%;}
+.uv-reminder-text{
+  font-size:clamp(11px,2vw,13px);letter-spacing:.12em;
+  color:#ff8c00;text-transform:uppercase;font-weight:bold;
+  text-shadow:0 0 10px rgba(255,140,0,.6);
+  text-align:center;
+}
 #mapsvg-wrap{width:min(97vw,680px);flex-shrink:0;}
 #mapsvg-wrap svg{width:100%;height:auto;display:block;}
 
@@ -193,18 +341,21 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 /* ── ISIS TAKEOVER SCREEN ───────────────────────────────────── */
 #isis-screen{
   position:fixed;inset:0;z-index:600;display:none;
-  flex-direction:column;align-items:center;justify-content:center;
+  flex-direction:column;align-items:center;justify-content:flex-start;
   background:#000;
+  overflow-y:auto;
+  padding:clamp(24px,5vh,48px) clamp(16px,4vw,32px) clamp(40px,8vh,72px);
   animation:isisborder 2.5s ease-in-out infinite;
 }
-/* Orange corner accents */
+/* Orange corner accents — fixed to the viewport, not the scroll content */
 #isis-screen::before,#isis-screen::after{
-  content:'';position:absolute;width:48px;height:48px;
+  content:'';position:fixed;width:48px;height:48px;
   border-color:#ff8c00;border-style:solid;
+  z-index:601;pointer-events:none;
 }
 #isis-screen::before{top:0;left:0;border-width:2px 0 0 2px;}
 #isis-screen::after {bottom:0;right:0;border-width:0 2px 2px 0;}
-.isis-corner-tr,.isis-corner-bl{position:absolute;width:48px;height:48px;border-color:#ff8c00;border-style:solid;}
+.isis-corner-tr,.isis-corner-bl{position:fixed;width:48px;height:48px;border-color:#ff8c00;border-style:solid;z-index:601;pointer-events:none;}
 .isis-corner-tr{top:0;right:0;border-width:2px 2px 0 0;}
 .isis-corner-bl{bottom:0;left:0;border-width:0 0 2px 2px;}
 .isis-inner{display:flex;flex-direction:column;align-items:center;gap:0;animation:isisfade .6s ease forwards;}
@@ -261,6 +412,136 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   border:1px solid rgba(255,140,0,.55);padding:12px 28px;cursor:pointer;
   text-shadow:0 0 10px rgba(255,140,0,.7);
   animation:pulse 1.8s ease-in-out infinite,slideup .5s ease 1.2s both;
+}
+
+/* ── LIVE TRANSCRIPT DIALOGUE ─────────────────────────────────
+   Deliberately distinct from the rest of the ISIS screen: left
+   aligned, mixed case, monospace but not letter-spaced uppercase,
+   so it reads as an intercepted recording rather than a system
+   message. ──────────────────────────────────────────────────── */
+#transcript-block{
+  display:none;
+  flex-direction:column;
+  align-items:flex-start;
+  width:100%;max-width:420px;
+  margin-top:18px;
+  animation:slideup .5s ease .8s both;
+}
+#transcript-block.on{display:flex;}
+
+.transcript-header{
+  display:flex;align-items:center;gap:8px;
+  width:100%;margin-bottom:10px;
+  font-size:clamp(8px,1.2vw,9px);letter-spacing:.3em;
+  color:rgba(255,140,0,.5);text-transform:uppercase;
+}
+.transcript-rec-dot{
+  width:6px;height:6px;border-radius:50%;
+  background:#ff3030;flex-shrink:0;
+  animation:recBlink 1s step-end infinite;
+}
+@keyframes recBlink{0%,100%{opacity:1}50%{opacity:.2}}
+
+/* Signal status ticker — reinforces this is live and unstable */
+#signal-ticker{
+  font-size:clamp(7px,1.1vw,8px);letter-spacing:.2em;
+  color:rgba(255,140,0,.4);text-transform:uppercase;
+  margin-left:auto;text-align:right;
+}
+#signal-ticker.unstable{color:rgba(255,60,30,.65);animation:pulsefast .4s ease-in-out infinite;}
+
+.transcript-line{
+  width:100%;text-align:left;
+  font-size:clamp(11.5px,2vw,13px);
+  line-height:1.7;letter-spacing:.01em;
+  margin-bottom:11px;
+  opacity:0;transform:translateY(8px);
+  transition:opacity .4s ease,transform .4s ease;
+}
+.transcript-line.on{opacity:1;transform:translateY(0);}
+
+.t-speaker{
+  font-weight:bold;letter-spacing:.08em;
+  margin-right:6px;
+}
+.t-speaker.malory{color:#ff8c00;}
+.t-speaker.archer{color:#ffb347;}
+.t-dialogue{color:rgba(255,200,150,.92);font-style:normal;}
+
+.t-cursor{
+  display:inline-block;width:6px;height:.85em;
+  background:#ff8c00;vertical-align:middle;margin-left:2px;
+  animation:blink .7s step-end infinite;
+}
+
+/* Raised-voice lines get a sharper, slightly destabilized look */
+.transcript-line.raised .t-dialogue{
+  color:#ffd9a0;
+  text-shadow:0 0 6px rgba(255,140,0,.5);
+}
+
+#transcript-footer{
+  font-size:clamp(7px,1.1vw,8px);letter-spacing:.25em;
+  color:rgba(255,140,0,.35);text-transform:uppercase;
+  margin-top:4px;opacity:0;transition:opacity .5s ease;
+}
+#transcript-footer.on{opacity:1;}
+
+/* ── INCOMING TRANSMISSION NOTIFICATION ───────────────────────
+   The beat between the ISIS card settling and the transcript
+   starting: a call-style alert so it's unmistakable that
+   something is about to come through. ──────────────────────── */
+@keyframes incomingPulseRing{
+  0%{transform:scale(.9);opacity:.9;}
+  70%{transform:scale(1.5);opacity:0;}
+  100%{transform:scale(1.5);opacity:0;}
+}
+@keyframes incomingShake{
+  0%,100%{transform:translateX(0);}
+  20%{transform:translateX(-2px);}
+  40%{transform:translateX(2px);}
+  60%{transform:translateX(-1px);}
+  80%{transform:translateX(1px);}
+}
+#incoming-notice{
+  display:none;
+  flex-direction:column;align-items:center;
+  width:100%;max-width:340px;
+  margin-top:22px;
+  padding:14px 18px;
+  border:1px solid rgba(255,140,0,.5);
+  background:rgba(255,140,0,.06);
+  opacity:0;
+}
+#incoming-notice.on{
+  display:flex;
+  animation:slideup .4s ease forwards,incomingShake 2.2s ease-in-out .4s infinite;
+}
+.incoming-row{display:flex;align-items:center;gap:10px;}
+.incoming-icon-wrap{position:relative;width:20px;height:20px;flex-shrink:0;}
+.incoming-icon-wrap svg{width:100%;height:100%;position:relative;z-index:2;}
+.incoming-ring{
+  position:absolute;inset:0;border:1px solid #ff8c00;border-radius:50%;
+  animation:incomingPulseRing 1.6s ease-out infinite;
+}
+.incoming-text{
+  font-size:clamp(10px,1.6vw,12px);letter-spacing:.18em;
+  color:#ff8c00;text-transform:uppercase;font-weight:bold;
+}
+.incoming-sub{
+  font-size:clamp(8px,1.2vw,9px);letter-spacing:.15em;
+  color:rgba(255,140,0,.55);text-transform:uppercase;
+  margin-top:6px;text-align:center;
+}
+#incoming-answer-btn{
+  display:block;
+  margin-top:14px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(10px,1.6vw,12px);letter-spacing:.25em;
+  color:#ff8c00;text-transform:uppercase;background:transparent;
+  border:1px solid rgba(255,140,0,.6);padding:10px 22px;cursor:pointer;
+  text-shadow:0 0 10px rgba(255,140,0,.6);
+  animation:pulse 1.4s ease-in-out infinite;
 }
 
 /* ── GATEWAY SCAN BAR ────────────────────────────────────────── */
@@ -352,6 +633,16 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 }
 .msg-line.on{animation:revealLine .7s ease forwards;}
 
+/* Inside-joke line — playful emphasis, distinct from the rest */
+@keyframes jokeglow{0%,100%{text-shadow:0 0 10px rgba(0,229,255,.6)}50%{text-shadow:0 0 22px rgba(0,229,255,1),0 0 40px rgba(0,229,255,.5)}}
+.msg-joke{
+  font-size:clamp(13px,2.3vw,17px);color:#00e5ff;
+  letter-spacing:.05em;line-height:1.8;font-style:italic;
+  margin-top:clamp(10px,2vw,16px);
+  opacity:0;
+}
+.msg-joke.on{animation:revealLine .7s ease forwards,jokeglow 2.4s ease-in-out .8s infinite;}
+
 /* The directional highlight */
 .msg-highlight{
   display:block;
@@ -395,6 +686,84 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   opacity:0;
 }
 #msg-sig.on{animation:sigAppear 1.2s ease forwards;}
+
+/* ════════════════════════════════════════════════════════════
+   MOBILE OPTIMISATION — tuned for phone-class screens
+   (iPhone 17 Pro Max viewport ≈ 440px wide)
+════════════════════════════════════════════════════════════ */
+@media (max-width: 600px){
+  /* Tighter global chrome so it doesn't eat screen real estate */
+  #encom-hud,#clock-hud{font-size:8px;}
+  .corner{width:20px;height:20px;}
+
+  /* Gateway — bigger touch target, readable labels */
+  .gw-card{padding:28px 20px;min-width:0;width:92vw;}
+  .gw-company{font-size:20px;letter-spacing:.22em;}
+  .gw-division{font-size:10px;}
+  .gw-portal-label{font-size:8px;letter-spacing:.4em;margin-bottom:20px;}
+  #gw-btn{font-size:13px;padding:15px 20px;}
+  .gw-topbar-name{font-size:9px;}
+  .gw-topbar-right{display:none;} /* too cramped on phone */
+  .gw-ref{font-size:7px;}
+
+  /* Boot screen */
+  .boot-id-line{font-size:12px;letter-spacing:.22em;}
+  .boot-ring-wrap{width:110px;height:110px;}
+
+  /* Terminal — bigger text, tighter padding so more fits */
+  #state-terminal{padding:18px 16px 28px;}
+  #terminal{font-size:15px;line-height:1.95;}
+  #track-btn{font-size:13px;padding:14px 22px;width:100%;text-align:center;}
+
+  /* Map — critical: room labels must be readable on a 6" screen */
+  .map-eyebrow{font-size:9px;letter-spacing:.3em;}
+  .map-title{font-size:12px;letter-spacing:.15em;}
+  #uv-reminder{padding:10px 14px;margin-bottom:14px;width:96vw;}
+  .uv-reminder-text{font-size:12px;letter-spacing:.08em;}
+  .uv-reminder-icon{width:16px;height:16px;}
+  #mapsvg-wrap{width:98vw;}
+  #map-proceed-btn{font-size:13px;padding:14px 22px;width:90%;}
+  .pw-row{padding:12px 14px;}
+  #pw-input{font-size:16px;} /* 16px prevents iOS auto-zoom on focus */
+
+  /* ISIS screen — the most text-dense screen, needs the most care */
+  .isis-logo-wrap{width:78px;height:78px;margin-bottom:16px;}
+  .isis-org{font-size:9px;letter-spacing:.35em;}
+  .isis-name{font-size:38px;letter-spacing:.18em;}
+  .isis-title{font-size:11px;letter-spacing:.22em;}
+  .isis-field{font-size:17px;letter-spacing:.16em;}
+  .isis-id{font-size:10px;letter-spacing:.18em;}
+  .isis-msg{font-size:13px;line-height:2;max-width:300px;}
+  #transcript-block{max-width:92vw;}
+  .transcript-line{font-size:12px;line-height:1.6;margin-bottom:9px;}
+  .transcript-header{font-size:8px;}
+  #signal-ticker{font-size:7px;}
+  #transcript-footer{font-size:7px;}
+  #incoming-notice{max-width:90vw;padding:12px 14px;margin-top:18px;}
+  .incoming-text{font-size:11px;}
+  .incoming-sub{font-size:8px;}
+  .isis-scanline{font-size:9px;}
+  #isis-proceed-btn{font-size:13px;padding:14px 22px;width:80%;}
+  .isis-inner{padding:0 16px;}
+
+  /* Final reveal page — must read clearly and feel grand on a phone */
+  #disc-wrap{width:100px;height:100px;margin-bottom:24px;}
+  .msg-line{font-size:15px;line-height:2.1;}
+  .msg-highlight{font-size:16px;letter-spacing:.18em;}
+  .msg-joke{font-size:15px;}
+  .msg-bday{font-size:19px;}
+  .msg-eol{font-size:11px;}
+  .msg-footer{font-size:8px;}
+  #msg-sig{font-size:14px;}
+  #msg-content{max-width:94vw;}
+}
+
+@media (max-width: 400px){
+  /* Extra-narrow safety net */
+  .isis-name{font-size:32px;}
+  .gw-company{font-size:18px;}
+  #terminal{font-size:14px;}
+}
 </style>
 </head>
 <body>
@@ -461,17 +830,17 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
       </svg>
     </div>
     <div class="gw-company">ENCOM INTERNATIONAL</div>
-    <div class="gw-division">GRID SYSTEMS DIVISION — SECURE ACCESS</div>
+    <div class="gw-division">GRID SYSTEMS DIVISION · SECURE ACCESS</div>
     <div class="gw-divider"></div>
-    <div class="gw-scan-label">IDENTITY BADGE DETECTED — AWAITING AUTHORISATION</div>
+    <div class="gw-scan-label">IDENTITY BADGE DETECTED · AWAITING AUTHORISATION</div>
     <button id="gw-btn">&gt; INITIATE SECURE SESSION</button>
-    <div class="gw-sub">AUTHORISED PERSONNEL ONLY — SESSIONS ARE MONITORED AND LOGGED</div>
+    <div class="gw-sub">AUTHORISED PERSONNEL ONLY · SESSIONS ARE MONITORED AND LOGGED</div>
     <div class="gw-ref">REF: ENC-SEC-4471 &nbsp;·&nbsp; GRID ACCESS TIER 1 &nbsp;·&nbsp; MCP CLEARANCE REQUIRED</div>
   </div>
 
   <!-- Bottom bar -->
   <div class="gw-bottombar">
-    <span>© ENCOM INTERNATIONAL — ALL RIGHTS RESERVED</span>
+    <span>© ENCOM INTERNATIONAL · ALL RIGHTS RESERVED</span>
     <span id="gw-clock-bottom"></span>
     <span>UNAUTHORISED ACCESS IS A CRIMINAL OFFENCE</span>
   </div>
@@ -501,9 +870,9 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
       </svg>
     </div>
     <div class="boot-id-line" id="bid1">ENCOM INTERNATIONAL</div>
-    <div class="boot-id-line" id="bid2">IDENTITY TOKEN SCAN — EC-777</div>
+    <div class="boot-id-line" id="bid2">IDENTITY TOKEN SCAN · EC-777</div>
     <div class="boot-id-line" id="bid3">MOHD ERIDANI EFFENDI NORWAWI</div>
-    <div class="boot-id-line" id="bid4">CLEARANCE: USER — ACTIVE</div>
+    <div class="boot-id-line" id="bid4">CLEARANCE: USER ACTIVE</div>
     <div class="boot-bar-wrap" id="boot-bar-wrap">
       <div class="boot-bar-fill" id="boot-bar-fill"></div>
     </div>
@@ -523,12 +892,70 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   <button id="track-btn">&gt; ACCEPT MISSION</button>
 </div>
 
+<!-- THEATRICAL BREACH OVERLAY (Identity-Disc style shockwave) -->
+<div id="intruder-sweep"></div>
+<div id="breach-overlay">
+  <svg id="breach-svg" viewBox="-170 -170 340 340" xmlns="http://www.w3.org/2000/svg">
+    <circle id="breach-ring-1" class="breach-ring" cx="0" cy="0" r="0" fill="none" stroke="#ff8c00" stroke-width="6"/>
+    <circle id="breach-ring-2" class="breach-ring" cx="0" cy="0" r="0" fill="none" stroke="#ff8c00" stroke-width="6" style="animation-delay:.15s;"/>
+    <circle id="breach-ring-3" class="breach-ring" cx="0" cy="0" r="0" fill="none" stroke="#00e5ff" stroke-width="4" style="animation-delay:.3s;"/>
+    <circle class="breach-core" cx="0" cy="0" r="14" fill="#ff8c00"/>
+    <circle class="breach-core" cx="0" cy="0" r="22" fill="none" stroke="#ff8c00" stroke-width="2" opacity=".6"/>
+  </svg>
+</div>
+
+<!-- ACCESS BREACH SUCCESS (password unlock, before ISIS) -->
+<div id="access-breach">
+  <div id="breach-sweep-line"></div>
+  <svg id="breach-success-svg" viewBox="-180 -180 360 360" xmlns="http://www.w3.org/2000/svg">
+    <g class="hexlock-frame">
+      <!-- Outer hex, clockwise spin -->
+      <g class="hexlock-spin-cw">
+        <polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" fill="none" stroke="#00e5ff" stroke-width="2" opacity=".7"/>
+      </g>
+      <!-- Mid hex, counter-clockwise spin -->
+      <g class="hexlock-spin-ccw">
+        <polygon points="0,-105 91,-52.5 91,52.5 0,105 -91,52.5 -91,-52.5" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="14 8" opacity=".55"/>
+      </g>
+      <!-- Inner static hex -->
+      <polygon points="0,-60 52,-30 52,30 0,60 -52,30 -52,-30" fill="rgba(0,229,255,.05)" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+      <!-- Core -->
+      <g class="hexlock-core">
+        <circle cx="0" cy="0" r="20" fill="rgba(0,229,255,.12)" stroke="#00e5ff" stroke-width="1.5"/>
+        <circle cx="0" cy="0" r="8" fill="#00e5ff"/>
+        <circle cx="0" cy="0" r="8" fill="none" stroke="#00e5ff" stroke-width="1.5">
+          <animate attributeName="r" values="8;30" dur="1.6s" repeatCount="indefinite"/>
+          <animate attributeName="opacity" values="0.8;0" dur="1.6s" repeatCount="indefinite"/>
+        </circle>
+      </g>
+    </g>
+  </svg>
+  <div id="breach-stamp">ACCESS CONFIRMED</div>
+  <div id="breach-substamp">IDENTITY VERIFIED, USER EC-777</div>
+</div>
+
 <!-- ════════════════════════════════════════════════════════════
      MAP — single SVG, leg 2 elements hidden until reroute
 ════════════════════════════════════════════════════════════ -->
 <div id="state-map">
-  <div class="map-eyebrow" id="map-eyebrow">CLASSIFIED GRID LAYOUT — ROUTE ALPHA — EC-777</div>
+  <div class="map-eyebrow" id="map-eyebrow">CLASSIFIED GRID LAYOUT · ROUTE ALPHA · EC-777</div>
   <div class="map-title"   id="map-title">ACTIVE MISSION: NAVIGATE TO THE ENCRYPTED CACHE</div>
+  <div id="uv-reminder">
+    <div class="uv-reminder-icon">
+      <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+        <circle cx="12" cy="12" r="5" fill="none" stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="12" y1="1"  x2="12" y2="5"  stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="12" y1="19" x2="12" y2="23" stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="1"  y1="12" x2="5"  y2="12" stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="19" y1="12" x2="23" y2="12" stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="4.2" y1="4.2" x2="7" y2="7"   stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="17"  y1="17" x2="19.8" y2="19.8" stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="19.8" y1="4.2" x2="17" y2="7"   stroke="#ff8c00" stroke-width="1.5"/>
+        <line x1="7"   y1="17" x2="4.2" y2="19.8" stroke="#ff8c00" stroke-width="1.5"/>
+      </svg>
+    </div>
+    <div class="uv-reminder-text">Equip your scanning tools before infiltration</div>
+  </div>
   <div id="mapsvg-wrap">
   <svg id="mapsvg" viewBox="0 0 680 760" xmlns="http://www.w3.org/2000/svg">
     <defs>
@@ -729,7 +1156,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
              autocorrect="off" autocapitalize="off" spellcheck="false"
              placeholder="type here and press enter"/>
     </div>
-    <div class="pw-error" id="pw-error">ACCESS DENIED — INVALID CREDENTIALS</div>
+    <div class="pw-error" id="pw-error">ACCESS DENIED · INVALID CREDENTIALS</div>
   </div>
   <button id="map-proceed-btn">&gt; PROCEED TO FINAL OBJECTIVE</button>
 </div>
@@ -763,16 +1190,58 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <div class="isis-org">INTERNATIONAL SECRET INTELLIGENCE SERVICE</div>
     <div class="isis-name">ISIS</div>
     <div class="isis-divider"></div>
-    <div class="isis-title">FIELD AGENT INDUCTION — CLEARANCE CONFIRMED</div>
+    <div class="isis-title">FIELD AGENT INDUCTION: APPROVED, RELUCTANTLY</div>
     <div class="isis-field">MOHD ERIDANI EFFENDI NORWAWI</div>
-    <div class="isis-id">AGENT REF: EC-777 &nbsp;|&nbsp; STATUS: INDUCTED — ACTIVE</div>
+    <div class="isis-id">AGENT REF: 7-SEVEN-7 &nbsp;|&nbsp; STATUS: INDUCTED, ACTIVE</div>
     <div class="isis-divider2"></div>
-    <div class="isis-msg">
-      YOU HAVE PROVEN YOUR WORTH, DANI.<br>
-      WELCOME TO ISIS.<br>
-      YOUR FIRST MISSION AWAITS.
+
+    <!-- INCOMING TRANSMISSION NOTICE -->
+    <div id="incoming-notice">
+      <div class="incoming-row">
+        <div class="incoming-icon-wrap">
+          <span class="incoming-ring"></span>
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path d="M3 5c0-1 1-2 2-2h2l2 5-2 2c1 3 3 5 6 6l2-2 5 2v2c0 1-1 2-2 2C10 20 3 13 3 5z" fill="none" stroke="#ff8c00" stroke-width="1.6"/>
+          </svg>
+        </div>
+        <span class="incoming-text">Incoming Transmission</span>
+      </div>
+      <div class="incoming-sub">Unknown source &middot; routing through Grid relay</div>
+      <button id="incoming-answer-btn">&gt; ANSWER</button>
     </div>
-    <div class="isis-scanline">— INDUCTION COMPLETE — FIELD STATUS: ACTIVE —</div>
+
+    <!-- LIVE TRANSCRIPT DIALOGUE -->
+    <div id="transcript-block">
+      <div class="transcript-header">
+        <span class="transcript-rec-dot"></span>
+        <span>SIGNAL INTERCEPTED VIA GRID RELAY</span>
+        <span id="signal-ticker">LINK: STABLE</span>
+      </div>
+
+      <div class="transcript-line" id="tl1">
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td1" data-text="EC-777. You've been cleared for immediate field induction. ENCOM's security is an embarrassment, but it served as a passable screening test. We've been watching your navigation of the Grid."></span>
+      </div>
+
+      <div class="transcript-line" id="tl2">
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td2" data-text="He's just getting lucky with the RNG. This entire Grid architecture is garbage, and I'm ninety percent sure the map is just looping on purpose to spite me."></span>
+      </div>
+
+      <div class="transcript-line" id="tl3">
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td3" data-text="It's not spite, Sterling, it's just your incompetence. Dani, ignore him. We need you in the Archive Sector. There's an asset waiting, we don't care how you get to it, just get it out."></span>
+      </div>
+
+      <div class="transcript-line" id="tl4">
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td4" data-text="Seriously though, if we're going to be trapped in a computer, why am I not at least a giant cyborg with a Glengoolie Blue dispenser?"></span>
+      </div>
+
+      <div class="transcript-line raised" id="tl5">
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Enough chatter. Accept the parameters, Dani. The Grid is closing in."></span>
+      </div>
+
+      <div id="transcript-footer">[END RECORDING]</div>
+    </div>
+
+    <div class="isis-scanline">INDUCTION COMPLETE · FIELD STATUS: ACTIVE</div>
     <button id="isis-proceed-btn">&gt; ACCEPT MISSION PARAMETERS</button>
   </div>
 </div>
@@ -831,21 +1300,22 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
     <!-- Lines revealed one by one via JS -->
     <div class="msg-divider" id="msg-div1"></div>
 
-    <div class="msg-line" id="ml1">It was never lost, User.</div>
-    <div class="msg-line" id="ml2">It was hidden — deep in the Grid,</div>
-    <div class="msg-line" id="ml3">waiting for the one who earned it back.</div>
+    <div class="msg-line" id="ml1">System Status: Asset Identified.</div>
+    <div class="msg-line" id="ml2">Location: Archive Sector.</div>
+    <div class="msg-line" id="ml3">It was never misplaced, User. It was archived, encrypted deep within the Grid, reserved for your unique authorization key.</div>
 
-    <div class="msg-highlight" id="ml4">&rarr; Proceed to the Storage Room</div>
+    <div class="msg-highlight" id="ml4">&rarr; Execute: Archive Sector Infiltration</div>
 
-    <div class="msg-line" id="ml5">The UV light will guide you through the Grid.</div>
+    <div class="msg-joke" id="ml-joke">Data streams confirm: You have the biggest LED lights.</div>
 
     <div class="msg-divider" id="msg-div2" style="margin-top:clamp(16px,3vw,26px);"></div>
 
-    <div class="msg-bday"  id="ml6">Happy birthday, Buh.</div>
-    <div class="msg-eol"   id="ml7">End of line.</div>
+    <div class="msg-line" id="ml5">System Update: Initialization Complete.</div>
+    <div class="msg-bday"  id="ml6">Happy 27th Birthday, Buh.</div>
+    <div class="msg-eol"   id="ml7">End of Line.</div>
 
-    <div class="msg-footer" id="msg-footer">— TRANSMISSION ORIGIN : CLASSIFIED — ISIS / ENCOM GRID —</div>
-    <div id="msg-sig">// Your Quorrbuh</div>
+    <div class="msg-footer" id="msg-footer">TRANSMISSION ORIGIN: CLASSIFIED · ISIS / ENCOM GRID</div>
+    <div id="msg-sig">Signature: Your Quorrbuh</div>
   </div>
 </div>
 
@@ -981,11 +1451,11 @@ function animateBootBar(cb){
   const fill=$('boot-bar-fill');
   const label=$('boot-bar-label');
   const stages=[
-    {pct:15, label:'SCANNING IDENTITY TOKEN...',  delay:0   },
-    {pct:35, label:'VERIFYING GRID CLEARANCE...',  delay:340 },
-    {pct:56, label:'BYPASSING MCP FIREWALL...',    delay:720 },
-    {pct:74, label:'DECRYPTING SECTOR KEYS...',    delay:1100},
-    {pct:90, label:'ERASING TRACE VECTORS...',     delay:1460},
+    {pct:15, label:'SCANNING IDENTITY...',         delay:0   },
+    {pct:35, label:'VERIFYING CLEARANCE...',       delay:340 },
+    {pct:56, label:'CONNECTING TO GRID...',        delay:720 },
+    {pct:74, label:'UNLOCKING SECTORS...',         delay:1100},
+    {pct:90, label:'FINALISING ACCESS...',         delay:1460},
     {pct:100,label:'ACCESS GRANTED.',              delay:1780},
   ];
   stages.forEach(({pct,label:lbl,delay})=>{
@@ -1004,56 +1474,43 @@ function animateBootBar(cb){
 
 // Phase A: normal ENCOM login, then warning spam
 const termLinesA=[
-  {t:'ENCOM INTERNATIONAL — SECURE SHELL v4.7.2',  d:0},
+  {t:'ENCOM INTERNATIONAL: SECURE SHELL v4.7.2',    d:0},
   {t:'',                                             d:300},
-  {t:'> INITIATING SESSION HANDSHAKE...',           d:600},
-  {t:'> CONNECTING TO ENCOM MAINFRAME...',          d:1400},
-  {t:'',                                             d:2200},
-  {t:'POST /api/v2/session/auth HTTP/1.1',          d:2500},
-  {t:'Host: mainframe.encom.internal',              d:3100},
-  {t:'X-Forwarded-For: 192.168.0.7',               d:3700},
-  {t:'Content-Type: application/json',              d:4200},
-  {t:'Authorization: Bearer [REDACTED]',            d:4800},
-  {t:'',                                             d:5400},
-  {t:'{ "user_id": "EC-777",',                      d:5700},
-  {t:'  "name": "Mohd Eridani Effendi Norwawi",',   d:6300},
-  {t:'  "clearance": "USER — ACTIVE",',             d:7000},
-  {t:'  "grid_access": true }',                     d:7700},
-  {t:'',                                             d:8400},
-  {t:'> HTTP/1.1 200 OK',                           d:8700},
-  {t:'> IDENTITY TOKEN VERIFIED.',                  d:9300},
-  {t:'',                                             d:10000},
-  {t:'> ROUTING TO ENCOM DB...',                    d:10400},
-  {t:'> ESTABLISHING ENCRYPTED TUNNEL...',          d:11200},
-  {t:'',                                             d:12000},
-  // Warning spam — rapid fire
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:12400},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:12850},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13200},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13500},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13760},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:13980},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:14170},
-  {t:'> WARNING: UNEXPECTED PACKET ORIGIN DETECTED',d:14330},
-  {t:'> TRACE ROUTE MODIFIED — SOURCE UNKNOWN',     d:14600},
+  {t:'> CONNECTING TO ENCOM MAINFRAME...',          d:700},
+  {t:'',                                             d:1600},
+  {t:'> IDENTITY CONFIRMED: EC-777',                d:2000},
+  {t:'> MOHD ERIDANI EFFENDI NORWAWI',              d:2900},
+  {t:'> CLEARANCE: USER ACTIVE',                    d:3900},
+  {t:'',                                             d:4900},
+  {t:'> ACCESS GRANTED.',                           d:5300},
+  {t:'',                                             d:6200},
+  {t:'> ROUTING TO ENCOM DATABASE...',              d:6600},
+  {t:'> ESTABLISHING SECURE LINK...',               d:7700},
+  {t:'',                                             d:9000},
+  // Visual spectacle, minimal jargon
+  {t:'> ...',                                        d:9700},
+  {t:'> SIGNAL INTERFERENCE DETECTED',                d:10300,glitch:true},
+  {t:'> !!',                                          d:10850,glitch:true},
+  {t:'> !! !!',                                       d:11200,glitch:true},
+  {t:'> !! !! !!',                                    d:11500,glitch:true},
+  {t:'> EXTERNAL CONNECTION FORCED',                  d:12000,glitch:true},
 ];
 
 // Phase B: appears on a freshly cleared terminal
 const termLinesB=[
   {t:'> !! SESSION HIJACKED !!',                    d:0,   glitch:true},
   {t:'',                                             d:700},
-  {t:'> INCOMING TRANSMISSION — SOURCE: ENCRYPTED', d:1100},
-  {t:'> ORIGIN: [REDACTED]',                        d:1900},
-  {t:'',                                             d:2600},
-  {t:'> "EC-777. We have been watching."',                            d:3000},
-  {t:'> "ENCOM cannot give you what you need."',                      d:4700},
-  {t:'> "But we can."',                                               d:6200},
-  {t:'> "It is time for you to take back what is rightfully yours."', d:7400},
-  {t:'> "Accept the mission. The grid will show you the way."',       d:9400},
-  {t:'> "End of line."',                                              d:11300},
-  {t:'',                                             d:12200},
-  {t:'> TRANSMISSION ENDED. SOURCE UNTRACEABLE.',   d:12600},
-  {t:'> GRID MAP READY.',                            d:13500},
+  {t:'> UNKNOWN SIGNAL: SOURCE ENCRYPTED',          d:1100},
+  {t:'',                                             d:2000},
+  {t:'> "EC-777. We have been watching."',                            d:2600},
+  {t:'> "ENCOM cannot give you what you need."',                      d:4300},
+  {t:'> "But we can."',                                               d:5800},
+  {t:'> "It is time for you to take back what is rightfully yours."', d:7000},
+  {t:'> "Accept the mission. The grid will show you the way."',       d:9000},
+  {t:'> "End of line."',                                              d:10900},
+  {t:'',                                             d:11800},
+  {t:'> SIGNAL LOST.',                               d:12200},
+  {t:'> GRID MAP READY.',                            d:13000},
 ];
 
 const termEl=$('terminal');
@@ -1085,17 +1542,15 @@ function typeStr(str,cb,rapid=false){
 // Run Phase A lines
 function runTerminalA(){
   if(lineIdx>=termLinesA.length){
-    // Pause so the last line is readable, then wipe
-    setTimeout(wipeAndRunB, 1100);
+    // Dramatic full-screen takeover before the wipe
+    setTimeout(dramaticTakeover, 500);
     return;
   }
   const line=termLinesA[lineIdx];
   const prev=lineIdx>0?termLinesA[lineIdx-1].d:0;
   const wait=line.d-prev;
   lineIdx++;
-  // Spam lines (after index 22) type fast
-  const isSpam=lineIdx>22;
-  if(isSpam) doGlitch(120);
+  if(line.glitch) doGlitch(150);
   setTimeout(()=>{
     if(line.t===''){
       built+='\n'; termEl.textContent=built;
@@ -1103,9 +1558,68 @@ function runTerminalA(){
       appendCursor(); scrollEl.scrollTop=scrollEl.scrollHeight;
       runTerminalA();
     } else {
-      typeStr(line.t,()=>{built+='\n'; runTerminalA();},isSpam);
+      typeStr(line.t,()=>{built+='\n'; runTerminalA();},line.glitch);
     }
   },wait);
+}
+
+// THEATRICAL BREACH SEQUENCE — Tron-style intrusion set piece
+function dramaticTakeover(){
+  // Beat 1: rapid red/cyan color fight (quick, sets unease)
+  const flashes=[
+    {color:'red',  delay:0},
+    {color:'cyan', delay:110},
+    {color:'red',  delay:220},
+    {color:'red',  delay:320},
+  ];
+  flashes.forEach(({color,delay})=>{
+    setTimeout(()=>{
+      doGlitch(100);
+      if(color==='red') doRedFlash();
+      else { const f=$('flash'); f.style.opacity='0.6'; setTimeout(()=>{f.style.opacity='0';},90); }
+    },delay);
+  });
+
+  // Beat 2: screen shake kicks in as the intrusion intensifies
+  setTimeout(()=>{
+    document.body.classList.add('shaking');
+    setTimeout(()=>document.body.classList.remove('shaking'),450);
+  },420);
+
+  // Beat 3: the intruder grid sweeps across the entire screen, orange,
+  // like a hostile network physically overwriting the terminal
+  setTimeout(()=>{
+    const sweep=$('intruder-sweep');
+    sweep.classList.add('sweep');
+    doGlitch(500);
+  },700);
+
+  // Beat 4: the breach shockwave, concentric rings expanding from
+  // center like an Identity Disc impact, with the core flickering
+  setTimeout(()=>{
+    const overlay=$('breach-overlay');
+    overlay.style.opacity='1';
+    // restart the ring animations
+    ['breach-ring-1','breach-ring-2','breach-ring-3'].forEach(id=>{
+      const el=$(id);
+      el.style.animation='none';
+      void el.offsetWidth; // force reflow to restart animation
+      el.style.animation='';
+    });
+    doRedFlash();
+  },1150);
+
+  // Beat 5: final overwhelming flash, then hide breach overlay and wipe
+  setTimeout(()=>{
+    const f=$('flash-red');
+    f.style.opacity='0.9';
+    setTimeout(()=>{
+      f.style.opacity='0';
+      $('breach-overlay').style.opacity='0';
+      $('intruder-sweep').classList.remove('sweep');
+      setTimeout(wipeAndRunB, 150);
+    },240);
+  },2100);
 }
 
 // Clear terminal and run Phase B
@@ -1157,6 +1671,10 @@ function showMap(){
   hideEl('state-terminal');
   showEl('state-map','flex');
   playLightcycle();
+
+  // Show the equipment reminder immediately, in-universe framing,
+  // since this is the screen he acts from before leaving for the cache.
+  $('uv-reminder').classList.add('on');
 
   // Leg 1 paths draw with room flashes as each segment completes
   animPath('la1a','la1ag',430,200,()=>flashRoom('rl-pool'));
@@ -1219,13 +1737,135 @@ function handleDenied(){
 function handleGranted(){
   doGreenFlash();
   playGranted();
-  doGlitch(600);
+  doGlitch(400);
   stopLightcycle();
-  showEl('isis-screen');
-  // Reveal the proceed button after 3s so he has time to read first
+
+  // Hide the map and show the breach success sequence
   setTimeout(()=>{
-    $('isis-proceed-btn').style.display='block';
-  },3000);
+    hideEl('state-map');
+    showEl('access-breach','flex');
+    $('access-breach').classList.add('show');
+
+    // Restart all the breach animations cleanly in case of repeat plays
+    document.querySelectorAll('#access-breach [class*="hexlock"],#breach-stamp,#breach-substamp,#breach-sweep-line').forEach(el=>{
+      el.style.animation='none';
+      void el.offsetWidth;
+      el.style.animation='';
+    });
+
+    // Hold on the breach success screen so it can be appreciated,
+    // then transition into the ISIS induction.
+    setTimeout(()=>{
+      doFlash(()=>{
+        hideEl('access-breach');
+        $('access-breach').classList.remove('show');
+        showEl('isis-screen');
+        // Let the ISIS identity card fully settle and be read
+        // before anything else happens on this screen.
+        setTimeout(showIncomingNotice, 2200);
+      });
+    },2600);
+  },500);
+}
+
+// Beat 2: the incoming transmission alert, like a call coming in.
+// Now requires a tap on ANSWER before anything plays, rather than
+// auto-dismissing on a timer.
+function showIncomingNotice(){
+  const notice=$('incoming-notice');
+  notice.classList.add('on');
+}
+
+$('incoming-answer-btn').addEventListener('click',()=>{
+  playClick();
+  const notice=$('incoming-notice');
+  notice.style.transition='opacity .4s ease';
+  notice.style.opacity='0';
+  setTimeout(()=>{
+    notice.classList.remove('on');
+    notice.style.opacity='';
+    notice.style.transition='';
+    runTranscript();
+  },400);
+});
+
+// Live transcript: each line types out character by character like
+// a real-time intercepted feed, with a blinking cursor while typing,
+// glitch + signal instability on the raised-voice line, and the
+// proceed button appearing once the recording has fully played out.
+const transcriptLines=['tl1','tl2','tl3','tl4','tl5'];
+let transcriptIdx=0;
+
+function runTranscript(){
+  const block=$('transcript-block');
+  block.classList.add('on');
+  transcriptIdx=0;
+  typeNextTranscriptLine();
+}
+
+function typeNextTranscriptLine(){
+  if(transcriptIdx>=transcriptLines.length){
+    // All lines done, show the footer and drop the signal,
+    // then reveal the proceed button shortly after.
+    setTimeout(()=>{
+      $('transcript-footer').classList.add('on');
+      const ticker=$('signal-ticker');
+      if(ticker)ticker.textContent='LINK: LOST';
+      setTimeout(()=>{
+        const btn=$('isis-proceed-btn');
+        btn.style.display='block';
+        btn.scrollIntoView({behavior:'smooth',block:'center'});
+      },1000);
+    },500);
+    return;
+  }
+
+  const lineId=transcriptLines[transcriptIdx];
+  const lineEl=$(lineId);
+  const dialogueEl=lineEl.querySelector('.t-dialogue');
+  const fullText=dialogueEl.getAttribute('data-text');
+  const isRaised=lineEl.classList.contains('raised');
+
+  // Reveal the line container (speaker label appears immediately,
+  // dialogue text will type into the empty span)
+  lineEl.classList.add('on');
+
+  // Auto-scroll so the active line is always visible, since the
+  // page can grow taller than the viewport and nothing should
+  // require him to scroll manually to keep up.
+  setTimeout(()=>{
+    lineEl.scrollIntoView({behavior:'smooth',block:'center'});
+  },100);
+
+  if(isRaised){
+    doGlitch(250);
+    const ticker=$('signal-ticker');
+    if(ticker){ticker.textContent='LINK: UNSTABLE';ticker.classList.add('unstable');}
+  }
+
+  // Typing cursor
+  const cursor=document.createElement('span');
+  cursor.className='t-cursor';
+  dialogueEl.appendChild(cursor);
+
+  let i=0;
+  function typeChar(){
+    if(i>=fullText.length){
+      cursor.remove();
+      transcriptIdx++;
+      // Short pause between speaker turns, just enough to register
+      // the line ended before the next one starts, not a long hold.
+      setTimeout(typeNextTranscriptLine,900);
+      return;
+    }
+    dialogueEl.insertBefore(document.createTextNode(fullText[i]),cursor);
+    i++;
+    const ch=fullText[i-1];
+    // ~10% slower than before on every character, punctuation included.
+    const d=ch==='.'?187:ch===','?121:ch==='?'?187:ch===' '?37:46;
+    setTimeout(typeChar,d);
+  }
+  typeChar();
 }
 
 $('isis-proceed-btn').addEventListener('click',()=>{
@@ -1240,9 +1880,16 @@ $('isis-proceed-btn').addEventListener('click',()=>{
    MAP — LEG 2 (reroute after ISIS unlock)
 ════════════════════════════════════════════════════════════ */
 function showLeg2(){
+  // state-map was hidden when the breach success / ISIS sequence
+  // took over. Bring it back before updating its contents below.
+  showEl('state-map','flex');
+
   // Update headers
-  $('map-eyebrow').textContent='CLASSIFIED GRID LAYOUT — ROUTE BETA — REROUTED';
-  $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE STORAGE ROOM';
+  $('map-eyebrow').textContent='CLASSIFIED GRID LAYOUT · ROUTE BETA · REROUTED';
+  $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE ARCHIVE SECTOR';
+
+  // Equipment reminder no longer needed, he's already geared up.
+  $('uv-reminder').classList.remove('on');
 
   // Hide password prompt — no longer needed
   $('pw-block').style.display='none';
@@ -1253,7 +1900,7 @@ function showLeg2(){
     if(el){el.style.transition='fill .8s ease';el.style.fill='rgba(255,140,0,0.85)';}
   });
   const sub=document.getElementById('rl-storage-sub');
-  if(sub){sub.style.fill='rgba(255,140,0,0.55)';sub.textContent='RETRIEVE PACKAGE';}
+  if(sub){sub.style.fill='rgba(255,140,0,0.55)';sub.textContent='ARCHIVE SECTOR';}
 
   // Fade out leg 1 paths + flow
   ['la1a','la1ag','la1b','la1bg','la2','la2g','la3','la3g','la4','la4g','la5','la5g','la-flow','dest-a','dest-a-pulse','briefcase-marker'].forEach(id=>{
@@ -1300,8 +1947,27 @@ function showLeg2(){
 $('map-proceed-btn').addEventListener('click',()=>{
   playClick();
   stopLightcycle();
-  doFlash(showFinalMessage);
+  // Fade out EndofLine immediately on click
+  fadeOutBg(900);
+  // Short dramatic pause, then flash into the final page
+  setTimeout(()=>{
+    doFlash(showFinalMessage);
+  },1000);
 });
+
+// Reusable background fade-out (used before final page opens)
+function fadeOutBg(durationMs){
+  const bg=$('audio-bg');
+  const startVol=bg.volume||0.18;
+  const steps=18;
+  const stepTime=durationMs/steps;
+  let s=0;
+  const fade=setInterval(()=>{
+    s++;
+    bg.volume=Math.max(0,startVol*(1-s/steps));
+    if(s>=steps){clearInterval(fade);bg.pause();bg.volume=0;}
+  },stepTime);
+}
 
 function flashRoomOrange(id){
   const el=document.getElementById(id);
@@ -1396,28 +2062,16 @@ function showFinalMessage(){
   showEl('state-message');
   drawHexGrid();
 
-  // Music crossfade: fade out EndofLine quickly, then start EndTitles
+  // EndofLine was already faded out by the proceed button click.
+  // Start EndTitles fresh and ramp it in smoothly.
   const bg=$('audio-bg');
+  bg.pause(); bg.volume=0;
   const end=$('audio-end');
-  // Hard stop bg immediately on mobile (volume ramp unreliable)
-  const startVol=bg.volume||0.18;
-  let steps=0;
-  const totalSteps=20;
-  const fadeOut=setInterval(()=>{
-    steps++;
-    bg.volume=Math.max(0, startVol*(1-steps/totalSteps));
-    if(steps>=totalSteps){
-      clearInterval(fadeOut);
-      bg.pause();
-      bg.volume=0;
-    }
-  },50); // 50ms × 20 steps = 1 second fade
-  // Start EndTitles immediately at low vol and ramp up
   end.volume=0;
   end.play().catch(()=>{});
   let evol=0;
   const fadeIn=setInterval(()=>{
-    evol=Math.min(0.22,evol+0.011);
+    evol=Math.min(0.22,evol+0.014);
     end.volume=evol;
     if(evol>=0.22)clearInterval(fadeIn);
   },50);
@@ -1435,9 +2089,9 @@ function showFinalMessage(){
   // Divider 1 expands
   setTimeout(()=>$('msg-div1').classList.add('on'),700);
 
-  // Staggered line reveals
-  const lineIds=['ml1','ml2','ml3','ml4','ml5'];
-  const lineDelays=[1000,1600,2200,3000,3900];
+  // Staggered line reveals (opening status lines through the highlight)
+  const lineIds=['ml1','ml2','ml3','ml4'];
+  const lineDelays=[1000,1700,2400,3600];
   lineIds.forEach((id,i)=>{
     setTimeout(()=>{
       const el=$(id);
@@ -1445,16 +2099,20 @@ function showFinalMessage(){
     },lineDelays[i]);
   });
 
-  // Divider 2
-  setTimeout(()=>$('msg-div2').classList.add('on'),4800);
+  // Inside joke line, framed as a data confirmation
+  setTimeout(()=>$('ml-joke').classList.add('on'),4500);
 
-  // Birthday + end of line
-  setTimeout(()=>$('ml6').classList.add('on'),5400);
-  setTimeout(()=>$('ml7').classList.add('on'),6200);
+  // Divider 2
+  setTimeout(()=>$('msg-div2').classList.add('on'),5400);
+
+  // System update line, then birthday, then end of line
+  setTimeout(()=>$('ml5').classList.add('on'),6000);
+  setTimeout(()=>$('ml6').classList.add('on'),6800);
+  setTimeout(()=>$('ml7').classList.add('on'),7600);
 
   // Footer and sig
-  setTimeout(()=>$('msg-footer').classList.add('on'),7000);
-  setTimeout(()=>$('msg-sig').classList.add('on'),7600);
+  setTimeout(()=>$('msg-footer').classList.add('on'),8400);
+  setTimeout(()=>$('msg-sig').classList.add('on'),9000);
 }
 </script>
 </body>
