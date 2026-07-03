@@ -26,15 +26,66 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 @keyframes slideup   {from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
 /* ── GLOBAL CHROME ──────────────────────────────────────────── */
-#scanline{position:fixed;top:0;left:0;right:0;height:2px;background:rgba(0,229,255,.1);animation:scan 7s linear infinite;pointer-events:none;z-index:50;}
+/* CRT scanline — heavier, more visible */
+#scanline{
+  position:fixed;top:0;left:0;right:0;height:3px;
+  background:linear-gradient(180deg,rgba(0,229,255,.15),rgba(0,229,255,.06));
+  animation:scan 6s linear infinite;
+  pointer-events:none;z-index:50;
+  box-shadow:0 0 8px rgba(0,229,255,.2);
+}
+/* CRT interlace — static subtle horizontal line pattern over everything */
+#crt-lines{
+  position:fixed;inset:0;pointer-events:none;z-index:49;
+  background-image:repeating-linear-gradient(
+    0deg,transparent,transparent 2px,
+    rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 4px
+  );
+}
+/* Vignette — darkens edges like a real monitor */
+#vignette{
+  position:fixed;inset:0;pointer-events:none;z-index:48;
+  background:radial-gradient(ellipse at center,transparent 55%,rgba(0,0,0,.75) 100%);
+}
 #gridlines{position:fixed;inset:0;background-image:linear-gradient(rgba(0,229,255,.03) 1px,transparent 1px),linear-gradient(90deg,rgba(0,229,255,.03) 1px,transparent 1px);background-size:40px 40px;pointer-events:none;z-index:0;animation:hflicker 8s step-end infinite;}
-#encom-hud{position:fixed;top:14px;left:18px;font-size:10px;letter-spacing:.35em;color:rgba(0,229,255,.55);text-transform:uppercase;z-index:10;}
-#clock-hud{position:fixed;top:14px;right:18px;font-size:10px;letter-spacing:.2em;color:rgba(0,229,255,.55);z-index:10;}
+#encom-hud{position:fixed;top:14px;left:18px;font-size:10px;letter-spacing:.35em;color:rgba(0,229,255,.65);text-transform:uppercase;z-index:10;text-shadow:0 0 8px rgba(0,229,255,.4);}
+#clock-hud{position:fixed;top:14px;right:18px;font-size:10px;letter-spacing:.2em;color:rgba(0,229,255,.65);z-index:10;text-shadow:0 0 8px rgba(0,229,255,.4);}
+
+/* Telemetry footer bar — always visible, adds ambient authenticity */
+#telemetry-bar{
+  position:fixed;bottom:0;left:0;right:0;height:22px;
+  border-top:1px solid rgba(0,229,255,.12);
+  background:rgba(0,0,0,.4);
+  display:flex;align-items:center;
+  padding:0 18px;gap:clamp(8px,2vw,24px);
+  z-index:10;pointer-events:none;
+}
+.tel-item{
+  font-size:8px;letter-spacing:.2em;
+  color:rgba(0,229,255,.3);text-transform:uppercase;
+  display:flex;align-items:center;gap:5px;white-space:nowrap;
+}
+.tel-dot{
+  width:5px;height:5px;border-radius:50%;
+  background:#00e5ff;opacity:.5;
+  animation:pulse 2.5s ease-in-out infinite;
+}
+.tel-dot.active{background:#00ff88;opacity:.8;animation:pulse 1.2s ease-in-out infinite;}
+.tel-spacer{flex:1;}
+
+/* Signal bars */
+.sig-bars{display:flex;gap:2px;align-items:flex-end;height:10px;}
+.sig-bar{width:3px;background:rgba(0,229,255,.35);border-radius:1px;}
+.sig-bar:nth-child(1){height:3px;}
+.sig-bar:nth-child(2){height:5px;}
+.sig-bar:nth-child(3){height:7px;}
+.sig-bar:nth-child(4){height:9px;background:rgba(0,229,255,.6);}
+
 .corner{position:fixed;width:28px;height:28px;z-index:10;}
-#c-tl{top:0;left:0;border-top:1px solid rgba(0,229,255,.5);border-left:1px solid rgba(0,229,255,.5);}
-#c-tr{top:0;right:0;border-top:1px solid rgba(0,229,255,.5);border-right:1px solid rgba(0,229,255,.5);}
-#c-bl{bottom:0;left:0;border-bottom:1px solid rgba(0,229,255,.5);border-left:1px solid rgba(0,229,255,.5);}
-#c-br{bottom:0;right:0;border-bottom:1px solid rgba(0,229,255,.5);border-right:1px solid rgba(0,229,255,.5);}
+#c-tl{top:0;left:0;border-top:1px solid rgba(0,229,255,.6);border-left:1px solid rgba(0,229,255,.6);}
+#c-tr{top:0;right:0;border-top:1px solid rgba(0,229,255,.6);border-right:1px solid rgba(0,229,255,.6);}
+#c-bl{bottom:0;left:0;border-bottom:1px solid rgba(0,229,255,.6);border-left:1px solid rgba(0,229,255,.6);}
+#c-br{bottom:0;right:0;border-bottom:1px solid rgba(0,229,255,.6);border-right:1px solid rgba(0,229,255,.6);}
 
 /* ── FLASH OVERLAYS ─────────────────────────────────────────── */
 #flash    {position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
@@ -73,15 +124,20 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 /* center card */
 .gw-card{
   display:flex;flex-direction:column;align-items:center;
-  border:1px solid rgba(0,229,255,.2);
+  border:1px solid rgba(0,229,255,.25);
   padding:clamp(32px,5vw,52px) clamp(28px,5vw,52px);
-  background:rgba(0,229,255,.02);
+  background:rgba(0,229,255,.025);
   min-width:clamp(280px,60vw,420px);
   position:relative;
+  box-shadow:
+    0 0 60px rgba(0,229,255,.08),
+    0 0 120px rgba(0,229,255,.04),
+    inset 0 0 40px rgba(0,229,255,.03);
 }
+/* Subtle inner top highlight — makes the card feel lit from within */
 .gw-card::before,.gw-card::after{
   content:'';position:absolute;width:16px;height:16px;
-  border-color:rgba(0,229,255,.4);border-style:solid;
+  border-color:rgba(0,229,255,.5);border-style:solid;
 }
 .gw-card::before{top:-1px;left:-1px;border-width:1px 0 0 1px;}
 .gw-card::after {bottom:-1px;right:-1px;border-width:0 1px 1px 0;}
@@ -90,36 +146,40 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   font-size:clamp(8px,1.2vw,9px);letter-spacing:.55em;
   color:rgba(0,229,255,.4);text-transform:uppercase;margin-bottom:28px;
 }
-.gw-logo{width:72px;height:72px;margin:0 auto 20px;}
+.gw-logo{width:82px;height:82px;margin:0 auto 22px;filter:drop-shadow(0 0 12px rgba(0,229,255,.6)) drop-shadow(0 0 28px rgba(0,229,255,.25));}
 .gw-logo svg{width:100%;height:100%;}
 .gw-company{
   font-size:clamp(16px,3vw,22px);letter-spacing:.35em;
   color:#00e5ff;text-transform:uppercase;margin-bottom:4px;
-  text-shadow:0 0 14px rgba(0,229,255,.6);font-weight:bold;
-  text-align:center;
+  text-shadow:0 0 18px rgba(0,229,255,.8),0 0 40px rgba(0,229,255,.3);
+  font-weight:bold;text-align:center;
 }
 .gw-division{
   font-size:clamp(9px,1.3vw,11px);letter-spacing:.3em;
-  color:rgba(0,229,255,.5);text-transform:uppercase;margin-bottom:28px;
+  color:rgba(0,229,255,.55);text-transform:uppercase;margin-bottom:28px;
   text-align:center;
 }
-.gw-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.3),transparent);margin-bottom:28px;}
+.gw-divider{width:100%;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.4),transparent);margin-bottom:28px;}
 .gw-scan-label{
   font-size:clamp(9px,1.3vw,10px);letter-spacing:.35em;
-  color:rgba(0,229,255,.45);text-transform:uppercase;margin-bottom:16px;
+  color:rgba(0,229,255,.5);text-transform:uppercase;margin-bottom:16px;
   text-align:center;
 }
 #gw-btn{
   font-family:'Courier New',monospace;
   font-size:clamp(12px,2vw,14px);letter-spacing:.3em;
-  color:#00e5ff;text-transform:uppercase;background:transparent;
-  border:1px solid rgba(0,229,255,.5);padding:14px 32px;cursor:pointer;
-  text-shadow:0 0 12px rgba(0,229,255,.8);
-  box-shadow:0 0 18px rgba(0,229,255,.08);
+  color:#00e5ff;text-transform:uppercase;background:rgba(0,229,255,.04);
+  border:1px solid rgba(0,229,255,.6);padding:14px 32px;cursor:pointer;
+  text-shadow:0 0 14px rgba(0,229,255,.9);
+  box-shadow:0 0 24px rgba(0,229,255,.12),inset 0 0 16px rgba(0,229,255,.04);
   animation:pulse 2s ease-in-out infinite;
-  transition:box-shadow .2s,border-color .2s;width:100%;
+  transition:box-shadow .2s,border-color .2s,background .2s;width:100%;
 }
-#gw-btn:hover{border-color:#00e5ff;box-shadow:0 0 32px rgba(0,229,255,.35);}
+#gw-btn:hover{
+  border-color:#00e5ff;
+  background:rgba(0,229,255,.08);
+  box-shadow:0 0 40px rgba(0,229,255,.35),inset 0 0 20px rgba(0,229,255,.06);
+}
 .gw-sub{
   font-size:clamp(8px,1.2vw,9px);letter-spacing:.22em;
   color:rgba(0,229,255,.3);margin-top:16px;text-transform:uppercase;
@@ -145,15 +205,41 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 .boot-bar-label{font-size:clamp(9px,1.3vw,10px);letter-spacing:.28em;color:rgba(0,229,255,.55);text-transform:uppercase;margin-top:9px;text-align:center;opacity:0;transition:opacity .3s ease .1s;}
 
 /* ── STATE: TERMINAL ────────────────────────────────────────── */
-#state-terminal{position:fixed;inset:0;z-index:90;display:none;flex-direction:column;justify-content:flex-end;padding:clamp(24px,5vw,52px) clamp(20px,5vw,52px) clamp(32px,6vw,60px);}
-#terminal-scroll{position:relative;overflow:hidden;max-height:calc(100vh - 110px);display:flex;flex-direction:column;justify-content:flex-end;}
-#terminal{font-size:clamp(13px,2.1vw,15px);line-height:2.15;color:#00e5ff;text-shadow:0 0 6px rgba(0,229,255,.45);white-space:pre-wrap;max-width:720px;}
+#state-terminal{
+  position:fixed;inset:0;z-index:90;display:none;flex-direction:column;justify-content:flex-end;
+  padding:clamp(24px,5vw,52px) clamp(20px,5vw,52px) clamp(32px,6vw,60px);
+}
+/* Gradient fog at top — text seems to emerge from darkness */
+#state-terminal::before{
+  content:'';position:absolute;top:0;left:0;right:0;height:45%;
+  background:linear-gradient(180deg,rgba(0,0,0,.95) 0%,transparent 100%);
+  pointer-events:none;z-index:1;
+}
+/* Left gutter accent */
+#state-terminal::after{
+  content:'';position:absolute;left:clamp(12px,3vw,28px);top:10%;bottom:10%;
+  width:1px;background:linear-gradient(180deg,transparent,rgba(0,229,255,.2),transparent);
+  pointer-events:none;z-index:1;
+}
+#terminal-scroll{position:relative;overflow:hidden;max-height:calc(100vh - 110px);display:flex;flex-direction:column;justify-content:flex-end;z-index:2;}
+#terminal{font-size:clamp(13px,2.1vw,15px);line-height:2.15;color:#00e5ff;text-shadow:0 0 8px rgba(0,229,255,.5);white-space:pre-wrap;max-width:720px;}
 /* Glitch ghost layers */
 #terminal-g1,#terminal-g2{position:absolute;left:0;bottom:0;font-size:clamp(13px,2.1vw,15px);line-height:2.15;white-space:pre-wrap;max-width:720px;pointer-events:none;opacity:0;}
 #terminal-g1{color:rgba(0,229,255,.35);transform:translateX(-3px);animation:glitch1 .18s step-end infinite;}
 #terminal-g2{color:rgba(255,0,80,.25);transform:translateX(3px);animation:glitch2 .18s step-end infinite;}
-.cur{display:inline-block;width:8px;height:.9em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 6px #00e5ff;}
-#track-btn{display:none;margin-top:26px;font-family:'Courier New',monospace;font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;color:#00e5ff;text-transform:uppercase;background:transparent;border:1px solid rgba(0,229,255,.5);padding:13px 28px;cursor:pointer;width:fit-content;text-shadow:0 0 10px rgba(0,229,255,.7);animation:pulse 1.8s ease-in-out infinite;}
+.cur{display:inline-block;width:8px;height:.9em;background:#00e5ff;vertical-align:middle;margin-left:2px;animation:blink .75s step-end infinite;box-shadow:0 0 8px #00e5ff;}
+#track-btn{
+  display:none;margin-top:26px;
+  font-family:'Courier New',monospace;
+  font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;
+  color:#00e5ff;text-transform:uppercase;background:rgba(0,229,255,.04);
+  border:1px solid rgba(0,229,255,.5);padding:13px 28px;cursor:pointer;
+  width:fit-content;
+  text-shadow:0 0 10px rgba(0,229,255,.7);
+  box-shadow:0 0 20px rgba(0,229,255,.1),inset 0 0 12px rgba(0,229,255,.03);
+  animation:pulse 1.8s ease-in-out infinite;
+  z-index:2;position:relative;
+}
 
 /* ── THEATRICAL BREACH SEQUENCE ──────────────────────────────── */
 @keyframes screenShake{
@@ -284,9 +370,15 @@ body.shaking{animation:screenShake .45s linear;}
 }
 
 /* ── STATE: MAP ─────────────────────────────────────────────── */
-#state-map{position:fixed;inset:0;z-index:80;display:none;flex-direction:column;align-items:center;justify-content:flex-start;padding:clamp(34px,5vh,50px) clamp(12px,3vw,24px) clamp(80px,16vh,140px);overflow-y:auto;}
-.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.75);text-transform:uppercase;margin-bottom:5px;text-align:center;}
-.map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 10px rgba(0,229,255,.55);}
+#state-map{
+  position:fixed;inset:0;z-index:80;display:none;flex-direction:column;
+  align-items:center;justify-content:flex-start;
+  padding:clamp(34px,5vh,50px) clamp(12px,3vw,24px) clamp(80px,16vh,140px);
+  overflow-y:auto;
+  background:radial-gradient(ellipse at 50% 40%,rgba(0,229,255,.03) 0%,transparent 70%);
+}
+.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.7);text-transform:uppercase;margin-bottom:5px;text-align:center;}
+.map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 14px rgba(0,229,255,.8),0 0 30px rgba(0,229,255,.3);}
 
 /* UV LIGHT REMINDER — hard to miss, sits right under the map title */
 @keyframes uvpulse{0%,100%{box-shadow:0 0 14px rgba(255,140,0,.35),inset 0 0 14px rgba(255,140,0,.08);border-color:rgba(255,140,0,.5);}50%{box-shadow:0 0 28px rgba(255,140,0,.65),inset 0 0 24px rgba(255,140,0,.16);border-color:rgba(255,140,0,.85);}}
@@ -344,7 +436,7 @@ body.shaking{animation:screenShake .45s linear;}
 #isis-screen{
   position:fixed;inset:0;z-index:600;display:none;
   flex-direction:column;align-items:center;justify-content:flex-start;
-  background:#000;
+  background:radial-gradient(ellipse at 50% 30%,rgba(255,100,0,.06) 0%,rgba(0,0,0,1) 65%);
   overflow-y:auto;
   padding:clamp(24px,5vh,48px) clamp(16px,4vw,32px) clamp(80px,16vh,140px);
   animation:isisborder 2.5s ease-in-out infinite;
@@ -554,8 +646,6 @@ body.shaking{animation:screenShake .45s linear;}
   animation:gwscan 3.5s ease-in-out infinite alternate;
   pointer-events:none;
 }
-/* ── FINAL PAGE HEX CANVAS ───────────────────────────────────── */
-#msg-hex-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.07;}
 /* ── ISIS ENHANCED ───────────────────────────────────────────── */
 .isis-inner{display:flex;flex-direction:column;align-items:center;gap:0;animation:isisfade .6s ease forwards;width:100%;max-width:440px;padding:0 24px;}
 .isis-msg{
@@ -570,30 +660,38 @@ body.shaking{animation:screenShake .45s linear;}
 }
 @keyframes revealLine  {from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes discSpin    {from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
-@keyframes discPulse   {0%,100%{filter:drop-shadow(0 0 8px #00e5ff) drop-shadow(0 0 20px rgba(0,229,255,.4))}50%{filter:drop-shadow(0 0 18px #00e5ff) drop-shadow(0 0 50px rgba(0,229,255,.8))}}
+@keyframes discPulse{
+  0%,100%{filter:drop-shadow(0 0 6px #00e5ff) drop-shadow(0 0 18px rgba(0,229,255,.5)) drop-shadow(0 0 40px rgba(0,229,255,.2));}
+  50%{filter:drop-shadow(0 0 16px #00e5ff) drop-shadow(0 0 40px rgba(0,229,255,.9)) drop-shadow(0 0 80px rgba(0,229,255,.4));}
+}
 @keyframes particleFly {0%{opacity:1;transform:translate(0,0) scale(1)}100%{opacity:0;transform:translate(var(--tx),var(--ty)) scale(0)}}
 @keyframes sigAppear   {from{opacity:0;letter-spacing:.05em}to{opacity:1;letter-spacing:.18em}}
 @keyframes borderPulse {0%,100%{opacity:.35}50%{opacity:.7}}
+@keyframes scanDisc    {0%{transform:translateY(-70px);opacity:0}20%{opacity:.6}80%{opacity:.6}100%{transform:translateY(70px);opacity:0}}
+@keyframes stampScale  {0%{opacity:0;transform:scale(1.3)}60%{opacity:1;transform:scale(.96)}100%{opacity:1;transform:scale(1)}}
 
 #state-message{
   position:fixed;inset:0;z-index:70;display:none;
   flex-direction:column;align-items:center;justify-content:flex-start;
-  padding:clamp(32px,6vh,56px) clamp(20px,4vw,48px) clamp(48px,8vh,80px);
+  padding:clamp(28px,5vh,48px) clamp(16px,4vw,40px) clamp(60px,12vh,120px);
   text-align:center;
   overflow-y:auto;
+  background:radial-gradient(ellipse at 50% 25%,rgba(0,229,255,.07) 0%,transparent 60%);
 }
 
 /* Particle canvas behind everything */
 #msg-particles{position:absolute;inset:0;pointer-events:none;z-index:0;}
+/* Hex grid — slightly more visible for atmosphere */
+#msg-hex-canvas{position:absolute;inset:0;pointer-events:none;z-index:0;opacity:.1;}
 
-/* Animated border frame — fixed to viewport, not the scroll content */
+/* Animated border frame — fixed to viewport */
 #msg-frame{
   position:fixed;inset:clamp(12px,2vw,24px);
   border:1px solid rgba(0,229,255,0);
   pointer-events:none;z-index:71;
   transition:border-color 2s ease 0.5s;
 }
-#msg-frame.on{border-color:rgba(0,229,255,.2);}
+#msg-frame.on{border-color:rgba(0,229,255,.18);}
 #msg-frame::before,#msg-frame::after{
   content:'';position:absolute;
   width:clamp(24px,4vw,40px);height:clamp(24px,4vw,40px);
@@ -615,81 +713,140 @@ body.shaking{animation:screenShake .45s linear;}
 #msg-frame.on .msg-frame-corner-bl{opacity:.8;}
 
 /* Content wrapper */
-#msg-content{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;max-width:560px;width:100%;}
+#msg-content{
+  position:relative;z-index:2;
+  display:flex;flex-direction:column;align-items:center;
+  max-width:540px;width:100%;
+  gap:0;
+}
 
-/* Identity Disc SVG */
-#disc-wrap{width:clamp(90px,18vw,130px);height:clamp(90px,18vw,130px);margin-bottom:clamp(24px,4vw,36px);opacity:0;transition:opacity 1s ease;}
+/* ── DISC — larger, more centrepiece ───────────────────────── */
+#disc-wrap{
+  position:relative;
+  width:clamp(120px,26vw,170px);height:clamp(120px,26vw,170px);
+  margin-bottom:clamp(20px,3.5vw,32px);
+  opacity:0;transition:opacity 1s ease;
+}
 #disc-wrap svg{width:100%;height:100%;display:block;overflow:visible;}
 #disc-wrap.on{opacity:1;}
 #disc-outer-ring{transform-origin:65px 65px;animation:discSpin 12s linear infinite;}
 #disc-inner-ring{transform-origin:65px 65px;animation:discSpin 8s linear infinite reverse;}
 #disc-wrap.on svg{animation:discPulse 3s ease-in-out infinite;}
 
-/* Divider line */
-.msg-divider{width:0;height:1px;background:linear-gradient(90deg,transparent,rgba(0,229,255,.6),transparent);margin:0 auto clamp(20px,3vw,30px);transition:width 1.2s ease;}
-.msg-divider.on{width:min(320px,80vw);}
+/* Scanning line that sweeps over the disc after it appears */
+#disc-scan{
+  position:absolute;
+  left:0;right:0;height:1px;top:50%;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.8),transparent);
+  box-shadow:0 0 8px rgba(0,229,255,.5);
+  opacity:0;pointer-events:none;
+}
+#disc-scan.on{animation:scanDisc 1.8s ease-in-out .8s 2 forwards;}
 
-/* Text lines — each reveals individually */
+/* ── DIVIDER ─────────────────────────────────────────────── */
+.msg-divider{
+  width:0;height:1px;
+  background:linear-gradient(90deg,transparent,rgba(0,229,255,.5),transparent);
+  margin:clamp(16px,2.5vw,24px) auto;
+  transition:width 1.2s ease;
+}
+.msg-divider.on{width:min(300px,75vw);}
+
+/* ── NARRATIVE LINE — main body text ─────────────────────── */
 .msg-line{
-  font-size:clamp(13px,2.1vw,16px);color:#00e5ff;
-  letter-spacing:.06em;line-height:2.3;
-  opacity:0;
+  font-size:clamp(13px,2.1vw,15px);
+  color:rgba(0,229,255,.85);
+  letter-spacing:.04em;line-height:2.0;
+  opacity:0;max-width:460px;
+  padding:0 clamp(8px,2vw,16px);
 }
-.msg-line.on{animation:revealLine .7s ease forwards;}
+.msg-line.on{animation:revealLine .8s ease forwards;}
 
-/* Inside-joke line — playful emphasis, distinct from the rest */
-@keyframes jokeglow{0%,100%{text-shadow:0 0 10px rgba(0,229,255,.6)}50%{text-shadow:0 0 22px rgba(0,229,255,1),0 0 40px rgba(0,229,255,.5)}}
-.msg-joke{
-  font-size:clamp(13px,2.3vw,17px);color:#00e5ff;
-  letter-spacing:.05em;line-height:1.8;font-style:italic;
-  margin-top:clamp(10px,2vw,16px);
-  opacity:0;
-}
-.msg-joke.on{animation:revealLine .7s ease forwards,jokeglow 2.4s ease-in-out .8s infinite;}
-
-/* The directional highlight */
+/* ── MISSION DIRECTIVE — the highlight ───────────────────── */
 .msg-highlight{
   display:block;
-  font-size:clamp(15px,2.8vw,22px);letter-spacing:.28em;
+  font-size:clamp(12px,2.2vw,16px);
+  letter-spacing:.3em;
   text-transform:uppercase;color:#00e5ff;
-  text-shadow:0 0 22px rgba(0,229,255,1),0 0 50px rgba(0,229,255,.5);
-  margin:clamp(16px,3vw,26px) 0;
+  text-shadow:0 0 18px rgba(0,229,255,.9),0 0 40px rgba(0,229,255,.4);
+  margin:clamp(18px,3vw,28px) 0 clamp(6px,1.5vw,12px);
+  padding:clamp(10px,1.8vw,16px) clamp(20px,4vw,36px);
+  border:1px solid rgba(0,229,255,.3);
+  border-left:3px solid #00e5ff;
+  background:rgba(0,229,255,.04);
+  text-align:left;width:100%;box-sizing:border-box;
   opacity:0;
 }
 .msg-highlight.on{animation:revealLine .8s ease forwards;}
 
-/* Birthday line — larger */
-.msg-bday{
-  font-size:clamp(17px,3vw,24px);color:#00e5ff;
-  letter-spacing:.12em;
-  text-shadow:0 0 14px rgba(0,229,255,.7);
-  opacity:0;margin-top:clamp(14px,2.5vw,22px);
+/* ── JOKE LINE — personal beat, italic and distinct ─────── */
+@keyframes jokeglow{
+  0%,100%{text-shadow:0 0 8px rgba(0,229,255,.5)}
+  50%{text-shadow:0 0 18px rgba(0,229,255,.95),0 0 35px rgba(0,229,255,.4)}
 }
-.msg-bday.on{animation:revealLine .8s ease forwards;}
+.msg-joke{
+  font-size:clamp(12px,2vw,14px);
+  color:rgba(0,229,255,.7);
+  letter-spacing:.06em;line-height:1.8;
+  font-style:italic;
+  margin:clamp(8px,1.5vw,14px) 0;
+  opacity:0;
+}
+.msg-joke.on{animation:revealLine .7s ease forwards,jokeglow 2.8s ease-in-out .8s infinite;}
 
-/* End of line */
+/* ── BIRTHDAY CLOSING ZONE — visually heavier ────────────── */
+.msg-closing{
+  display:flex;flex-direction:column;align-items:center;
+  margin-top:clamp(18px,3vw,28px);
+  width:100%;
+}
+
+/* Birthday line — the emotional peak, bigger and brighter */
+.msg-bday{
+  font-size:clamp(18px,3.8vw,28px);
+  color:#00e5ff;
+  letter-spacing:.14em;font-weight:bold;
+  text-shadow:0 0 18px rgba(0,229,255,.8),0 0 40px rgba(0,229,255,.35);
+  opacity:0;margin-bottom:clamp(6px,1.2vw,10px);
+}
+.msg-bday.on{animation:revealLine .9s ease forwards;}
+
+/* End of line — small, spaced, atmospheric */
 .msg-eol{
-  font-size:clamp(10px,1.5vw,13px);letter-spacing:.4em;
-  color:rgba(0,229,255,.45);text-transform:uppercase;
-  opacity:0;margin-top:8px;
+  font-size:clamp(9px,1.4vw,11px);
+  letter-spacing:.5em;
+  color:rgba(0,229,255,.35);
+  text-transform:uppercase;
+  opacity:0;margin-bottom:clamp(16px,3vw,24px);
 }
 .msg-eol.on{animation:revealLine .6s ease forwards;}
 
-/* Footer */
+/* Signature — stamp-style, distinct from everything else */
+.msg-sig-wrap{
+  display:flex;flex-direction:column;align-items:center;gap:6px;
+  opacity:0;
+}
+.msg-sig-wrap.on{animation:stampScale .8s ease forwards;}
+.msg-sig-rule{
+  width:clamp(40px,8vw,60px);height:1px;
+  background:rgba(0,229,255,.3);
+  margin:0 auto;
+}
+#msg-sig{
+  font-size:clamp(13px,2.2vw,17px);
+  color:rgba(0,229,255,.7);
+  letter-spacing:.08em;
+  font-style:italic;
+}
+
+/* Footer — barely-there watermark */
 .msg-footer{
-  font-size:clamp(8px,1.2vw,10px);letter-spacing:.22em;
-  color:rgba(0,229,255,.2);margin-top:clamp(20px,4vw,36px);
+  font-size:clamp(7px,1.1vw,9px);letter-spacing:.25em;
+  color:rgba(0,229,255,.18);
+  margin-top:clamp(24px,4vw,36px);
   text-transform:uppercase;opacity:0;transition:opacity 1.5s ease;
 }
 .msg-footer.on{opacity:1;}
-
-/* Signature */
-#msg-sig{
-  font-size:clamp(13px,2vw,16px);color:rgba(0,229,255,.65);
-  letter-spacing:.05em;margin-top:8px;font-style:italic;
-  opacity:0;
-}
-#msg-sig.on{animation:sigAppear 1.2s ease forwards;}
 
 /* ════════════════════════════════════════════════════════════
    MOBILE OPTIMISATION — tuned for phone-class screens
@@ -698,6 +855,9 @@ body.shaking{animation:screenShake .45s linear;}
 @media (max-width: 600px){
   /* Tighter global chrome so it doesn't eat screen real estate */
   #encom-hud,#clock-hud{font-size:8px;}
+  #telemetry-bar{padding:0 10px;gap:6px;}
+  .tel-item{font-size:7px;letter-spacing:.12em;}
+  #telemetry-bar .tel-item:nth-child(3){display:none;} /* hide sector on mobile */
   .corner{width:20px;height:20px;}
 
   /* Gateway — bigger touch target, readable labels */
@@ -751,14 +911,15 @@ body.shaking{animation:screenShake .45s linear;}
   .isis-inner{padding:0 16px;}
 
   /* Final reveal page — must read clearly and feel grand on a phone */
-  #disc-wrap{width:100px;height:100px;margin-bottom:24px;}
-  .msg-line{font-size:15px;line-height:2.1;}
-  .msg-highlight{font-size:16px;letter-spacing:.18em;}
-  .msg-joke{font-size:15px;}
-  .msg-bday{font-size:19px;}
-  .msg-eol{font-size:11px;}
-  .msg-footer{font-size:8px;}
+  #disc-wrap{width:130px;height:130px;margin-bottom:20px;}
+  .msg-line{font-size:14px;line-height:1.95;padding:0 8px;}
+  .msg-highlight{font-size:12px;letter-spacing:.2em;padding:10px 14px;}
+  .msg-joke{font-size:12px;}
+  .msg-bday{font-size:20px;letter-spacing:.1em;}
+  .msg-eol{font-size:10px;letter-spacing:.35em;}
+  .msg-footer{font-size:7px;}
   #msg-sig{font-size:14px;}
+  .msg-sig-wrap{gap:4px;}
   #msg-content{max-width:94vw;}
 
   /* Breach success screen — keep the stamp readable and contained */
@@ -778,6 +939,8 @@ body.shaking{animation:screenShake .45s linear;}
 <body>
 
 <!-- ── CHROME ─────────────────────────────────────────────────── -->
+<div id="crt-lines"></div>
+<div id="vignette"></div>
 <div id="gridlines"></div>
 <div id="scanline"></div>
 <div class="corner" id="c-tl"></div><div class="corner" id="c-tr"></div>
@@ -789,6 +952,22 @@ body.shaking{animation:screenShake .45s linear;}
 <div id="flash-green"></div>
 <div id="glitch-a"></div>
 <div id="glitch-b"></div>
+
+<!-- Telemetry footer bar — always visible, ambient authenticity -->
+<div id="telemetry-bar">
+  <div class="tel-item"><span class="tel-dot active"></span>SESSION ACTIVE</div>
+  <div class="tel-item">
+    <span class="sig-bars">
+      <span class="sig-bar"></span><span class="sig-bar"></span>
+      <span class="sig-bar"></span><span class="sig-bar"></span>
+    </span>
+    SIGNAL STRONG
+  </div>
+  <div class="tel-item">GRID SECTOR: 0-ALPHA</div>
+  <div class="tel-spacer"></div>
+  <div class="tel-item" id="tel-session">SESSION: EC-777-X</div>
+  <div class="tel-item"><span class="tel-dot"></span>ENCOM INTL</div>
+</div>
 
 <!-- ── AUDIO ──────────────────────────────────────────────────── -->
 <audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
@@ -971,10 +1150,11 @@ body.shaking{animation:screenShake .45s linear;}
       <filter id="glow"  x="-60%" y="-60%" width="220%" height="220%"><feGaussianBlur stdDeviation="3.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       <filter id="glow2" x="-40%" y="-40%" width="180%" height="180%"><feGaussianBlur stdDeviation="2"   result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
       <filter id="glowsm" x="-30%" y="-30%" width="160%" height="160%"><feGaussianBlur stdDeviation="1.2" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+      <filter id="glowborder" x="-5%" y="-5%" width="110%" height="110%"><feGaussianBlur stdDeviation="2.5" result="b"/><feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
     </defs>
 
     <!-- ── LEVEL 0 ─────────────────────────────────────── -->
-    <rect x="8"  y="8"   width="664" height="355" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5"/>
+    <rect x="8"  y="8"   width="664" height="355" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
     <rect x="12" y="12"  width="656" height="347" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
     <rect x="8"  y="8"   width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
     <text x="73" y="23" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  0</text>
@@ -1045,7 +1225,7 @@ body.shaking{animation:screenShake .45s linear;}
     <text x="340" y="406" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8" letter-spacing="3">▲  VIA  LIFT  ▲</text>
 
     <!-- ── LEVEL 1 ─────────────────────────────────────── -->
-    <rect x="8"  y="410" width="664" height="340" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5"/>
+    <rect x="8"  y="410" width="664" height="340" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
     <rect x="12" y="414" width="656" height="332" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
     <rect x="8"  y="410" width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
     <text x="73" y="425" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  1</text>
@@ -1201,7 +1381,7 @@ body.shaking{animation:screenShake .45s linear;}
     <div class="isis-divider"></div>
     <div class="isis-title">FIELD AGENT INDUCTION: APPROVED, RELUCTANTLY</div>
     <div class="isis-field">MOHD ERIDANI EFFENDI NORWAWI</div>
-    <div class="isis-id">AGENT REF: 7-SEVEN-7 &nbsp;|&nbsp; STATUS: INDUCTED, ACTIVE</div>
+    <div class="isis-id">AGENT REF: AGENT-067 &nbsp;|&nbsp; STATUS: INDUCTED, ACTIVE</div>
     <div class="isis-divider2"></div>
 
     <!-- INCOMING TRANSMISSION NOTICE -->
@@ -1228,23 +1408,23 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line" id="tl1">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td1" data-text="EC-777. You've been cleared for immediate field induction. ENCOM's security is an embarrassment, but it served as a passable screening test. We've been watching your navigation of the Grid."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td1" data-text="Agent-067 Eridani Effendi. You've been cleared for immediate field induction. ENCOM's security is an embarrassment, but it served as a passable screening test. We've been watching your navigation of the Grid."></span>
       </div>
 
       <div class="transcript-line" id="tl2">
-        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td2" data-text="He's just getting lucky with the RNG. This entire Grid architecture is garbage, and I'm ninety percent sure the map is just looping on purpose to spite me."></span>
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td2" data-text="He's just getting lucky with the RNG! This entire neon hellscape is garbage, and if this thing tries to computerize me into a cyborg, I swear to God, Mother, I am burning this entire mainframe to the ground!"></span>
       </div>
 
       <div class="transcript-line" id="tl3">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td3" data-text="It's not spite, Sterling, it's just your incompetence. Dani, ignore him. We need you in the Archive Sector. There's an asset waiting, we don't care how you get to it, just get it out."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td3" data-text="If you're quite finished with your paranoid little outburst, Sterling, we have a mission to complete. Dani, ignore the idiot. He's clearly having a breakdown."></span>
       </div>
 
       <div class="transcript-line" id="tl4">
-        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td4" data-text="Seriously though, if we're going to be trapped in a computer, why am I not at least a giant cyborg with a Glengoolie Blue dispenser?"></span>
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td4" data-text="Oh, sure, just send the new agent on a cool mission and leave me here suffering. Computer! Be useful and digitize me a Glengoolie Blue, like, yesterday. I'm literally DYING from alcohol withdrawal."></span>
       </div>
 
       <div class="transcript-line raised" id="tl5">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Enough chatter. Accept the parameters, Dani. The Grid is closing in."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I'm calling HR to delete your pension. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it to an extraction point."></span>
       </div>
 
       <div id="transcript-footer">[END RECORDING]</div>
@@ -1268,63 +1448,61 @@ body.shaking{animation:screenShake .45s linear;}
 
   <div id="msg-content">
 
-    <!-- Identity Disc -->
+    <!-- Identity Disc — larger centrepiece -->
     <div id="disc-wrap">
+      <div id="disc-scan"></div>
       <svg viewBox="0 0 130 130" xmlns="http://www.w3.org/2000/svg">
-        <!-- Static base -->
-        <circle cx="65" cy="65" r="62" fill="none" stroke="rgba(0,229,255,.12)" stroke-width="1"/>
-        <!-- Outer spinning ring -->
+        <circle cx="65" cy="65" r="62" fill="none" stroke="rgba(0,229,255,.1)" stroke-width="1"/>
         <g id="disc-outer-ring">
           <circle cx="65" cy="65" r="56" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="24 10" opacity=".8"/>
         </g>
-        <!-- Mid ring -->
-        <circle cx="65" cy="65" r="46" fill="none" stroke="rgba(0,229,255,.3)" stroke-width="1"/>
-        <!-- Inner spinning ring -->
+        <circle cx="65" cy="65" r="46" fill="none" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
         <g id="disc-inner-ring">
           <circle cx="65" cy="65" r="38" fill="none" stroke="#00e5ff" stroke-width="1" stroke-dasharray="8 18" opacity=".6"/>
         </g>
-        <!-- Spokes -->
-        <line x1="65" y1="9"  x2="65" y2="27"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="65" y1="9"   x2="65" y2="27"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
         <line x1="65" y1="103" x2="65" y2="121" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
-        <line x1="9"  y1="65" x2="27" y2="65"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
+        <line x1="9"  y1="65"  x2="27" y2="65"  stroke="rgba(0,229,255,.4)" stroke-width="1"/>
         <line x1="103" y1="65" x2="121" y2="65" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
-        <line x1="24" y1="24" x2="36" y2="36"  stroke="rgba(0,229,255,.25)" stroke-width="1"/>
-        <line x1="106" y1="24" x2="94" y2="36" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
-        <line x1="24" y1="106" x2="36" y2="94" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
-        <line x1="106" y1="106" x2="94" y2="94" stroke="rgba(0,229,255,.25)" stroke-width="1"/>
-        <!-- Core disc shape -->
-        <circle cx="65" cy="65" r="26" fill="rgba(0,229,255,.06)" stroke="#00e5ff" stroke-width="1.5"/>
-        <circle cx="65" cy="65" r="16" fill="rgba(0,229,255,.1)"  stroke="rgba(0,229,255,.5)" stroke-width="1"/>
-        <!-- Centre dot -->
+        <line x1="24"  y1="24"  x2="36" y2="36"  stroke="rgba(0,229,255,.2)" stroke-width="1"/>
+        <line x1="106" y1="24"  x2="94" y2="36"  stroke="rgba(0,229,255,.2)" stroke-width="1"/>
+        <line x1="24"  y1="106" x2="36" y2="94"  stroke="rgba(0,229,255,.2)" stroke-width="1"/>
+        <line x1="106" y1="106" x2="94" y2="94"  stroke="rgba(0,229,255,.2)" stroke-width="1"/>
+        <circle cx="65" cy="65" r="26" fill="rgba(0,229,255,.05)" stroke="#00e5ff" stroke-width="1.5"/>
+        <circle cx="65" cy="65" r="16" fill="rgba(0,229,255,.08)" stroke="rgba(0,229,255,.45)" stroke-width="1"/>
         <circle cx="65" cy="65" r="5"  fill="#00e5ff" opacity=".95"/>
         <circle cx="65" cy="65" r="5"  fill="none" stroke="#00e5ff" stroke-width="1.5">
           <animate attributeName="r" values="5;16" dur="2.2s" repeatCount="indefinite"/>
           <animate attributeName="opacity" values="0.8;0" dur="2.2s" repeatCount="indefinite"/>
         </circle>
-        <!-- EC-777 label -->
-        <text x="65" y="69" text-anchor="middle" fill="rgba(0,229,255,.55)" font-family="Courier New" font-size="7" letter-spacing="2">EC-777</text>
+        <text x="65" y="69" text-anchor="middle" fill="rgba(0,229,255,.45)" font-family="Courier New" font-size="7" letter-spacing="2">EC-777</text>
       </svg>
     </div>
 
-    <!-- Lines revealed one by one via JS -->
+    <!-- Zone 1: Narrative -->
     <div class="msg-divider" id="msg-div1"></div>
-
-    <div class="msg-line" id="ml1">System Status: Asset Identified.</div>
-    <div class="msg-line" id="ml2">Location: Archive Sector.</div>
     <div class="msg-line" id="ml3">It was never misplaced, User. It was archived, encrypted deep within the Grid, reserved for your unique authorization key.</div>
 
+    <!-- Zone 2: Mission directive -->
     <div class="msg-highlight" id="ml4">&rarr; Execute: Archive Sector Infiltration</div>
 
+    <!-- Zone 3: Personal beat -->
     <div class="msg-joke" id="ml-joke">Data streams confirm: You have the biggest LED lights.</div>
 
-    <div class="msg-divider" id="msg-div2" style="margin-top:clamp(16px,3vw,26px);"></div>
-
-    <div class="msg-line" id="ml5">System Update: Initialization Complete.</div>
-    <div class="msg-bday"  id="ml6">Happy 27th Birthday, Buh.</div>
-    <div class="msg-eol"   id="ml7">End of Line.</div>
+    <!-- Zone 4: Celebration closing -->
+    <div class="msg-divider" id="msg-div2"></div>
+    <div class="msg-closing">
+      <div class="msg-bday" id="ml6">Happy 27th Birthday, Buh.</div>
+      <div class="msg-eol"  id="ml7">End of Line.</div>
+      <div class="msg-sig-wrap" id="msg-sig-wrap">
+        <div class="msg-sig-rule"></div>
+        <div id="msg-sig">Signature: Your Quorrbuh</div>
+        <div class="msg-sig-rule"></div>
+      </div>
+    </div>
 
     <div class="msg-footer" id="msg-footer">TRANSMISSION ORIGIN: CLASSIFIED · ISIS / ENCOM GRID</div>
-    <div id="msg-sig">Signature: Your Quorrbuh</div>
+
   </div>
 </div>
 
@@ -1335,11 +1513,20 @@ body.shaking{animation:screenShake .45s linear;}
 const $ = id => document.getElementById(id);
 
 // Clock
+let telSecond=0;
 (function tick(){
   const n=new Date();
   const t=[n.getHours(),n.getMinutes(),n.getSeconds()].map(v=>String(v).padStart(2,'0')).join(':');
   $('clock-hud').textContent=t;
   const gb=$('gw-clock-bottom'); if(gb) gb.textContent=t;
+  // Telemetry session counter
+  telSecond++;
+  const ts=$('tel-session');
+  if(ts){
+    const mm=String(Math.floor(telSecond/60)).padStart(2,'0');
+    const ss=String(telSecond%60).padStart(2,'0');
+    ts.textContent='SESSION: '+mm+':'+ss;
+  }
   setTimeout(tick,1000);
 })();
 
@@ -2102,38 +2289,33 @@ function showFinalMessage(){
   setTimeout(()=>frame.classList.add('on'),100);
 
   // Disc fades in
-  setTimeout(()=>$('disc-wrap').classList.add('on'),300);
+  setTimeout(()=>{
+    $('disc-wrap').classList.add('on');
+    // Scanning line sweeps over the disc after it appears
+    setTimeout(()=>$('disc-scan').classList.add('on'),600);
+  },300);
 
   // Particle burst
-  setTimeout(launchParticles,400);
+  setTimeout(launchParticles,500);
 
-  // Divider 1 expands
-  setTimeout(()=>$('msg-div1').classList.add('on'),700);
+  // Zone 1: Divider then narrative line
+  setTimeout(()=>$('msg-div1').classList.add('on'),1000);
+  setTimeout(()=>$('ml3').classList.add('on'),1600);
 
-  // Staggered line reveals (opening status lines through the highlight)
-  const lineIds=['ml1','ml2','ml3','ml4'];
-  const lineDelays=[1000,1700,2400,3600];
-  lineIds.forEach((id,i)=>{
-    setTimeout(()=>{
-      const el=$(id);
-      if(el)el.classList.add('on');
-    },lineDelays[i]);
-  });
+  // Zone 2: Mission directive
+  setTimeout(()=>$('ml4').classList.add('on'),3000);
 
-  // Inside joke line, framed as a data confirmation
-  setTimeout(()=>$('ml-joke').classList.add('on'),4500);
+  // Zone 3: Personal beat
+  setTimeout(()=>$('ml-joke').classList.add('on'),4200);
 
-  // Divider 2
+  // Zone 4: Closing — divider, birthday, end of line, signature stamp
   setTimeout(()=>$('msg-div2').classList.add('on'),5400);
+  setTimeout(()=>$('ml6').classList.add('on'),6200);
+  setTimeout(()=>$('ml7').classList.add('on'),7100);
+  setTimeout(()=>$('msg-sig-wrap').classList.add('on'),8000);
 
-  // System update line, then birthday, then end of line
-  setTimeout(()=>$('ml5').classList.add('on'),6000);
-  setTimeout(()=>$('ml6').classList.add('on'),6800);
-  setTimeout(()=>$('ml7').classList.add('on'),7600);
-
-  // Footer and sig
-  setTimeout(()=>$('msg-footer').classList.add('on'),8400);
-  setTimeout(()=>$('msg-sig').classList.add('on'),9000);
+  // Footer watermark last, barely visible
+  setTimeout(()=>$('msg-footer').classList.add('on'),8800);
 }
 </script>
 </body>
