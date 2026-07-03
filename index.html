@@ -25,6 +25,39 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 @keyframes isisborder{0%,100%{box-shadow:0 0 18px rgba(255,140,0,.3)}50%{box-shadow:0 0 42px rgba(255,140,0,.7),inset 0 0 24px rgba(255,140,0,.08)}}
 @keyframes slideup   {from{opacity:0;transform:translateY(18px)}to{opacity:1;transform:translateY(0)}}
 
+/* 3D disc float — the whole disc assembly bobs and tilts in 3D space */
+@keyframes discFloat{
+  0%,100%{transform:perspective(600px) rotateX(12deg) rotateY(-8deg) rotateZ(0deg) translateY(0px);}
+  25%    {transform:perspective(600px) rotateX(8deg)  rotateY(10deg)  rotateZ(1deg) translateY(-6px);}
+  50%    {transform:perspective(600px) rotateX(14deg) rotateY(5deg)   rotateZ(-1deg) translateY(-3px);}
+  75%    {transform:perspective(600px) rotateX(6deg)  rotateY(-12deg) rotateZ(2deg) translateY(-8px);}
+}
+
+/* Tile wipe — the materialization transition */
+@keyframes tileIn{
+  0%  {opacity:0;transform:scale(.6);}
+  60% {opacity:1;transform:scale(1.04);}
+  100%{opacity:1;transform:scale(1);}
+}
+@keyframes tileOut{
+  0%  {opacity:1;transform:scale(1);}
+  100%{opacity:0;transform:scale(.6);}
+}
+
+/* Gateway hex cell pulse */
+@keyframes hexCellPulse{
+  0%,100%{opacity:0;}
+  50%    {opacity:1;}
+}
+
+/* Particle travel along path */
+@keyframes particleTravel{
+  0%  {opacity:0;}
+  10% {opacity:1;}
+  90% {opacity:1;}
+  100%{opacity:0;}
+}
+
 /* ── GLOBAL CHROME ──────────────────────────────────────────── */
 /* CRT scanline — heavier, more visible */
 #scanline{
@@ -89,12 +122,40 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 
 /* ── FLASH OVERLAYS ─────────────────────────────────────────── */
 #flash    {position:fixed;inset:0;background:#00e5ff;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
-#flash-red{position:fixed;inset:0;background:#ff1111;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
+#flash-red{
+  position:fixed;inset:0;background:#ff1111;opacity:0;
+  pointer-events:none;z-index:900;transition:opacity .07s;
+  display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:16px;
+}
+#flash-red-x{
+  font-size:clamp(80px,20vw,140px);font-weight:bold;
+  color:rgba(0,0,0,.45);line-height:1;
+  font-family:'Courier New',monospace;
+  letter-spacing:-.02em;
+}
+#flash-red-text{
+  font-size:clamp(14px,3vw,22px);letter-spacing:.4em;
+  color:rgba(0,0,0,.4);text-transform:uppercase;
+  font-family:'Courier New',monospace;font-weight:bold;
+}
 #flash-green{position:fixed;inset:0;background:#00ff88;opacity:0;pointer-events:none;z-index:900;transition:opacity .07s;}
 /* Glitch overlay pair */
 #glitch-a,#glitch-b{position:fixed;inset:0;pointer-events:none;z-index:800;opacity:0;}
 #glitch-a{background:rgba(0,229,255,.08);}
 #glitch-b{background:rgba(255,0,80,.06);}
+
+/* ── GATEWAY HEX CANVAS ─────────────────────────────────────── */
+#gw-hex-canvas{
+  position:absolute;inset:0;pointer-events:none;
+  opacity:.28;z-index:0;
+}
+
+/* ── TILE WIPE TRANSITION OVERLAY ──────────────────────────── */
+#tile-wipe{
+  position:fixed;inset:0;z-index:950;
+  pointer-events:none;display:none;
+}
 
 /* ── STATE: GATEWAY ─────────────────────────────────────────── */
 #state-gateway{position:fixed;inset:0;z-index:100;display:flex;flex-direction:column;align-items:center;justify-content:center;background:#000;overflow-y:auto;padding:56px 16px 40px;}
@@ -192,7 +253,7 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 
 /* ── STATE: BOOT ────────────────────────────────────────────── */
 #boot-screen{position:fixed;inset:0;z-index:200;display:none;flex-direction:column;align-items:center;justify-content:center;background:#000;}
-#boot-canvas{position:absolute;inset:0;opacity:.16;pointer-events:none;}
+#boot-canvas{position:absolute;inset:0;opacity:.45;pointer-events:none;}
 .boot-center{position:relative;z-index:2;display:flex;flex-direction:column;align-items:center;}
 .boot-ring-wrap{position:relative;width:144px;height:144px;margin-bottom:30px;}
 .boot-ring-wrap svg{width:100%;height:100%;}
@@ -303,12 +364,24 @@ body.shaking{animation:screenShake .45s linear;}
   gap:clamp(14px,3vh,28px);
   padding:clamp(20px,4vh,40px) clamp(16px,4vw,32px);
   background:#000;
-  overflow-y:auto;
 }
 #access-breach.show{display:flex;}
+
+/* SVG sits full-screen behind everything — rings can expand freely */
 #breach-success-svg{
-  width:min(80vw,55vh,420px);height:min(80vw,55vh,420px);
-  flex-shrink:0;
+  position:fixed;inset:0;
+  width:100vw;height:100vh;
+  pointer-events:none;
+  overflow:visible;
+  z-index:871;
+}
+
+/* Text stamps sit above the SVG in their own layer */
+#breach-text-layer{
+  position:fixed;inset:0;z-index:872;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  gap:clamp(8px,1.5vh,16px);
+  pointer-events:none;
 }
 
 @keyframes hexLockExpand{
@@ -375,10 +448,21 @@ body.shaking{animation:screenShake .45s linear;}
   align-items:center;justify-content:flex-start;
   padding:clamp(34px,5vh,50px) clamp(12px,3vw,24px) clamp(80px,16vh,140px);
   overflow-y:auto;
-  background:radial-gradient(ellipse at 50% 40%,rgba(0,229,255,.03) 0%,transparent 70%);
+  background:
+    radial-gradient(ellipse at 50% 30%,rgba(0,229,255,.05) 0%,transparent 55%),
+    radial-gradient(ellipse at 20% 70%,rgba(0,229,255,.025) 0%,transparent 40%),
+    radial-gradient(ellipse at 80% 70%,rgba(0,229,255,.025) 0%,transparent 40%);
 }
-.map-eyebrow{font-size:clamp(8px,1.3vw,10px);letter-spacing:.45em;color:rgba(0,229,255,.7);text-transform:uppercase;margin-bottom:5px;text-align:center;}
-.map-title{font-size:clamp(11px,1.8vw,14px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:12px;text-align:center;text-shadow:0 0 14px rgba(0,229,255,.8),0 0 30px rgba(0,229,255,.3);}
+.map-eyebrow{
+  font-size:clamp(8px,1.3vw,10px);letter-spacing:.5em;
+  color:rgba(0,229,255,.6);text-transform:uppercase;
+  margin-bottom:4px;text-align:center;
+}
+.map-title{
+  font-size:clamp(12px,2vw,15px);letter-spacing:.22em;color:#00e5ff;
+  text-transform:uppercase;margin-bottom:14px;text-align:center;
+  text-shadow:0 0 16px rgba(0,229,255,.9),0 0 40px rgba(0,229,255,.4);
+}
 
 /* UV LIGHT REMINDER — hard to miss, sits right under the map title */
 @keyframes uvpulse{0%,100%{box-shadow:0 0 14px rgba(255,140,0,.35),inset 0 0 14px rgba(255,140,0,.08);border-color:rgba(255,140,0,.5);}50%{box-shadow:0 0 28px rgba(255,140,0,.65),inset 0 0 24px rgba(255,140,0,.16);border-color:rgba(255,140,0,.85);}}
@@ -418,10 +502,18 @@ body.shaking{animation:screenShake .45s linear;}
   display:none;margin-top:18px;margin-bottom:14px;
   font-family:'Courier New',monospace;
   font-size:clamp(12px,1.8vw,14px);letter-spacing:.3em;
-  color:#ff8c00;text-transform:uppercase;background:transparent;
-  border:1px solid rgba(255,140,0,.55);padding:12px 28px;cursor:pointer;
-  text-shadow:0 0 10px rgba(255,140,0,.7);
+  color:#ff8c00;text-transform:uppercase;
+  background:rgba(255,140,0,.04);
+  border:1px solid rgba(255,140,0,.65);padding:13px 32px;cursor:pointer;
+  text-shadow:0 0 14px rgba(255,140,0,.8);
+  box-shadow:0 0 22px rgba(255,140,0,.12),inset 0 0 14px rgba(255,140,0,.03);
   animation:pulse 1.8s ease-in-out infinite;
+  transition:box-shadow .2s,border-color .2s,background .2s;
+}
+#map-proceed-btn:hover{
+  background:rgba(255,140,0,.08);
+  border-color:#ff8c00;
+  box-shadow:0 0 36px rgba(255,140,0,.3),inset 0 0 16px rgba(255,140,0,.06);
 }
 #pw-block{display:none;flex-direction:column;align-items:center;margin-top:16px;margin-bottom:10px;width:min(97vw,680px);}
 .pw-label{font-size:clamp(11px,1.6vw,13px);letter-spacing:.25em;color:#00e5ff;text-transform:uppercase;margin-bottom:10px;text-align:center;}
@@ -720,15 +812,20 @@ body.shaking{animation:screenShake .45s linear;}
   gap:0;
 }
 
-/* ── DISC — larger, more centrepiece ───────────────────────── */
+/* ── DISC — 3D floating centrepiece ────────────────────────── */
 #disc-wrap{
   position:relative;
   width:clamp(120px,26vw,170px);height:clamp(120px,26vw,170px);
   margin-bottom:clamp(20px,3.5vw,32px);
   opacity:0;transition:opacity 1s ease;
+  transform-style:preserve-3d;
 }
 #disc-wrap svg{width:100%;height:100%;display:block;overflow:visible;}
-#disc-wrap.on{opacity:1;}
+#disc-wrap.on{
+  opacity:1;
+  animation:discFloat 9s ease-in-out infinite;
+}
+/* Rings spin in 2D within the 3D-transformed container */
 #disc-outer-ring{transform-origin:65px 65px;animation:discSpin 12s linear infinite;}
 #disc-inner-ring{transform-origin:65px 65px;animation:discSpin 8s linear infinite reverse;}
 #disc-wrap.on svg{animation:discPulse 3s ease-in-out infinite;}
@@ -774,7 +871,7 @@ body.shaking{animation:screenShake .45s linear;}
   border:1px solid rgba(0,229,255,.3);
   border-left:3px solid #00e5ff;
   background:rgba(0,229,255,.04);
-  text-align:left;width:100%;box-sizing:border-box;
+  text-align:center;width:100%;box-sizing:border-box;
   opacity:0;
 }
 .msg-highlight.on{animation:revealLine .8s ease forwards;}
@@ -923,7 +1020,7 @@ body.shaking{animation:screenShake .45s linear;}
   #msg-content{max-width:94vw;}
 
   /* Breach success screen — keep the stamp readable and contained */
-  #breach-success-svg{width:min(80vw,60vh,420px);height:min(80vw,60vh,420px);}
+  /* breach-success-svg is now position:fixed full-screen, no mobile override needed */
   #breach-stamp{font-size:15px;letter-spacing:.16em;}
   #breach-substamp{font-size:8px;letter-spacing:.22em;}
 }
@@ -948,7 +1045,10 @@ body.shaking{animation:screenShake .45s linear;}
 <div id="encom-hud">ENCOM INTERNATIONAL</div>
 <div id="clock-hud"></div>
 <div id="flash"></div>
-<div id="flash-red"></div>
+<div id="flash-red">
+  <div id="flash-red-x">✕</div>
+  <div id="flash-red-text">ACCESS DENIED</div>
+</div>
 <div id="flash-green"></div>
 <div id="glitch-a"></div>
 <div id="glitch-b"></div>
@@ -978,10 +1078,14 @@ body.shaking{animation:screenShake .45s linear;}
 <audio id="audio-granted"         preload="auto"><source src="sfx-granted.mp3"    type="audio/mpeg"></audio>
 <audio id="audio-click"           preload="auto"><source src="sfx-click.mp3"      type="audio/mpeg"></audio>
 
+<!-- Tile wipe transition overlay -->
+<canvas id="tile-wipe"></canvas>
+
 <!-- ════════════════════════════════════════════════════════════
      GATEWAY
 ════════════════════════════════════════════════════════════ -->
 <div id="state-gateway">
+  <canvas id="gw-hex-canvas"></canvas>
   <!-- Top bar -->
   <div class="gw-topbar">
     <div class="gw-topbar-left">
@@ -1094,32 +1198,38 @@ body.shaking{animation:screenShake .45s linear;}
 
 <!-- ACCESS BREACH SUCCESS (password unlock, before ISIS) -->
 <div id="access-breach">
+  <!-- Full-screen sweep line -->
   <div id="breach-sweep-line"></div>
-  <svg id="breach-success-svg" viewBox="-180 -180 360 360" xmlns="http://www.w3.org/2000/svg">
-    <g class="hexlock-frame">
-      <!-- Outer hex, clockwise spin -->
-      <g class="hexlock-spin-cw">
-        <polygon points="0,-150 130,-75 130,75 0,150 -130,75 -130,-75" fill="none" stroke="#00e5ff" stroke-width="2" opacity=".7"/>
-      </g>
-      <!-- Mid hex, counter-clockwise spin -->
-      <g class="hexlock-spin-ccw">
-        <polygon points="0,-105 91,-52.5 91,52.5 0,105 -91,52.5 -91,-52.5" fill="none" stroke="#00e5ff" stroke-width="1.5" stroke-dasharray="14 8" opacity=".55"/>
-      </g>
-      <!-- Inner static hex -->
-      <polygon points="0,-60 52,-30 52,30 0,60 -52,30 -52,-30" fill="rgba(0,229,255,.05)" stroke="rgba(0,229,255,.4)" stroke-width="1"/>
-      <!-- Core -->
-      <g class="hexlock-core">
-        <circle cx="0" cy="0" r="20" fill="rgba(0,229,255,.12)" stroke="#00e5ff" stroke-width="1.5"/>
-        <circle cx="0" cy="0" r="8" fill="#00e5ff"/>
-        <circle cx="0" cy="0" r="8" fill="none" stroke="#00e5ff" stroke-width="1.5">
-          <animate attributeName="r" values="8;30" dur="1.6s" repeatCount="indefinite"/>
-          <animate attributeName="opacity" values="0.8;0" dur="1.6s" repeatCount="indefinite"/>
-        </circle>
+
+  <!-- Full-screen SVG — rings expand freely to screen edges -->
+  <svg id="breach-success-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+    <!-- We draw in vw/vh space by using a 100x100 viewBox and positioning at 50,50 -->
+    <g transform="translate(50,50)" style="transform-box:fill-box;">
+      <g class="hexlock-frame">
+        <g class="hexlock-spin-cw">
+          <polygon points="0,-18 15.6,-9 15.6,9 0,18 -15.6,9 -15.6,-9" fill="none" stroke="#00e5ff" stroke-width=".3" opacity=".7"/>
+        </g>
+        <g class="hexlock-spin-ccw">
+          <polygon points="0,-12 10.4,-6 10.4,6 0,12 -10.4,6 -10.4,-6" fill="none" stroke="#00e5ff" stroke-width=".2" stroke-dasharray="1.5 0.8" opacity=".55"/>
+        </g>
+        <polygon points="0,-7 6.1,-3.5 6.1,3.5 0,7 -6.1,3.5 -6.1,-3.5" fill="rgba(0,229,255,.05)" stroke="rgba(0,229,255,.4)" stroke-width=".15"/>
+        <g class="hexlock-core">
+          <circle cx="0" cy="0" r="2.5" fill="rgba(0,229,255,.12)" stroke="#00e5ff" stroke-width=".2"/>
+          <circle cx="0" cy="0" r="1" fill="#00e5ff"/>
+          <circle cx="0" cy="0" r="1" fill="none" stroke="#00e5ff" stroke-width=".2">
+            <animate attributeName="r" values="1;4" dur="1.6s" repeatCount="indefinite"/>
+            <animate attributeName="opacity" values="0.8;0" dur="1.6s" repeatCount="indefinite"/>
+          </circle>
+        </g>
       </g>
     </g>
   </svg>
-  <div id="breach-stamp">ACCESS CONFIRMED</div>
-  <div id="breach-substamp">IDENTITY VERIFIED, USER EC-777</div>
+
+  <!-- Text stamps in their own fixed layer -->
+  <div id="breach-text-layer">
+    <div id="breach-stamp">ACCESS CONFIRMED</div>
+    <div id="breach-substamp">IDENTITY VERIFIED · USER EC-777</div>
+  </div>
 </div>
 
 <!-- ════════════════════════════════════════════════════════════
@@ -1154,10 +1264,15 @@ body.shaking{animation:screenShake .45s linear;}
     </defs>
 
     <!-- ── LEVEL 0 ─────────────────────────────────────── -->
-    <rect x="8"  y="8"   width="664" height="355" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
-    <rect x="12" y="12"  width="656" height="347" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
-    <rect x="8"  y="8"   width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
+    <rect x="8"  y="8"   width="664" height="355" fill="rgba(0,10,20,0.6)"  stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
+    <rect x="12" y="12"  width="656" height="347" fill="none" stroke="rgba(0,229,255,0.06)"  stroke-width="1"/>
+    <rect x="8"  y="8"   width="130" height="22"  fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.5)" stroke-width="1"/>
     <text x="73" y="23" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  0</text>
+    <!-- Tactical grid coordinate labels -->
+    <text x="20"  y="46" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">A-01</text>
+    <text x="620" y="46" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">D-01</text>
+    <text x="20"  y="356" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">A-04</text>
+    <text x="620" y="356" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">D-04</text>
 
     <!-- grid lines L0 -->
     <line x1="8"   y1="116" x2="672" y2="116" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
@@ -1167,8 +1282,8 @@ body.shaking{animation:screenShake .45s linear;}
     <line x1="504" y1="8"   x2="504" y2="363" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
 
     <!-- POOL (origin) -->
-    <rect x="18"  y="270" width="130" height="82" fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.65)" stroke-width="1.3"/>
-    <rect x="21"  y="273" width="124" height="76" fill="none" stroke="rgba(0,229,255,0.15)" stroke-width="1"/>
+    <rect x="18"  y="270" width="130" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.8)" stroke-width="1.5"/>
+    <rect x="21"  y="273" width="124" height="76" fill="none" stroke="rgba(0,229,255,0.2)" stroke-width="1"/>
     <text id="rl-pool" x="83" y="295" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1.5">SECTOR 0</text>
     <text x="83" y="314" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="12" font-weight="bold">POOL</text>
     <text x="83" y="332" text-anchor="middle" fill="rgba(0,229,255,.8)" font-family="Courier New" font-size="9">ORIGIN  POINT</text>
@@ -1186,7 +1301,7 @@ body.shaking{animation:screenShake .45s linear;}
     <text x="420" y="270" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="8">COFFEE STA. LHS</text>
 
     <!-- LIFT L0 -->
-    <rect x="512" y="210" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
+    <rect x="512" y="210" width="80" height="82" fill="rgba(0,229,255,0.14)" stroke="rgba(0,229,255,0.75)" stroke-width="1.6"/>
     <rect x="515" y="213" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
     <text id="rl-lift0" x="552" y="247" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
     <text x="552" y="261" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
@@ -1220,15 +1335,20 @@ body.shaking{animation:screenShake .45s linear;}
     <text x="83" y="262" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="9" letter-spacing="1">YOU ARE HERE</text>
 
     <!-- ── LEVEL DIVIDER ──────────────────────────────── -->
-    <line x1="8" y1="395" x2="672" y2="395" stroke="rgba(0,229,255,0.35)" stroke-width="1.5" stroke-dasharray="8 5"/>
-    <text x="340" y="385" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8" letter-spacing="3">▼  VIA  LIFT  ▼</text>
-    <text x="340" y="406" text-anchor="middle" fill="rgba(0,229,255,.3)" font-family="Courier New" font-size="8" letter-spacing="3">▲  VIA  LIFT  ▲</text>
+    <line x1="8" y1="395" x2="672" y2="395" stroke="rgba(0,229,255,0.5)" stroke-width="1.5" stroke-dasharray="8 5" filter="url(#glowsm)"/>
+    <text x="340" y="385" text-anchor="middle" fill="rgba(0,229,255,.45)" font-family="Courier New" font-size="8" letter-spacing="3">▼  VIA  LIFT  ▼</text>
+    <text x="340" y="406" text-anchor="middle" fill="rgba(0,229,255,.45)" font-family="Courier New" font-size="8" letter-spacing="3">▲  VIA  LIFT  ▲</text>
 
     <!-- ── LEVEL 1 ─────────────────────────────────────── -->
-    <rect x="8"  y="410" width="664" height="340" fill="none" stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
-    <rect x="12" y="414" width="656" height="332" fill="none" stroke="rgba(0,229,255,0.1)"  stroke-width="1"/>
-    <rect x="8"  y="410" width="130" height="22"  fill="rgba(0,229,255,0.08)" stroke="rgba(0,229,255,0.4)" stroke-width="1"/>
+    <rect x="8"  y="410" width="664" height="340" fill="rgba(0,10,20,0.6)"  stroke="rgba(0,229,255,0.6)"  stroke-width="1.5" filter="url(#glowborder)"/>
+    <rect x="12" y="414" width="656" height="332" fill="none" stroke="rgba(0,229,255,0.06)"  stroke-width="1"/>
+    <rect x="8"  y="410" width="130" height="22"  fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.5)" stroke-width="1"/>
     <text x="73" y="425" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="10" letter-spacing="2">LEVEL  1</text>
+    <!-- Tactical grid coordinate labels L1 -->
+    <text x="20"  y="448" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">A-05</text>
+    <text x="620" y="448" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">D-05</text>
+    <text x="20"  y="745" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">A-08</text>
+    <text x="620" y="745" fill="rgba(0,229,255,0.25)" font-family="Courier New" font-size="7" letter-spacing="1">D-08</text>
 
     <!-- grid lines L1 -->
     <line x1="8"   y1="520" x2="672" y2="520" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
@@ -1238,7 +1358,7 @@ body.shaking{animation:screenShake .45s linear;}
     <line x1="504" y1="410" x2="504" y2="750" stroke="rgba(0,229,255,0.05)" stroke-width="1"/>
 
     <!-- LIFT L1 -->
-    <rect x="512" y="420" width="80" height="82" fill="rgba(0,229,255,0.1)" stroke="rgba(0,229,255,0.55)" stroke-width="1.4"/>
+    <rect x="512" y="420" width="80" height="82" fill="rgba(0,229,255,0.14)" stroke="rgba(0,229,255,0.75)" stroke-width="1.6"/>
     <rect x="515" y="423" width="74" height="76" fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="1"/>
     <text id="rl-lift1" x="552" y="457" text-anchor="middle" fill="rgba(0,229,255,.7)" font-family="Courier New" font-size="8" letter-spacing="1">SECTOR</text>
     <text x="552" y="471" text-anchor="middle" fill="#00e5ff" font-family="Courier New" font-size="13" font-weight="bold">LIFT</text>
@@ -1276,23 +1396,23 @@ body.shaking{animation:screenShake .45s linear;}
 
     <!-- ══ LEG 1 PATHS — CYAN ═══════════════════════════ -->
     <!-- A1a: Pool right →  x=248, y=311 -->
-    <polyline id="la1ag" points="83,311 248,311"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="165" stroke-dashoffset="165"/>
-    <polyline id="la1a"  points="83,311 248,311"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="165" stroke-dashoffset="165"/>
+    <polyline id="la1ag" points="83,311 248,311"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="165" stroke-dashoffset="165"/>
+    <polyline id="la1a"  points="83,311 248,311"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="165" stroke-dashoffset="165"/>
     <!-- A1b: Turn up to Dining y=251 -->
-    <polyline id="la1bg" points="248,311 248,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="60" stroke-dashoffset="60"/>
-    <polyline id="la1b"  points="248,311 248,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="60" stroke-dashoffset="60"/>
+    <polyline id="la1bg" points="248,311 248,251"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="60" stroke-dashoffset="60"/>
+    <polyline id="la1b"  points="248,311 248,251"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="60" stroke-dashoffset="60"/>
     <!-- A2: Dining → Living Room -->
-    <polyline id="la2g"  points="248,251 420,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="172" stroke-dashoffset="172"/>
-    <polyline id="la2"   points="248,251 420,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="172" stroke-dashoffset="172"/>
+    <polyline id="la2g"  points="248,251 420,251"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="172" stroke-dashoffset="172"/>
+    <polyline id="la2"   points="248,251 420,251"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="172" stroke-dashoffset="172"/>
     <!-- A3: Living Room → Lift -->
-    <polyline id="la3g"  points="420,251 552,251"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132"/>
-    <polyline id="la3"   points="420,251 552,251"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="132" stroke-dashoffset="132"/>
+    <polyline id="la3g"  points="420,251 552,251"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132"/>
+    <polyline id="la3"   points="420,251 552,251"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="132" stroke-dashoffset="132"/>
     <!-- A4: Lift L0 → L1 (straight vertical) -->
-    <polyline id="la4g"  points="552,210 552,502"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="292" stroke-dashoffset="292"/>
-    <polyline id="la4"   points="552,210 552,502"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="292" stroke-dashoffset="292"/>
+    <polyline id="la4g"  points="552,210 552,502"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="292" stroke-dashoffset="292"/>
+    <polyline id="la4"   points="552,210 552,502"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="292" stroke-dashoffset="292"/>
     <!-- A5: Lift L1 → Golf Sim -->
-    <polyline id="la5g"  points="512,461 420,461"  fill="none" stroke="rgba(0,229,255,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="92" stroke-dashoffset="92"/>
-    <polyline id="la5"   points="512,461 420,461"  fill="none" stroke="#00e5ff"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow)" stroke-dasharray="92" stroke-dashoffset="92"/>
+    <polyline id="la5g"  points="512,461 420,461"  fill="none" stroke="rgba(0,229,255,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="92" stroke-dashoffset="92"/>
+    <polyline id="la5"   points="512,461 420,461"  fill="none" stroke="#00e5ff"               stroke-width="3"   stroke-linecap="square" filter="url(#glow)" stroke-dasharray="92" stroke-dashoffset="92"/>
 
     <!-- Flowing pulse overlay for leg 1 (invisible until path drawn) -->
     <polyline id="la-flow" points="83,311 248,311 248,251 420,251 552,251 552,461 420,461" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
@@ -1306,14 +1426,14 @@ body.shaking{animation:screenShake .45s linear;}
 
     <!-- ══ LEG 2 PATHS — ORANGE (fully hidden until ISIS unlock) ═ -->
     <!-- B1: Golf Sim → L1 Lift centre (horizontal right, 90°) -->
-    <polyline id="lb1g" points="420,461 552,461"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
-    <polyline id="lb1"  points="420,461 552,461"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb1g" points="420,461 552,461"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb1"  points="420,461 552,461"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
     <!-- B2: L1 Lift up through divider to L0 Lift, continuing up to y=151 (one clean vertical) -->
-    <polyline id="lb2g" points="552,461 552,151"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
-    <polyline id="lb2"  points="552,461 552,151"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <polyline id="lb2g" points="552,461 552,151"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <polyline id="lb2"  points="552,461 552,151"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
     <!-- B3: Turn left from 552,151 → Storage Room at 420,151 (horizontal left, 90°) -->
-    <polyline id="lb3g" points="552,151 420,151"  fill="none" stroke="rgba(255,140,0,0.18)" stroke-width="8"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
-    <polyline id="lb3"  points="552,151 420,151"  fill="none" stroke="#ff8c00"               stroke-width="2.5" stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb3g" points="552,151 420,151"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb3"  points="552,151 420,151"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
 
     <!-- Leg 2 flow pulse — matches corrected path -->
     <polyline id="lb-flow" points="420,461 552,461 552,151 420,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
@@ -1412,7 +1532,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line" id="tl2">
-        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td2" data-text="He's just getting lucky with the RNG! This entire neon hellscape is garbage, and if this thing tries to computerize me into a cyborg, I swear to God, Mother, I am burning this entire mainframe to the ground!"></span>
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td2" data-text="He's just getting lucky with the RNG. This entire neon hellscape is garbage, and if this thing tries to computerize me into a cyborg, I swear to God, Mother, I am burning this entire mainframe to the ground!"></span>
       </div>
 
       <div class="transcript-line" id="tl3">
@@ -1424,7 +1544,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line raised" id="tl5">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I'm calling HR to delete your pension. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it to an extraction point."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I'm calling HR to delete your pension. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it out."></span>
       </div>
 
       <div id="transcript-footer">[END RECORDING]</div>
@@ -1530,9 +1650,261 @@ let telSecond=0;
   setTimeout(tick,1000);
 })();
 
+// Start gateway hex grid immediately — always running on first screen
+let stopGatewayHex=startGatewayHex();
+
 // Show / hide
 function showEl(id,display='flex'){$(id).style.display=display;}
 function hideEl(id){$(id).style.display='none';}
+
+/* ════════════════════════════════════════════════════════════
+   GATEWAY HEX GRID
+   Draws an animated hex grid that pulses individual cells
+   at random, making the first screen feel like the Grid floor.
+════════════════════════════════════════════════════════════ */
+function startGatewayHex(){
+  const canvas=$('gw-hex-canvas');
+  if(!canvas)return;
+  const ctx=canvas.getContext('2d');
+  const resize=()=>{canvas.width=window.innerWidth;canvas.height=window.innerHeight;};
+  resize();
+  window.addEventListener('resize',resize);
+
+  const R=38; // hex radius
+  const W=R*2, H=Math.sqrt(3)*R;
+  // Store cells with their glow state
+  const cells=[];
+  const cols=Math.ceil(canvas.width/(W*0.75))+2;
+  const rows=Math.ceil(canvas.height/H)+2;
+  for(let c=0;c<cols;c++){
+    for(let r=0;r<rows;r++){
+      cells.push({
+        x:c*W*0.75, y:r*H+(c%2===0?0:H/2),
+        glow:0, target:0, speed:Math.random()*.04+.01
+      });
+    }
+  }
+
+  // Randomly trigger cell glows
+  setInterval(()=>{
+    const n=Math.floor(Math.random()*4)+1;
+    for(let i=0;i<n;i++){
+      const cell=cells[Math.floor(Math.random()*cells.length)];
+      cell.target=Math.random()*.7+.15;
+    }
+  },220);
+
+  function hexPath(cx,cy,r){
+    ctx.beginPath();
+    for(let i=0;i<6;i++){
+      const a=Math.PI/180*(60*i-30);
+      const x=cx+r*Math.cos(a), y=cy+r*Math.sin(a);
+      i===0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+    }
+    ctx.closePath();
+  }
+
+  let running=true;
+  function draw(){
+    if(!running)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    for(const cell of cells){
+      // Ease toward target glow
+      cell.glow+=(cell.target-cell.glow)*cell.speed;
+      if(Math.abs(cell.glow-cell.target)<.005){
+        cell.target=0; // fade back out
+      }
+      const g=cell.glow;
+      if(g<0.01){
+        // Draw dim wireframe only
+        hexPath(cell.x,cell.y,R-1);
+        ctx.strokeStyle=`rgba(0,229,255,0.06)`;
+        ctx.lineWidth=0.5;
+        ctx.stroke();
+      } else {
+        // Fill glowing cell
+        hexPath(cell.x,cell.y,R-1);
+        ctx.fillStyle=`rgba(0,229,255,${g*0.12})`;
+        ctx.fill();
+        ctx.strokeStyle=`rgba(0,229,255,${0.05+g*0.4})`;
+        ctx.lineWidth=g>0.3?1.2:0.8;
+        ctx.stroke();
+      }
+    }
+    requestAnimationFrame(draw);
+  }
+  draw();
+  return ()=>{running=false;};
+}
+
+/* ════════════════════════════════════════════════════════════
+   TILE WIPE TRANSITION
+   Grid of tiles that dissolve in/out on major state changes,
+   replacing the plain flash overlay for key transitions.
+════════════════════════════════════════════════════════════ */
+function doTileWipe(cb, color='#00e5ff'){
+  const canvas=$('tile-wipe');
+  const ctx=canvas.getContext('2d');
+  canvas.width=window.innerWidth;
+  canvas.height=window.innerHeight;
+  canvas.style.display='block';
+
+  const tW=clamp(40,6,80), tH=tW;
+  const cols=Math.ceil(canvas.width/tW)+1;
+  const rows=Math.ceil(canvas.height/tH)+1;
+
+  // Build tile list in diagonal wave order
+  const tiles=[];
+  for(let r=0;r<rows;r++){
+    for(let c=0;c<cols;c++){
+      tiles.push({x:c*tW,y:r*tH,wave:c+r,alpha:0,phase:'in'});
+    }
+  }
+  const maxWave=Math.max(...tiles.map(t=>t.wave));
+
+  // Phase 1: tiles fill in
+  const start=performance.now();
+  const duration=600;
+
+  function animate(now){
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const elapsed=now-start;
+    let allIn=true;
+    for(const t of tiles){
+      const waveDelay=(t.wave/maxWave)*duration*0.6;
+      const progress=Math.max(0,Math.min(1,(elapsed-waveDelay)/200));
+      t.alpha=progress;
+      if(progress<1)allIn=false;
+      ctx.globalAlpha=t.alpha*0.85;
+      ctx.fillStyle=color;
+      ctx.fillRect(t.x,t.y,tW-1,tH-1);
+    }
+    ctx.globalAlpha=1;
+    if(!allIn){
+      requestAnimationFrame(animate);
+    } else {
+      // All tiles in — call callback then wipe out
+      if(cb)cb();
+      setTimeout(()=>{
+        const start2=performance.now();
+        function animateOut(now2){
+          ctx.clearRect(0,0,canvas.width,canvas.height);
+          const elapsed2=now2-start2;
+          let anyVisible=false;
+          for(const t of tiles){
+            const waveDelay=((maxWave-t.wave)/maxWave)*duration*0.5;
+            const progress=Math.max(0,Math.min(1,(elapsed2-waveDelay)/180));
+            t.alpha=1-progress;
+            if(t.alpha>0){
+              anyVisible=true;
+              ctx.globalAlpha=t.alpha*0.85;
+              ctx.fillStyle=color;
+              ctx.fillRect(t.x,t.y,tW-1,tH-1);
+            }
+          }
+          ctx.globalAlpha=1;
+          if(anyVisible) requestAnimationFrame(animateOut);
+          else canvas.style.display='none';
+        }
+        requestAnimationFrame(animateOut);
+      },80);
+    }
+  }
+  requestAnimationFrame(animate);
+}
+
+function clamp(val,min,max){return Math.max(min,Math.min(max,val));}
+
+/* ════════════════════════════════════════════════════════════
+   PATH ENERGY PARTICLES
+   After the lightcycle path finishes drawing, small bright
+   dots travel along the route like a live signal current.
+════════════════════════════════════════════════════════════ */
+function runPathParticles(svgWrap, pathPoints, color, count=8){
+  // pathPoints is an array of {x,y} objects defining the route
+  // We'll run canvas particles over the SVG position
+  const wrap=document.getElementById('mapsvg-wrap');
+  if(!wrap)return;
+
+  const canvas=document.createElement('canvas');
+  canvas.style.cssText='position:absolute;top:0;left:0;width:100%;height:100%;pointer-events:none;z-index:5;';
+  wrap.style.position='relative';
+  wrap.appendChild(canvas);
+
+  function resize(){
+    canvas.width=wrap.offsetWidth;
+    canvas.height=wrap.offsetHeight;
+  }
+  resize();
+
+  const ctx=canvas.getContext('2d');
+  // Scale factor from SVG coordinate space to canvas pixels
+  const scaleX=()=>canvas.width/680;
+  const scaleY=()=>canvas.height/760;
+
+  // Build a flattened list of points along the path with even spacing
+  function buildRoute(pts){
+    const route=[];
+    for(let i=0;i<pts.length-1;i++){
+      const a=pts[i], b=pts[i+1];
+      const dist=Math.hypot(b.x-a.x,b.y-a.y);
+      const steps=Math.ceil(dist/6);
+      for(let s=0;s<steps;s++){
+        const t=s/steps;
+        route.push({x:a.x+(b.x-a.x)*t, y:a.y+(b.y-a.y)*t});
+      }
+    }
+    route.push(pts[pts.length-1]);
+    return route;
+  }
+
+  const route=buildRoute(pathPoints);
+
+  // Particles with staggered starting positions along the route
+  const particles=[];
+  for(let i=0;i<count;i++){
+    particles.push({
+      pos:Math.floor((i/count)*route.length),
+      speed:Math.random()*1.2+0.8,
+      life:1,
+      size:Math.random()*2+1.5,
+    });
+  }
+
+  let running=true;
+  function draw(){
+    if(!running)return;
+    ctx.clearRect(0,0,canvas.width,canvas.height);
+    const sx=scaleX(), sy=scaleY();
+    for(const p of particles){
+      p.pos+=p.speed;
+      if(p.pos>=route.length) p.pos=0;
+      const pt=route[Math.floor(p.pos)];
+      if(!pt)continue;
+      const cx=pt.x*sx, cy=pt.y*sy;
+      // Core bright dot
+      ctx.beginPath();
+      ctx.arc(cx,cy,p.size,0,Math.PI*2);
+      ctx.fillStyle=color;
+      ctx.shadowColor=color;
+      ctx.shadowBlur=10;
+      ctx.globalAlpha=0.9;
+      ctx.fill();
+      // Trailing glow dot slightly behind
+      const behind=route[Math.max(0,Math.floor(p.pos)-4)];
+      if(behind){
+        ctx.beginPath();
+        ctx.arc(behind.x*sx,behind.y*sy,p.size*0.5,0,Math.PI*2);
+        ctx.globalAlpha=0.35;
+        ctx.fill();
+      }
+    }
+    ctx.shadowBlur=0; ctx.globalAlpha=1;
+    requestAnimationFrame(draw);
+  }
+  draw();
+  return ()=>{running=false;canvas.remove();};
+}
 
 // Cyan flash
 function doFlash(cb){
@@ -1550,8 +1922,22 @@ function doFlash(cb){
 // Red flash
 function doRedFlash(cb){
   const f=$('flash-red');
-  f.style.opacity='0.7';
-  setTimeout(()=>{f.style.opacity='0';setTimeout(()=>{if(cb)cb();},100);},180);
+  f.style.opacity='0.92';
+  setTimeout(()=>{f.style.opacity='0';setTimeout(()=>{if(cb)cb();},100);},400);
+}
+
+// Same visual as doRedFlash but shows SYSTEM FAILURE text — for intrusion sequence
+function doSystemFailureFlash(){
+  const x=$('flash-red-x'), t=$('flash-red-text');
+  const ox=x.textContent, ot=t.textContent;
+  x.textContent='!'; t.textContent='SYSTEM FAILURE';
+  const f=$('flash-red');
+  f.style.opacity='0.88';
+  setTimeout(()=>{
+    f.style.opacity='0';
+    // restore after fade
+    setTimeout(()=>{x.textContent=ox; t.textContent=ot;},120);
+  },280);
 }
 
 // Green flash
@@ -1608,39 +1994,55 @@ function startMatrixRain(){
   const canvas=$('boot-canvas');
   const ctx=canvas.getContext('2d');
   canvas.width=window.innerWidth; canvas.height=window.innerHeight;
-  const cols=Math.floor(canvas.width/18);
+  const fontSize=14;
+  const cols=Math.floor(canvas.width/fontSize);
   const drops=Array(cols).fill(1);
   const chars='ENCOM01GRIDUSERTRONLEGACYMCPFLYNN777EC';
   return setInterval(()=>{
-    ctx.fillStyle='rgba(0,0,0,0.07)';
+    // Faster trail fade so characters don't smear
+    ctx.fillStyle='rgba(0,0,0,0.15)';
     ctx.fillRect(0,0,canvas.width,canvas.height);
-    ctx.fillStyle='#00e5ff'; ctx.font='13px Courier New';
     for(let i=0;i<drops.length;i++){
       const ch=chars[Math.floor(Math.random()*chars.length)];
-      ctx.fillText(ch,i*18,drops[i]*18);
-      if(drops[i]*18>canvas.height&&Math.random()>.975)drops[i]=0;
+      const y=drops[i]*fontSize;
+      // Leading character is bright white-cyan, trail fades behind it
+      ctx.fillStyle='#e0ffff';
+      ctx.font=`bold ${fontSize}px Courier New`;
+      ctx.fillText(ch,i*fontSize,y);
+      // Draw a slightly dimmer trailing character one step behind
+      if(drops[i]>1){
+        ctx.fillStyle='rgba(0,229,255,0.5)';
+        ctx.font=`${fontSize}px Courier New`;
+        ctx.fillText(chars[Math.floor(Math.random()*chars.length)],i*fontSize,y-fontSize);
+      }
+      if(y>canvas.height&&Math.random()>.97) drops[i]=0;
       drops[i]++;
     }
-  },40);
+  },45);
 }
 
 $('gw-btn').addEventListener('click',()=>{
   playClick();
-  hideEl('state-gateway');
-  showEl('boot-screen');
   playBg();
-  const rain=startMatrixRain();
-  ['bid1','bid2','bid3','bid4'].forEach((id,i)=>{
-    setTimeout(()=>$(id).classList.add('on'),400+i*520);
-  });
-  setTimeout(()=>{
-    $('boot-bar-wrap').style.opacity='1';
-    $('boot-bar-label').style.opacity='1';
-    animateBootBar(()=>{
-      clearInterval(rain);
-      setTimeout(()=>doFlash(()=>{hideEl('boot-screen');showEl('state-terminal');setTimeout(runTerminal,350);}),300);
+  // Stop the hex grid canvas to free resources
+  if(stopGatewayHex) stopGatewayHex();
+  // Tile wipe transition — the Grid hex floor materializes and dissolves
+  doTileWipe(()=>{
+    hideEl('state-gateway');
+    showEl('boot-screen');
+    const rain=startMatrixRain();
+    ['bid1','bid2','bid3','bid4'].forEach((id,i)=>{
+      setTimeout(()=>$(id).classList.add('on'),400+i*520);
     });
-  },2800);
+    setTimeout(()=>{
+      $('boot-bar-wrap').style.opacity='1';
+      $('boot-bar-label').style.opacity='1';
+      animateBootBar(()=>{
+        clearInterval(rain);
+        setTimeout(()=>doFlash(()=>{hideEl('boot-screen');showEl('state-terminal');setTimeout(runTerminal,350);}),300);
+      });
+    },2800);
+  },'#00e5ff');
 });
 
 function animateBootBar(cb){
@@ -1771,7 +2173,7 @@ function dramaticTakeover(){
   flashes.forEach(({color,delay})=>{
     setTimeout(()=>{
       doGlitch(100);
-      if(color==='red') doRedFlash();
+      if(color==='red') doSystemFailureFlash();
       else { const f=$('flash'); f.style.opacity='0.6'; setTimeout(()=>{f.style.opacity='0';},90); }
     },delay);
   });
@@ -1802,15 +2204,23 @@ function dramaticTakeover(){
       void el.offsetWidth; // force reflow to restart animation
       el.style.animation='';
     });
-    doRedFlash();
+    doSystemFailureFlash();
   },1150);
 
   // Beat 5: final overwhelming flash, then hide breach overlay and wipe
   setTimeout(()=>{
+    // Swap to SYSTEM FAILURE for this final takeover flash
+    $('flash-red-x').textContent='!';
+    $('flash-red-text').textContent='SYSTEM FAILURE';
     const f=$('flash-red');
     f.style.opacity='0.9';
     setTimeout(()=>{
       f.style.opacity='0';
+      // Restore ACCESS DENIED text for future wrong-password flashes
+      setTimeout(()=>{
+        $('flash-red-x').textContent='✕';
+        $('flash-red-text').textContent='ACCESS DENIED';
+      },150);
       $('breach-overlay').style.opacity='0';
       $('intruder-sweep').classList.remove('sweep');
       setTimeout(wipeAndRunB, 150);
@@ -1886,6 +2296,12 @@ function showMap(){
       flow.style.opacity='1';
       flow.style.strokeDasharray='18 8';
       flow.style.animation='flowA 1.2s linear infinite';
+      // Energy particles travelling the route — store stop function
+      // so they can be killed when the reroute begins
+      window._leg1Particles=runPathParticles('mapsvg-wrap',[
+        {x:83,y:311},{x:248,y:311},{x:248,y:251},
+        {x:420,y:251},{x:552,y:251},{x:552,y:461},{x:420,y:461}
+      ],'#00e5ff',10);
     },300);
     // Reveal destination + briefcase marker
     setTimeout(()=>{
@@ -1936,31 +2352,36 @@ function handleDenied(){
 function handleGranted(){
   doGreenFlash();
   playGranted();
-  doGlitch(400);
+  // Brief glitch only during the flash moment, cleared well before
+  // the breach screen appears so it doesn't interfere with the animation
+  doGlitch(200);
   stopLightcycle();
 
   // Hide the map and show the breach success sequence
   setTimeout(()=>{
+    // Ensure glitch overlays are fully off before the breach screen
+    const ga=$('glitch-a'), gb=$('glitch-b');
+    ga.style.animation='none'; ga.style.opacity='0';
+    gb.style.animation='none'; gb.style.opacity='0';
+
     hideEl('state-map');
     showEl('access-breach','flex');
     $('access-breach').classList.add('show');
+    showEl('breach-text-layer','flex');
 
-    // Restart all the breach animations cleanly in case of repeat plays
-    document.querySelectorAll('#access-breach [class*="hexlock"],#breach-stamp,#breach-substamp,#breach-sweep-line').forEach(el=>{
+    // Restart all the breach animations cleanly
+    document.querySelectorAll('#access-breach [class*="hexlock"],#breach-text-layer *,#breach-sweep-line').forEach(el=>{
       el.style.animation='none';
       void el.offsetWidth;
       el.style.animation='';
     });
 
-    // Hold on the breach success screen so it can be appreciated,
-    // then transition into the ISIS induction.
     setTimeout(()=>{
       doFlash(()=>{
         hideEl('access-breach');
+        hideEl('breach-text-layer');
         $('access-breach').classList.remove('show');
         showEl('isis-screen');
-        // Let the ISIS identity card fully settle and be read
-        // before anything else happens on this screen.
         setTimeout(showIncomingNotice, 2200);
       });
     },2600);
@@ -2079,6 +2500,9 @@ $('isis-proceed-btn').addEventListener('click',()=>{
    MAP — LEG 2 (reroute after ISIS unlock)
 ════════════════════════════════════════════════════════════ */
 function showLeg2(){
+  // Stop leg 1 particles immediately — they must not show on the reroute
+  if(window._leg1Particles){ window._leg1Particles(); window._leg1Particles=null; }
+
   // state-map was hidden when the breach success / ISIS sequence
   // took over. Bring it back before updating its contents below.
   showEl('state-map','flex');
@@ -2125,11 +2549,14 @@ function showLeg2(){
     animPath('lb2','lb2g',780,  740,()=>{flashRoomOrange('rl-lift1');flashRoomOrange('rl-lift0');});
     animPath('lb3','lb3g',400, 1560,()=>{
       flashRoomOrange('rl-storage-name');
-      // Flow pulse on leg 2
+      // Flow pulse on leg 2 with orange energy particles
       setTimeout(()=>{
         const flow=$('lb-flow');
         flow.style.opacity='1';
         flow.style.animation='flowB 1.2s linear infinite';
+        runPathParticles('mapsvg-wrap',[
+          {x:420,y:461},{x:552,y:461},{x:552,y:151},{x:420,y:151}
+        ],'#ff8c00',8);
       },250);
       // Reveal destination
       setTimeout(()=>{
@@ -2157,6 +2584,18 @@ $('map-proceed-btn').addEventListener('click',()=>{
   stopLightcycle();
   // Fade out EndofLine immediately on click
   fadeOutBg(900);
+  // Start EndTitles fading in immediately so the track has
+  // 2 seconds to build before the final page actually appears.
+  // This compensates for the audio file's silent lead-in.
+  const end=$('audio-end');
+  end.volume=0;
+  end.play().catch(()=>{});
+  let earlyVol=0;
+  const earlyFade=setInterval(()=>{
+    earlyVol=Math.min(0.22,earlyVol+0.01);
+    end.volume=earlyVol;
+    if(earlyVol>=0.22)clearInterval(earlyFade);
+  },50);
   // Short dramatic pause, then flash into the final page
   setTimeout(()=>{
     doFlash(showFinalMessage);
@@ -2270,19 +2709,10 @@ function showFinalMessage(){
   showEl('state-message');
   drawHexGrid();
 
-  // EndofLine was already faded out by the proceed button click.
-  // Start EndTitles fresh and ramp it in smoothly.
+  // EndofLine is already faded out and EndTitles is already
+  // playing from the proceed button click. Just make sure bg is silent.
   const bg=$('audio-bg');
   bg.pause(); bg.volume=0;
-  const end=$('audio-end');
-  end.volume=0;
-  end.play().catch(()=>{});
-  let evol=0;
-  const fadeIn=setInterval(()=>{
-    evol=Math.min(0.22,evol+0.014);
-    end.volume=evol;
-    if(evol>=0.22)clearInterval(fadeIn);
-  },50);
 
   // Frame corners animate in
   const frame=$('msg-frame');
