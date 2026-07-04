@@ -1202,7 +1202,7 @@ body.shaking{animation:screenShake .45s linear;}
   <div id="breach-sweep-line"></div>
 
   <!-- Full-screen SVG — rings expand freely to screen edges -->
-  <svg id="breach-success-svg" viewBox="0 0 100 100" preserveAspectRatio="none" xmlns="http://www.w3.org/2000/svg">
+  <svg id="breach-success-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
     <!-- We draw in vw/vh space by using a 100x100 viewBox and positioning at 50,50 -->
     <g transform="translate(50,50)" style="transform-box:fill-box;">
       <g class="hexlock-frame">
@@ -1544,7 +1544,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line raised" id="tl5">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I'm calling HR to delete your pension. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it out."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I will personally oversee your deletion. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it out."></span>
       </div>
 
       <div id="transcript-footer">[END RECORDING]</div>
@@ -2031,17 +2031,19 @@ $('gw-btn').addEventListener('click',()=>{
     hideEl('state-gateway');
     showEl('boot-screen');
     const rain=startMatrixRain();
+    // Identity lines appear more slowly so he has time to register each one
     ['bid1','bid2','bid3','bid4'].forEach((id,i)=>{
-      setTimeout(()=>$(id).classList.add('on'),400+i*520);
+      setTimeout(()=>$(id).classList.add('on'),600+i*700);
     });
+    // Bar starts later, after all identity lines have had time to land
     setTimeout(()=>{
       $('boot-bar-wrap').style.opacity='1';
       $('boot-bar-label').style.opacity='1';
       animateBootBar(()=>{
         clearInterval(rain);
-        setTimeout(()=>doFlash(()=>{hideEl('boot-screen');showEl('state-terminal');setTimeout(runTerminal,350);}),300);
+        setTimeout(()=>doFlash(()=>{hideEl('boot-screen');showEl('state-terminal');setTimeout(runTerminal,350);}),500);
       });
-    },2800);
+    },4200);
   },'#00e5ff');
 });
 
@@ -2050,11 +2052,11 @@ function animateBootBar(cb){
   const label=$('boot-bar-label');
   const stages=[
     {pct:15, label:'SCANNING IDENTITY...',         delay:0   },
-    {pct:35, label:'VERIFYING CLEARANCE...',       delay:340 },
-    {pct:56, label:'CONNECTING TO GRID...',        delay:720 },
-    {pct:74, label:'UNLOCKING SECTORS...',         delay:1100},
-    {pct:90, label:'FINALISING ACCESS...',         delay:1460},
-    {pct:100,label:'ACCESS GRANTED.',              delay:1780},
+    {pct:35, label:'VERIFYING CLEARANCE...',       delay:600 },
+    {pct:56, label:'CONNECTING TO GRID...',        delay:1300},
+    {pct:74, label:'UNLOCKING SECTORS...',         delay:2000},
+    {pct:90, label:'FINALISING ACCESS...',         delay:2700},
+    {pct:100,label:'ACCESS GRANTED.',              delay:3300},
   ];
   stages.forEach(({pct,label:lbl,delay})=>{
     setTimeout(()=>{
@@ -2100,7 +2102,7 @@ const termLinesB=[
   {t:'',                                             d:700},
   {t:'> UNKNOWN SIGNAL: SOURCE ENCRYPTED',          d:1100},
   {t:'',                                             d:2000},
-  {t:'> "EC-777. We have been watching."',                            d:2600},
+  {t:'> "Dani Effendi. We have been watching."',                       d:2600},
   {t:'> "ENCOM cannot give you what you need."',                      d:4300},
   {t:'> "But we can."',                                               d:5800},
   {t:'> "It is time for you to take back what is rightfully yours."', d:7000},
