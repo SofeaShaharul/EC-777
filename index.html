@@ -376,27 +376,27 @@ body.shaking{animation:screenShake .45s linear;}
 
 /* ── ACCESS BREACH SUCCESS ─────────────────────────────────── */
 @keyframes hexLockExpand{
-  0%{opacity:0;transform:scale(.2) rotate(-20deg);}
-  70%{opacity:1;transform:scale(1.04) rotate(2deg);}
-  100%{opacity:1;transform:scale(1) rotate(0deg);}
+  0%  {opacity:0;transform:scale(.15);}
+  65% {opacity:1;transform:scale(1.05);}
+  100%{opacity:1;transform:scale(1);}
 }
-/* The lock snap — outer hex stops spinning and pulses bright */
 @keyframes hexLockSnap{
   0%  {opacity:1;transform:scale(1);}
-  25% {opacity:1;transform:scale(1.12);filter:drop-shadow(0 0 8px #00e5ff) drop-shadow(0 0 24px rgba(0,229,255,.9));}
-  50% {opacity:1;transform:scale(1.06);}
+  30% {opacity:1;transform:scale(1.14);}
+  65% {opacity:1;transform:scale(.97);}
   100%{opacity:1;transform:scale(1);}
 }
 @keyframes hexLockSpin{from{transform:rotate(0deg)}to{transform:rotate(360deg)}}
 @keyframes coreFlashIn{
-  0%{opacity:0;transform:scale(0);}
-  60%{opacity:1;transform:scale(1.4);}
+  0%  {opacity:0;transform:scale(0);}
+  60% {opacity:1;transform:scale(1.2);}
   100%{opacity:1;transform:scale(1);}
 }
-@keyframes ringExpand{
-  0%{r:0;opacity:.9;}
-  100%{r:180;opacity:0;}
+@keyframes ringFire{
+  0%  {r:0;opacity:.9;}
+  100%{r:78;opacity:0;}
 }
+.ring-fire{animation:ringFire .9s cubic-bezier(.2,.6,.3,1) forwards;}
 @keyframes stampIn{
   0%{opacity:0;transform:translateY(12px);}
   100%{opacity:1;transform:translateY(0);}
@@ -433,6 +433,8 @@ body.shaking{animation:screenShake .45s linear;}
   pointer-events:none;
   overflow:visible;
   z-index:871;
+  filter:drop-shadow(0 0 6px rgba(0,229,255,.7)) drop-shadow(0 0 18px rgba(0,229,255,.35));
+  will-change:transform;
 }
 
 /* Text stamps above SVG */
@@ -498,10 +500,21 @@ body.shaking{animation:screenShake .45s linear;}
   font-size:clamp(8px,1.3vw,10px);letter-spacing:.4em;
   color:rgba(0,229,255,.4);animation:pulse 1.5s ease-in-out infinite;
 }
-.hexlock-spin-cw{transform-origin:center;animation:hexLockSpin 5s linear infinite;}
-.hexlock-spin-ccw{transform-origin:center;animation:hexLockSpin 8s linear infinite reverse;}
-.hexlock-core{animation:coreFlashIn .6s ease .4s both;}
-.hexlock-frame{animation:hexLockExpand .7s cubic-bezier(.2,.8,.3,1) forwards;}
+.hexlock-spin-cw{
+  transform-origin:center;
+  animation:hexLockSpin 5s linear infinite;
+  will-change:transform;
+}
+.hexlock-spin-ccw{
+  transform-origin:center;
+  animation:hexLockSpin 8s linear infinite reverse;
+  will-change:transform;
+}
+.hexlock-core{animation:coreFlashIn .6s ease .4s both;will-change:transform,opacity;}
+.hexlock-frame{
+  animation:hexLockExpand .7s cubic-bezier(.2,.8,.3,1) forwards;
+  will-change:transform,opacity;
+}
 
 /* ── STATE: MAP ─────────────────────────────────────────────── */
 #state-map{
@@ -1297,7 +1310,7 @@ body.shaking{animation:screenShake .45s linear;}
       <circle id="bsr3" r="0" fill="none" stroke="rgba(0,229,255,.5)" stroke-width=".2" opacity="0"/>
 
       <!-- Hexlock assembly — much larger than before -->
-      <g class="hexlock-frame" filter="url(#hexglow)">
+      <g class="hexlock-frame">
         <g class="hexlock-spin-cw">
           <polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14"
             fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".8"/>
@@ -2645,25 +2658,23 @@ function handleGranted(){
       // Flash the background bright for the lock moment
       doGreenFlash();
 
-      // Fire all three confirmation rings simultaneously at lock
-      function fireRing(id,delay,maxR,dur){
+      // Fire all three confirmation rings with lightweight setInterval
+      function fireRing(id,delay){
         setTimeout(()=>{
           const el=$(id); if(!el)return;
-          const start=performance.now();
-          function tick(now){
-            const t=Math.min(1,(now-start)/dur);
-            const ease=1-Math.pow(1-t,2.5);
-            el.setAttribute('r',String(ease*maxR));
-            el.setAttribute('opacity',String((1-ease)*0.9));
-            if(t<1)requestAnimationFrame(tick);
-            else { el.setAttribute('r','0'); el.setAttribute('opacity','0'); }
-          }
-          requestAnimationFrame(tick);
+          el.setAttribute('opacity','0.9');
+          let r=0;
+          const iv=setInterval(()=>{
+            r+=3.5;
+            el.setAttribute('r',String(r));
+            el.setAttribute('opacity',String(Math.max(0,(1-r/78)*0.9)));
+            if(r>=78){clearInterval(iv);el.setAttribute('r','0');el.setAttribute('opacity','0');}
+          },16);
         },delay);
       }
-      fireRing('bsr1', 0,   75, 900);
-      fireRing('bsr2', 120, 75, 900);
-      fireRing('bsr3', 240, 75, 900);
+      fireRing('bsr1', 0);
+      fireRing('bsr2', 130);
+      fireRing('bsr3', 260);
 
       // After lock snap settles, resume a slow idle spin
       setTimeout(()=>{
