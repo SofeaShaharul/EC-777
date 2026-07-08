@@ -1257,7 +1257,7 @@ body.shaking{animation:screenShake .45s linear;}
     </div>
     <div class="boot-id-line" id="bid1">ENCOM INTERNATIONAL</div>
     <div class="boot-id-line" id="bid2">IDENTITY TOKEN SCAN · EC-777</div>
-    <div class="boot-id-line" id="bid3">MOHD ERIDANI EFFENDI NORWAWI</div>
+    <div class="boot-id-line" id="bid3">ERIDANI EFFENDI</div>
     <div class="boot-id-line" id="bid4">CLEARANCE: USER ACTIVE</div>
     <div class="boot-bar-wrap" id="boot-bar-wrap">
       <div class="boot-bar-fill" id="boot-bar-fill"></div>
@@ -1622,7 +1622,7 @@ body.shaking{animation:screenShake .45s linear;}
     <div class="isis-name">ISIS</div>
     <div class="isis-divider"></div>
     <div class="isis-title">FIELD AGENT INDUCTION: APPROVED, RELUCTANTLY</div>
-    <div class="isis-field">MOHD ERIDANI EFFENDI NORWAWI</div>
+    <div class="isis-field">ERIDANI EFFENDI</div>
     <div class="isis-id">AGENT REF: AGENT-067 &nbsp;|&nbsp; STATUS: INDUCTED, ACTIVE</div>
     <div class="isis-divider2"></div>
 
@@ -2304,7 +2304,7 @@ const termLinesA=[
   {t:'> CONNECTING TO ENCOM MAINFRAME...',          d:700},
   {t:'',                                             d:1600},
   {t:'> IDENTITY CONFIRMED: EC-777',                d:2000},
-  {t:'> MOHD ERIDANI EFFENDI NORWAWI',              d:2900},
+  {t:'> ERIDANI EFFENDI',            d:2900},
   {t:'> CLEARANCE: USER ACTIVE',                    d:3900},
   {t:'',                                             d:4900},
   {t:'> ACCESS GRANTED.',                           d:5300},
@@ -2595,9 +2595,8 @@ function handleGranted(){
     $('access-breach').classList.add('show');
     showEl('breach-text-layer','flex');
 
-    // Drop EndofLine noticeably as the access-breach screen appears —
-    // signals something tonally different is coming
-    fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.04, 800);
+    // Slowly fade EndofLine down as the access-breach screen appears
+    fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.03, 1400);
 
     // ── PHASE 1: Hexlock spins in (standard expand animation) ─────
     // Reset hexlock animations cleanly so it assembles IN, not OUT
@@ -2712,9 +2711,12 @@ function handleGranted(){
         hideEl('breach-text-layer');
         $('access-breach').classList.remove('show');
         showEl('isis-screen');
-        // EndofLine out, The Killer in — the comedy scene gets its own music
-        fadeAudio($('audio-bg'), $('audio-bg').volume||0.04, 0, 600);
-        setTimeout(playKiller, 400);
+        // Fade EndofLine out slowly so the transition isn't sudden
+        fadeAudio($('audio-bg'), $('audio-bg').volume||0.04, 0, 1800);
+        // Play The Killer immediately in this synchronous block —
+        // iOS Safari only honours play() calls close to a user gesture,
+        // so no setTimeout wrapper here
+        playKiller();
         setTimeout(showIncomingNotice, 2200);
       });
     },7200);
@@ -2978,7 +2980,8 @@ function playKiller(){
   k.currentTime=0;
   k.volume=0;
   k.play().catch(()=>{});
-  fadeAudio(k,0,0.22,1500);
+  // Fade in gently over 2.5 seconds
+  fadeAudio(k,0,0.22,2500);
 }
 
 // Fade The Killer out and stop it
