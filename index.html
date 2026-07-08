@@ -437,15 +437,24 @@ body.shaking{animation:screenShake .45s linear;}
   will-change:transform;
 }
 
-/* Text stamps — positioned in the lower portion so they don't
-   overlay the hexlock animation which sits in the upper centre */
-#breach-text-layer{
+/* Text above hexlock */
+#breach-text-top{
+  position:fixed;
+  left:0;right:0;
+  top:clamp(32px,8vh,80px);
+  z-index:872;
+  display:none;flex-direction:column;align-items:center;
+  gap:clamp(4px,.8vh,8px);
+  pointer-events:none;
+}
+/* Text below hexlock */
+#breach-text-bottom{
   position:fixed;
   left:0;right:0;
   bottom:clamp(40px,10vh,100px);
   z-index:872;
   display:none;flex-direction:column;align-items:center;
-  gap:clamp(5px,1vh,10px);
+  gap:clamp(4px,.8vh,8px);
   pointer-events:none;
 }
 
@@ -1348,10 +1357,14 @@ body.shaking{animation:screenShake .45s linear;}
   <div id="breach-data-left">EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA</div>
   <div id="breach-data-right">4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID</div>
 
-  <!-- Text layer: sequential reveal driven by JS -->
-  <div id="breach-text-layer">
+  <!-- Text above hexlock: identity lines -->
+  <div id="breach-text-top">
     <div class="breach-confirm-line" id="bc-label">IDENTITY CONFIRMED</div>
     <div class="breach-confirm-line" id="bc-name">ERIDANI EFFENDI</div>
+  </div>
+
+  <!-- Text below hexlock: clearance and welcome -->
+  <div id="breach-text-bottom">
     <div class="breach-confirm-line" id="bc-ref">EC-777 · CLEARANCE: USER ACTIVE</div>
     <div class="breach-confirm-line" id="bc-status">ACCESS CONFIRMED</div>
     <div class="breach-confirm-line" id="bc-sub">WELCOME TO THE GRID</div>
@@ -2561,6 +2574,11 @@ function showMap(){
 $('pw-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     const val=$('pw-input').value.trim().toLowerCase();
+    // Unlock audio-killer immediately on this user gesture so iOS
+    // Safari will allow play() to fire later from inside timeouts
+    const k=$('audio-killer');
+    k.volume=0;
+    k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
     if(val==='guest') handleGranted();
     else handleDenied();
   }
@@ -2597,7 +2615,8 @@ function handleGranted(){
     hideEl('state-map');
     showEl('access-breach','flex');
     $('access-breach').classList.add('show');
-    showEl('breach-text-layer','flex');
+    showEl('breach-text-top','flex');
+    showEl('breach-text-bottom','flex');
 
     // Slowly fade EndofLine down as the access-breach screen appears
     fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.03, 1400);
@@ -2712,7 +2731,8 @@ function handleGranted(){
     setTimeout(()=>{
       doFlash(()=>{
         hideEl('access-breach');
-        hideEl('breach-text-layer');
+        hideEl('breach-text-top');
+        hideEl('breach-text-bottom');
         $('access-breach').classList.remove('show');
         showEl('isis-screen');
         // Fade EndofLine out slowly so the transition isn't sudden
