@@ -437,24 +437,28 @@ body.shaking{animation:screenShake .45s linear;}
   will-change:transform;
 }
 
-/* Text above hexlock */
+/* Text above hexlock — sits just above the outer polygon edge.
+   Hexlock centre is at 50vh (vertical centre of viewport).
+   Outer polygon radius = 28% of min(vw,vh) = 28vmin.
+   So text block bottom edge should be at ~50vh - 30vmin. */
 #breach-text-top{
   position:fixed;
   left:0;right:0;
-  top:clamp(32px,8vh,80px);
+  bottom:calc(50vh + 28vmin + clamp(8px,1.5vmin,18px));
   z-index:872;
   display:none;flex-direction:column;align-items:center;
-  gap:clamp(4px,.8vh,8px);
+  gap:clamp(4px,.8vmin,8px);
   pointer-events:none;
 }
-/* Text below hexlock */
+/* Text below hexlock — sits just below the outer polygon edge.
+   top edge should be at ~50vh + 30vmin */
 #breach-text-bottom{
   position:fixed;
   left:0;right:0;
-  bottom:clamp(40px,10vh,100px);
+  top:calc(50vh + 28vmin + clamp(8px,1.5vmin,18px));
   z-index:872;
   display:none;flex-direction:column;align-items:center;
-  gap:clamp(4px,.8vh,8px);
+  gap:clamp(4px,.8vmin,8px);
   pointer-events:none;
 }
 
@@ -2618,8 +2622,8 @@ function handleGranted(){
     showEl('breach-text-top','flex');
     showEl('breach-text-bottom','flex');
 
-    // Slowly fade EndofLine down as the access-breach screen appears
-    fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.03, 1400);
+    // Fade EndofLine down quickly — nearly gone before The Killer arrives
+    fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 600);
 
     // ── PHASE 1: Hexlock spins in (standard expand animation) ─────
     // Reset hexlock animations cleanly so it assembles IN, not OUT
@@ -2735,8 +2739,8 @@ function handleGranted(){
         hideEl('breach-text-bottom');
         $('access-breach').classList.remove('show');
         showEl('isis-screen');
-        // Fade EndofLine out slowly so the transition isn't sudden
-        fadeAudio($('audio-bg'), $('audio-bg').volume||0.04, 0, 1800);
+        // Fade EndofLine to zero quickly — The Killer takes over
+        fadeAudio($('audio-bg'), $('audio-bg').volume||0.02, 0, 400);
         // Play The Killer immediately in this synchronous block —
         // iOS Safari only honours play() calls close to a user gesture,
         // so no setTimeout wrapper here
@@ -2852,7 +2856,7 @@ $('isis-proceed-btn').addEventListener('click',()=>{
   playClick();
   // Very gradual fade — 6 seconds so the silence arrives slowly
   // while he's already reading the reroute map, not as a sudden cut
-  fadeOutKiller(6000);
+  fadeOutKiller(9000);
   doFlash(()=>{
     hideEl('isis-screen');
     showLeg2();
