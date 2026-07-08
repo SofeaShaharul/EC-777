@@ -437,11 +437,15 @@ body.shaking{animation:screenShake .45s linear;}
   will-change:transform;
 }
 
-/* Text stamps above SVG */
+/* Text stamps — positioned in the lower portion so they don't
+   overlay the hexlock animation which sits in the upper centre */
 #breach-text-layer{
-  position:fixed;inset:0;z-index:872;
-  display:none;flex-direction:column;align-items:center;justify-content:center;
-  gap:clamp(6px,1.2vh,12px);
+  position:fixed;
+  left:0;right:0;
+  bottom:clamp(40px,10vh,100px);
+  z-index:872;
+  display:none;flex-direction:column;align-items:center;
+  gap:clamp(5px,1vh,10px);
   pointer-events:none;
 }
 
@@ -1162,7 +1166,7 @@ body.shaking{animation:screenShake .45s linear;}
 <!-- ── AUDIO ──────────────────────────────────────────────────── -->
 <audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
 <audio id="audio-end"        loop preload="auto"><source src="EndTitles.mp3"     type="audio/mpeg"></audio>
-<audio id="audio-killer"     preload="auto"><source src="TheKiller.mp3"       type="audio/mpeg"></audio>
+<audio id="audio-killer"     loop preload="auto"><source src="TheKiller.mp3"       type="audio/mpeg"></audio>
 <audio id="audio-type"            preload="auto"><source src="sfx-typing.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-lightcycle" loop preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
 <audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
@@ -1662,7 +1666,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line" id="tl4">
-        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td4" data-text="Oh, sure, just send the new agent on a cool mission and leave me here suffering. Computer! Be useful and digitize me a Glengoolie Blue, like, yesterday. I'm literally DYING from alcohol withdrawal."></span>
+        <span class="t-speaker archer">ARCHER:</span><span class="t-dialogue" id="td4" data-text="Oh, sure, just send the new agent on a cool mission and leave me here suffering. Computer! Be useful and digitize me a Glengoolie Blue, like, yesterday. I'm literally DYING from alcohol deficiency."></span>
       </div>
 
       <div class="transcript-line raised" id="tl5">
@@ -2826,9 +2830,9 @@ function typeNextTranscriptLine(){
 
 $('isis-proceed-btn').addEventListener('click',()=>{
   playClick();
-  // Fade The Killer out — silence on the reroute map is intentional,
-  // builds anticipation before EndTitles hits on the final page
-  fadeOutKiller(2000);
+  // Very gradual fade — 6 seconds so the silence arrives slowly
+  // while he's already reading the reroute map, not as a sudden cut
+  fadeOutKiller(6000);
   doFlash(()=>{
     hideEl('isis-screen');
     showLeg2();
