@@ -441,24 +441,27 @@ body.shaking{animation:screenShake .45s linear;}
    Hexlock centre is at 50vh (vertical centre of viewport).
    Outer polygon radius = 28% of min(vw,vh) = 28vmin.
    So text block bottom edge should be at ~50vh - 30vmin. */
+/* Text above hexlock — bottom edge flush just above outer ring.
+   Outer ring radius = 28 SVG units / 100 = 28% of vmin.
+   Subtract a bit to account for text block height so text
+   sits visually close rather than floating far above. */
 #breach-text-top{
   position:fixed;
   left:0;right:0;
-  bottom:calc(50vh + 28vmin + clamp(8px,1.5vmin,18px));
+  bottom:calc(50vh + 23vmin);
   z-index:872;
   display:none;flex-direction:column;align-items:center;
-  gap:clamp(4px,.8vmin,8px);
+  gap:clamp(3px,.5vmin,5px);
   pointer-events:none;
 }
-/* Text below hexlock — sits just below the outer polygon edge.
-   top edge should be at ~50vh + 30vmin */
+/* Text below hexlock — top edge flush just below outer ring */
 #breach-text-bottom{
   position:fixed;
   left:0;right:0;
-  top:calc(50vh + 28vmin + clamp(8px,1.5vmin,18px));
+  top:calc(50vh + 23vmin);
   z-index:872;
   display:none;flex-direction:column;align-items:center;
-  gap:clamp(4px,.8vmin,8px);
+  gap:clamp(3px,.5vmin,5px);
   pointer-events:none;
 }
 
