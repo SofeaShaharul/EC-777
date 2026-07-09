@@ -2593,6 +2593,8 @@ $('pw-input').addEventListener('keydown',e=>{
     const k=$('audio-killer');
     k.volume=0;
     k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
+    // Start fading EndofLine now so the granted sfx plays into quiet
+    if(val==='guest') fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 500);
     if(val==='guest') handleGranted();
     else handleDenied();
   }
@@ -2632,8 +2634,8 @@ function handleGranted(){
     showEl('breach-text-top','flex');
     showEl('breach-text-bottom','flex');
 
-    // Fade EndofLine down quickly — nearly gone before The Killer arrives
-    fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 600);
+    // Slowly fade EndofLine to zero — already started dropping on password submit
+    fadeAudio($('audio-bg'), $('audio-bg').volume||0.02, 0, 400);
 
     // ── PHASE 1: Hexlock spins in (standard expand animation) ─────
     // Reset hexlock animations cleanly so it assembles IN, not OUT
