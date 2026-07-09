@@ -398,128 +398,131 @@ body.shaking{animation:screenShake .45s linear;}
 }
 .ring-fire{animation:ringFire .9s cubic-bezier(.2,.6,.3,1) forwards;}
 @keyframes stampIn{
-  0%{opacity:0;transform:translateY(12px);}
+  0%{opacity:0;transform:translateY(10px);}
   100%{opacity:1;transform:translateY(0);}
 }
-@keyframes lineSweepDown{
-  0%{transform:scaleY(0);transform-origin:top;}
-  100%{transform:scaleY(1);transform-origin:top;}
-}
 @keyframes breachGlow{
-  0%,100%{background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,.08) 0%,transparent 60%);}
-  50%     {background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,.18) 0%,transparent 70%);}
+  0%,100%{background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,.07) 0%,transparent 60%);}
+  50%     {background:radial-gradient(ellipse at 50% 50%,rgba(0,229,255,.16) 0%,transparent 70%);}
 }
 @keyframes dataScroll{
   0%  {transform:translateY(0);}
   100%{transform:translateY(-50%);}
 }
-@keyframes confirmLine{
-  0%{opacity:0;letter-spacing:.6em;}
-  100%{opacity:1;letter-spacing:.25em;}
-}
+@keyframes bcLineIn{from{opacity:0;transform:scaleX(.2);}to{opacity:.5;transform:scaleX(1);}}
 
+/* ── OUTER CONTAINER — true flex column, everything in flow ── */
 #access-breach{
   position:fixed;inset:0;z-index:870;
-  display:none;align-items:center;justify-content:center;
+  display:none;
+  flex-direction:column;align-items:center;justify-content:center;
   background:#000;
   animation:breachGlow 2s ease-in-out infinite;
+  padding:clamp(16px,3vh,32px) clamp(12px,4vw,28px);
+  box-sizing:border-box;
 }
 #access-breach.show{display:flex;}
 
-/* Full-screen SVG — hexlock + expanding rings */
-#breach-success-svg{
-  position:fixed;inset:0;
-  width:100vw;height:100vh;
-  pointer-events:none;
-  overflow:visible;
+/* ── COMPOSITION WRAPPER — single coordinated block ──────────
+   This is the one element that holds everything together.
+   Text above, hex centre, text below — all in document flow. */
+#breach-composition{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:clamp(10px,2.5vmin,22px);
+  position:relative;
   z-index:871;
+  width:100%;
+}
+
+/* ── TOP TEXT BLOCK ──────────────────────────────────────────── */
+#breach-text-top{
+  display:none;
+  flex-direction:column;align-items:center;
+  gap:clamp(3px,0.6vmin,6px);
+  width:100%;
+}
+
+/* ── HEX CONTAINER — bounded, centred, square ─────────────── */
+#breach-hex-wrap{
+  position:relative;
+  width:min(56vmin,300px);
+  height:min(56vmin,300px);
+  flex-shrink:0;
+}
+/* The SVG fills its container exactly — no more full-screen SVG */
+#breach-success-svg{
+  width:100%;height:100%;
+  display:block;overflow:visible;
   filter:drop-shadow(0 0 6px rgba(0,229,255,.7)) drop-shadow(0 0 18px rgba(0,229,255,.35));
   will-change:transform;
 }
 
-/* Text above hexlock — sits just above the outer polygon edge.
-   Hexlock centre is at 50vh (vertical centre of viewport).
-   Outer polygon radius = 28% of min(vw,vh) = 28vmin.
-   So text block bottom edge should be at ~50vh - 30vmin. */
-/* Text above hexlock — bottom edge flush just above outer ring.
-   Outer ring radius = 28 SVG units / 100 = 28% of vmin.
-   Subtract a bit to account for text block height so text
-   sits visually close rather than floating far above. */
-#breach-text-top{
-  position:fixed;
-  left:0;right:0;
-  bottom:calc(50vh + 23vmin);
-  z-index:872;
-  display:none;flex-direction:column;align-items:center;
-  gap:clamp(3px,.5vmin,5px);
-  pointer-events:none;
-}
-/* Text below hexlock — top edge flush just below outer ring */
+/* ── BOTTOM TEXT BLOCK ─────────────────────────────────────── */
 #breach-text-bottom{
-  position:fixed;
-  left:0;right:0;
-  top:calc(50vh + 23vmin);
-  z-index:872;
-  display:none;flex-direction:column;align-items:center;
-  gap:clamp(3px,.5vmin,5px);
-  pointer-events:none;
+  display:none;
+  flex-direction:column;align-items:center;
+  gap:clamp(3px,0.6vmin,6px);
+  width:100%;
 }
 
-/* Data cascade columns — binary/hex stream either side */
+/* ── DATA CASCADES — side columns, absolute on hex wrap ────── */
 #breach-data-left,#breach-data-right{
-  position:fixed;top:0;width:clamp(40px,7vw,80px);
-  height:200vh;z-index:871;pointer-events:none;
+  position:fixed;top:0;bottom:0;
+  width:clamp(36px,6vw,64px);
+  pointer-events:none;z-index:870;
   font-family:'Courier New',monospace;
-  font-size:clamp(7px,1.2vw,10px);letter-spacing:.1em;
-  color:rgba(0,229,255,.28);line-height:1.8;
-  animation:dataScroll 4s linear infinite;
+  font-size:clamp(6px,1vw,9px);letter-spacing:.08em;
+  color:rgba(0,229,255,.2);line-height:1.8;
+  animation:dataScroll 5s linear infinite;
   white-space:nowrap;overflow:hidden;
 }
-#breach-data-left{left:clamp(6px,2vw,24px);}
-#breach-data-right{right:clamp(6px,2vw,24px);text-align:right;}
+#breach-data-left{left:clamp(4px,1vw,12px);}
+#breach-data-right{right:clamp(4px,1vw,12px);text-align:right;}
 
-/* Corner scan lines — horizontal lines that sweep in from corners */
+/* ── CORNER SCAN LINES ─────────────────────────────────────── */
 .breach-corner-line{
   position:fixed;height:1px;
   background:linear-gradient(90deg,transparent,#00e5ff,transparent);
   box-shadow:0 0 6px #00e5ff;
   z-index:872;pointer-events:none;opacity:0;
 }
-#bcl-top{top:clamp(20px,5vh,50px);left:0;right:0;
+#bcl-top{top:clamp(16px,4vh,40px);left:0;right:0;
   animation:bcLineIn .4s ease 0.7s forwards;}
-#bcl-bot{bottom:clamp(20px,5vh,50px);left:0;right:0;
+#bcl-bot{bottom:clamp(16px,4vh,40px);left:0;right:0;
   animation:bcLineIn .4s ease 0.9s forwards;}
-@keyframes bcLineIn{from{opacity:0;transform:scaleX(.2);}to{opacity:.5;transform:scaleX(1);}}
 
-/* Individual text confirm lines */
+/* ── TEXT STYLES ───────────────────────────────────────────── */
 .breach-confirm-line{
   font-family:'Courier New',monospace;
   text-transform:uppercase;text-align:center;
-  opacity:0;
+  opacity:0;white-space:nowrap;
 }
 #bc-label{
-  font-size:clamp(8px,1.4vw,11px);letter-spacing:.5em;
-  color:rgba(0,229,255,.5);
+  font-size:clamp(7px,1.6vmin,10px);letter-spacing:.5em;
+  color:rgba(0,229,255,.45);
 }
 #bc-name{
-  font-size:clamp(20px,5vw,36px);letter-spacing:.2em;font-weight:bold;
+  font-size:clamp(15px,4.2vmin,28px);letter-spacing:.18em;font-weight:bold;
   color:#00e5ff;
-  text-shadow:0 0 24px rgba(0,229,255,1),0 0 60px rgba(0,229,255,.5);
+  text-shadow:0 0 20px rgba(0,229,255,1),0 0 50px rgba(0,229,255,.5);
 }
 #bc-ref{
-  font-size:clamp(9px,1.6vw,12px);letter-spacing:.35em;
-  color:rgba(0,229,255,.6);
+  font-size:clamp(7px,1.6vmin,10px);letter-spacing:.3em;
+  color:rgba(0,229,255,.55);
 }
 #bc-status{
-  font-size:clamp(14px,3vw,22px);letter-spacing:.35em;font-weight:bold;
+  font-size:clamp(12px,3.2vmin,20px);letter-spacing:.3em;font-weight:bold;
   color:#00e5ff;
-  text-shadow:0 0 18px rgba(0,229,255,.9);
-  margin-top:clamp(8px,2vh,18px);
+  text-shadow:0 0 16px rgba(0,229,255,.9);
 }
 #bc-sub{
-  font-size:clamp(8px,1.3vw,10px);letter-spacing:.4em;
-  color:rgba(0,229,255,.4);animation:pulse 1.5s ease-in-out infinite;
+  font-size:clamp(6px,1.4vmin,9px);letter-spacing:.4em;
+  color:rgba(0,229,255,.35);
+  animation:pulse 1.5s ease-in-out infinite;
 }
+
 .hexlock-spin-cw{
   transform-origin:center;
   animation:hexLockSpin 5s linear infinite;
@@ -1312,69 +1315,73 @@ body.shaking{animation:screenShake .45s linear;}
 
 <!-- ACCESS BREACH SUCCESS (password unlock, before ISIS) -->
 <div id="access-breach">
-  <!-- Horizontal corner scan lines -->
+  <!-- Ambient corner scan lines (purely decorative, fixed to viewport) -->
   <div class="breach-corner-line" id="bcl-top"></div>
   <div class="breach-corner-line" id="bcl-bot"></div>
 
-  <!-- Full-screen SVG: large hexlock + expanding confirmation rings -->
-  <svg id="breach-success-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
-    <defs>
-      <filter id="hexglow" x="-40%" y="-40%" width="180%" height="180%">
-        <feGaussianBlur stdDeviation="1.5" result="b"/>
-        <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
-      </filter>
-    </defs>
-    <g transform="translate(50,50)">
-      <!-- Expanding confirmation rings animated via JS -->
-      <circle id="bsr1" r="0" fill="none" stroke="#00e5ff" stroke-width=".4" opacity="0"/>
-      <circle id="bsr2" r="0" fill="none" stroke="#00e5ff" stroke-width=".3" opacity="0"/>
-      <circle id="bsr3" r="0" fill="none" stroke="rgba(0,229,255,.5)" stroke-width=".2" opacity="0"/>
-
-      <!-- Hexlock assembly — much larger than before -->
-      <g class="hexlock-frame">
-        <g class="hexlock-spin-cw">
-          <polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14"
-            fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".8"/>
-          <line x1="0" y1="-24" x2="0" y2="-28" stroke="#00e5ff" stroke-width=".3"/>
-          <line x1="0" y1="24"  x2="0" y2="28"  stroke="#00e5ff" stroke-width=".3"/>
-        </g>
-        <g class="hexlock-spin-ccw">
-          <polygon points="0,-21 18.2,-10.5 18.2,10.5 0,21 -18.2,10.5 -18.2,-10.5"
-            fill="none" stroke="#00e5ff" stroke-width=".35" stroke-dasharray="2 1.2" opacity=".6"/>
-        </g>
-        <polygon points="0,-14 12.1,-7 12.1,7 0,14 -12.1,7 -12.1,-7"
-          fill="rgba(0,229,255,.06)" stroke="#00e5ff" stroke-width=".3" opacity=".9"/>
-        <line x1="-28" y1="0" x2="-14" y2="0" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
-        <line x1="14"  y1="0" x2="28"  y2="0" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
-        <line x1="0" y1="-28" x2="0" y2="-14" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
-        <line x1="0" y1="14"  x2="0" y2="28"  stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
-        <g class="hexlock-core">
-          <circle r="4.5" fill="rgba(0,229,255,.1)" stroke="#00e5ff" stroke-width=".25"/>
-          <circle r="2"   fill="#00e5ff"/>
-          <circle r="2"   fill="none" stroke="#00e5ff" stroke-width=".25">
-            <animate attributeName="r"       values="2;10"  dur="1.8s" repeatCount="indefinite"/>
-            <animate attributeName="opacity" values="0.9;0" dur="1.8s" repeatCount="indefinite"/>
-          </circle>
-        </g>
-      </g>
-    </g>
-  </svg>
-
-  <!-- Data cascade streams -->
+  <!-- Side data cascades (fixed, behind composition) -->
   <div id="breach-data-left">EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA<br>EC777 A1F3 CONFIRMED 0x4E USER ACTIVE<br>GRID ACCESS GRANTED SECTOR ALPHA</div>
   <div id="breach-data-right">4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID<br>4E USER ACTIVE CONFIRMED A1F3 EC777<br>ALPHA SECTOR GRANTED ACCESS GRID</div>
 
-  <!-- Text above hexlock: identity lines -->
-  <div id="breach-text-top">
-    <div class="breach-confirm-line" id="bc-label">IDENTITY CONFIRMED</div>
-    <div class="breach-confirm-line" id="bc-name">ERIDANI EFFENDI</div>
-  </div>
+  <!-- SINGLE COORDINATED COMPOSITION: text → hex → text in flow -->
+  <div id="breach-composition">
 
-  <!-- Text below hexlock: clearance and welcome -->
-  <div id="breach-text-bottom">
-    <div class="breach-confirm-line" id="bc-ref">EC-777 · CLEARANCE: USER ACTIVE</div>
-    <div class="breach-confirm-line" id="bc-status">ACCESS CONFIRMED</div>
-    <div class="breach-confirm-line" id="bc-sub">WELCOME TO THE GRID</div>
+    <!-- Top text: identity -->
+    <div id="breach-text-top">
+      <div class="breach-confirm-line" id="bc-label">IDENTITY CONFIRMED</div>
+      <div class="breach-confirm-line" id="bc-name">ERIDANI EFFENDI</div>
+    </div>
+
+    <!-- Hex centre: bounded square container, SVG fills it exactly -->
+    <div id="breach-hex-wrap">
+      <svg id="breach-success-svg" viewBox="0 0 100 100" preserveAspectRatio="xMidYMid meet" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <filter id="hexglow" x="-40%" y="-40%" width="180%" height="180%">
+            <feGaussianBlur stdDeviation="1.5" result="b"/>
+            <feMerge><feMergeNode in="b"/><feMergeNode in="SourceGraphic"/></feMerge>
+          </filter>
+        </defs>
+        <g transform="translate(50,50)">
+          <circle id="bsr1" r="0" fill="none" stroke="#00e5ff" stroke-width=".4" opacity="0"/>
+          <circle id="bsr2" r="0" fill="none" stroke="#00e5ff" stroke-width=".3" opacity="0"/>
+          <circle id="bsr3" r="0" fill="none" stroke="rgba(0,229,255,.5)" stroke-width=".2" opacity="0"/>
+          <g class="hexlock-frame">
+            <g class="hexlock-spin-cw">
+              <polygon points="0,-28 24.2,-14 24.2,14 0,28 -24.2,14 -24.2,-14"
+                fill="none" stroke="#00e5ff" stroke-width=".4" opacity=".8"/>
+              <line x1="0" y1="-24" x2="0" y2="-28" stroke="#00e5ff" stroke-width=".3"/>
+              <line x1="0" y1="24"  x2="0" y2="28"  stroke="#00e5ff" stroke-width=".3"/>
+            </g>
+            <g class="hexlock-spin-ccw">
+              <polygon points="0,-21 18.2,-10.5 18.2,10.5 0,21 -18.2,10.5 -18.2,-10.5"
+                fill="none" stroke="#00e5ff" stroke-width=".35" stroke-dasharray="2 1.2" opacity=".6"/>
+            </g>
+            <polygon points="0,-14 12.1,-7 12.1,7 0,14 -12.1,7 -12.1,-7"
+              fill="rgba(0,229,255,.06)" stroke="#00e5ff" stroke-width=".3" opacity=".9"/>
+            <line x1="-28" y1="0" x2="-14" y2="0" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
+            <line x1="14"  y1="0" x2="28"  y2="0" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
+            <line x1="0" y1="-28" x2="0" y2="-14" stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
+            <line x1="0" y1="14"  x2="0" y2="28"  stroke="rgba(0,229,255,.4)" stroke-width=".2"/>
+            <g class="hexlock-core">
+              <circle r="4.5" fill="rgba(0,229,255,.1)" stroke="#00e5ff" stroke-width=".25"/>
+              <circle r="2"   fill="#00e5ff"/>
+              <circle r="2"   fill="none" stroke="#00e5ff" stroke-width=".25">
+                <animate attributeName="r"       values="2;10"  dur="1.8s" repeatCount="indefinite"/>
+                <animate attributeName="opacity" values="0.9;0" dur="1.8s" repeatCount="indefinite"/>
+              </circle>
+            </g>
+          </g>
+        </g>
+      </svg>
+    </div>
+
+    <!-- Bottom text: clearance and welcome -->
+    <div id="breach-text-bottom">
+      <div class="breach-confirm-line" id="bc-ref">EC-777 · CLEARANCE: USER ACTIVE</div>
+      <div class="breach-confirm-line" id="bc-status">ACCESS CONFIRMED</div>
+      <div class="breach-confirm-line" id="bc-sub">WELCOME TO THE GRID</div>
+    </div>
+
   </div>
 </div>
 
@@ -1674,7 +1681,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line" id="tl1">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td1" data-text="Agent-067 Eridani Effendi. You've been cleared for immediate field induction. ENCOM's security is an embarrassment, but it served as a passable screening test. We've been watching your navigation of the Grid."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td1" data-text="Agent-067 Eridani Effendi. You've been cleared for immediate field induction. We've been watching your navigation of the Grid."></span>
       </div>
 
       <div class="transcript-line" id="tl2">
@@ -1682,7 +1689,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line" id="tl3">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td3" data-text="If you're quite finished with your paranoid little outburst, Sterling, we have a mission to complete. Dani, ignore the idiot. He's clearly having a breakdown."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td3" data-text="If you're quite finished with your paranoid little outburst, Sterling, some of us have a mission to complete!"></span>
       </div>
 
       <div class="transcript-line" id="tl4">
@@ -1759,7 +1766,7 @@ body.shaking{animation:screenShake .45s linear;}
     <div class="msg-divider" id="msg-div2"></div>
     <div class="msg-closing">
       <div class="msg-bday" id="ml6">Happy 27th Birthday, Buh.</div>
-      <div class="msg-eol"  id="ml7">End of Line.</div>
+      <div class="msg-eol"  id="ml7">— END OF LINE —</div>
       <div class="msg-sig-wrap" id="msg-sig-wrap">
         <div class="msg-sig-rule"></div>
         <div id="msg-sig">Signature: Your Quorrbuh</div>
@@ -2355,8 +2362,8 @@ const termLinesB=[
   {t:'> "ENCOM cannot give you what you need."',                      d:4300},
   {t:'> "But we can."',                                               d:5800},
   {t:'> "It is time for you to take back what is rightfully yours."', d:7000},
-  {t:'> "Accept the mission. The grid will show you the way."',       d:9000},
-  {t:'> "End of line."',                                              d:10900},
+  {t:'> "Accept the mission. You will need these tools to navigate the Grid."', d:9000},
+  {t:'> END OF LINE',                                                d:10900},
   {t:'',                                             d:11800},
   {t:'> SIGNAL LOST.',                               d:12200},
   {t:'> GRID MAP READY.',                            d:13000},
