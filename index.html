@@ -1184,10 +1184,10 @@ body.shaking{animation:screenShake .45s linear;}
 
 <!-- ── AUDIO ──────────────────────────────────────────────────── -->
 <audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
-<audio id="audio-end"        loop preload="auto"><source src="EndTitles.mp3"     type="audio/mpeg"></audio>
+<audio id="audio-end"        preload="auto"><source src="EndTitles.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-killer"     loop preload="auto"><source src="TheKiller.mp3"       type="audio/mpeg"></audio>
 <audio id="audio-type"            preload="auto"><source src="sfx-typing.mp3"     type="audio/mpeg"></audio>
-<audio id="audio-lightcycle" loop preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
+<audio id="audio-lightcycle" preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
 <audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-granted"         preload="auto"><source src="sfx-granted.mp3"    type="audio/mpeg"></audio>
 <audio id="audio-click"           preload="auto"><source src="sfx-click.mp3"      type="audio/mpeg"></audio>
@@ -2217,8 +2217,18 @@ function doGlitch(dur=400){
 function playBg()          {const a=$('audio-bg');        a.volume=0.18; a.play().catch(()=>{});}
 function playType()        {const a=$('audio-type');       a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
 function stopType()        {const a=$('audio-type');       a.pause(); a.currentTime=0;}
-function playLightcycle()  {const a=$('audio-lightcycle'); a.volume=0.9;  a.currentTime=0; a.play().catch(()=>{});}
-function stopLightcycle()  {const a=$('audio-lightcycle'); a.pause(); a.currentTime=0;}
+function playLightcycle(){
+  const a=$('audio-lightcycle');
+  a.volume=0.9; a.currentTime=0;
+  a.play().catch(()=>{});
+  // Play exactly twice — restart once when the first play ends
+  a._playedOnce=false;
+  a.onended=()=>{
+    if(!a._playedOnce){ a._playedOnce=true; a.currentTime=0; a.play().catch(()=>{}); }
+    else { a.onended=null; }
+  };
+}
+function stopLightcycle(){const a=$('audio-lightcycle'); a.pause(); a.currentTime=0; a.onended=null;}
 function playDenied()      {const a=$('audio-denied');     a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
 function playGranted()     {const a=$('audio-granted');    a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
 function playClick()       {const a=$('audio-click');      a.volume=0.8;  a.currentTime=0; a.play().catch(()=>{});}
