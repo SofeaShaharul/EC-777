@@ -2301,7 +2301,11 @@ function doGlitch(dur=400){
 }
 
 // Audio
-function playBg()          {const a=$('audio-bg');        a.volume=0.18; a.play().catch(()=>{});}
+function playBg(){
+  const a=$('audio-bg');
+  a.volume=0.09; // start at half normal volume — fades up alongside initial.mp3
+  a.play().catch(()=>{});
+}
 function playType()        {const a=$('audio-type');       a.volume=1.0;  a.currentTime=0; a.play().catch(()=>{});}
 function stopType()        {const a=$('audio-type');       a.pause(); a.currentTime=0;}
 function playLightcycle(){
@@ -2377,6 +2381,9 @@ function startMatrixRain(){
 $('gw-btn').addEventListener('click',()=>{
   playClick();
   playBg();
+  // Fade EndofLine from half volume up to normal over 10s —
+  // so initial.mp3 is clearly heard first then EndofLine takes over
+  fadeAudio($('audio-bg'), 0.09, 0.18, 10000);
   // Play initial.mp3 immediately on this direct tap — iOS Safari
   // honours play() here since we're in a synchronous user gesture
   const init=$('audio-initial');
