@@ -1236,6 +1236,7 @@ body.shaking{animation:screenShake .45s linear;}
 <audio id="audio-bg"         loop preload="auto"><source src="EndofLine.mp3"      type="audio/mpeg"></audio>
 <audio id="audio-end"        preload="auto"><source src="EndTitles.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-killer"     loop preload="auto"><source src="TheKiller.mp3"       type="audio/mpeg"></audio>
+<audio id="audio-initial"    preload="auto"><source src="initial.mp3"        type="audio/mpeg"></audio>
 <audio id="audio-type"            preload="auto"><source src="sfx-typing.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-lightcycle" preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
 <audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
@@ -1653,15 +1654,19 @@ body.shaking{animation:screenShake .45s linear;}
     <!-- ══ LEG 2 PATHS — ORANGE (fully hidden until ISIS unlock) ═ -->
     <!-- Leg 2: Golf Sim → left to Lift column → up to Movie Theatre (I/O Tower) -->
     <!-- B1: Golf Sim (420,461) → left to (83,461). distance=337 -->
-    <polyline id="lb1g" points="420,461 83,461"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="337" stroke-dashoffset="337" opacity="0"/>
-    <polyline id="lb1"  points="420,461 83,461"  fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="337" stroke-dashoffset="337" opacity="0"/>
-    <!-- B2: (83,461) up to Movie Theatre (83,151). distance=310 -->
-    <polyline id="lb2g" points="83,461 83,151"   fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
-    <polyline id="lb2"  points="83,461 83,151"   fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <!-- Leg 2: Golf Sim → Lift L1 → Lift L0 → Movie Theatre (I/O Tower) -->
+    <!-- B1: Golf Sim (420,461) → right to Lift L1 (552,461). distance=132 -->
+    <polyline id="lb1g" points="420,461 552,461"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <polyline id="lb1"  points="420,461 552,461"  fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <!-- B2: Lift L1 (552,461) up through divider to Lift L0 (552,151). distance=310 -->
+    <polyline id="lb2g" points="552,461 552,151"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <polyline id="lb2"  points="552,461 552,151"  fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <!-- B3: Lift L0 (552,151) left to Movie Theatre (83,151). distance=469 -->
+    <polyline id="lb3g" points="552,151 83,151"   fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="469" stroke-dashoffset="469" opacity="0"/>
+    <polyline id="lb3"  points="552,151 83,151"   fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="469" stroke-dashoffset="469" opacity="0"/>
 
     <!-- Leg 2 flow pulse -->
-    <polyline id="lb-flow" points="420,461 83,461 83,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
-
+    <polyline id="lb-flow" points="420,461 552,461 552,151 83,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
     <!-- Leg 2 destination dot — entire group hidden until reroute -->
     <g id="dest-b-group" style="display:none;">
       <circle id="dest-b"       cx="83" cy="151" r="8" fill="#ff8c00" filter="url(#glow2)"/>
@@ -2372,6 +2377,10 @@ function startMatrixRain(){
 $('gw-btn').addEventListener('click',()=>{
   playClick();
   playBg();
+  // Play initial.mp3 immediately on this direct tap — iOS Safari
+  // honours play() here since we're in a synchronous user gesture
+  const init=$('audio-initial');
+  init.volume=0.9; init.currentTime=0; init.play().catch(()=>{});
   // Stop the hex grid canvas to free resources
   if(stopGatewayHex) stopGatewayHex();
   // Tile wipe transition — the Grid hex floor materializes and dissolves
@@ -2680,15 +2689,19 @@ function showMap(){
 $('pw-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     const val=$('pw-input').value.trim().toLowerCase();
-    // Unlock audio-killer and audio-fxman immediately on this user gesture
-    const k=$('audio-killer');
-    k.volume=0; k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
-    const fx=$('audio-fxman');
-    fx.volume=0; fx.play().catch(()=>{}).then(()=>fx.pause()).catch(()=>{});
-    // Start fading EndofLine now so the granted sfx plays into quiet
-    if(val==='guest') fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 500);
-    if(val==='guest') handleGranted();
-    else handleDenied();
+    if(val==='guest'){
+      // Unlock audio-killer and audio-fxman on correct password only —
+      // must be in this user gesture's call stack for iOS Safari autoplay
+      const k=$('audio-killer');
+      k.volume=0; k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
+      const fx=$('audio-fxman');
+      fx.volume=0; fx.play().catch(()=>{}).then(()=>fx.pause()).catch(()=>{});
+      // Start fading EndofLine so the granted sfx plays into quiet
+      fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 500);
+      handleGranted();
+    } else {
+      handleDenied();
+    }
   }
 });
 
@@ -3035,33 +3048,30 @@ function showLeg2(){
 
   // Reveal and animate leg 2 — now only 2 segments to movie theatre
   setTimeout(()=>{
-    ['lb1','lb1g','lb2','lb2g'].forEach(id=>{
+    ['lb1','lb1g','lb2','lb2g','lb3','lb3g'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.style.opacity='1';
     });
     playLightcycle();
 
-    animPath('lb1','lb1g',400,  550,()=>flashRoomOrange('rl-golf'));
-    animPath('lb2','lb2g',600, 1000,()=>{
+    animPath('lb1','lb1g',400,  300,()=>flashRoomOrange('rl-golf'));
+    animPath('lb2','lb2g',780,  740,()=>{flashRoomOrange('rl-lift1');flashRoomOrange('rl-lift0');});
+    animPath('lb3','lb3g',600, 1560,()=>{
       flashRoomOrange('rl-movie-name');
-      // Flow pulse on leg 2 with orange energy particles
+      // Flow pulse on leg 2 with orange energy particles via lift
       setTimeout(()=>{
         const flow=$('lb-flow');
         flow.style.opacity='1';
         flow.style.animation='flowB 1.2s linear infinite';
         runPathParticles('mapsvg-wrap',[
-          {x:420,y:461},{x:83,y:461},{x:83,y:151}
+          {x:420,y:461},{x:552,y:461},{x:552,y:151},{x:83,y:151}
         ],'#ff8c00',8);
       },250);
       // Reveal destination
       setTimeout(()=>{
         $('dest-b-group').style.display='block';
       },350);
-      // Reveal proceed button after destination appears, and
-      // scroll it into view so he doesn't need to know to scroll
-      // down himself to find it. Fires twice, once immediately
-      // and once after a short delay, since layout can shift
-      // slightly as the button's pulse animation kicks in.
+      // Reveal proceed button and scroll it into view
       setTimeout(()=>{
         const btn=$('map-proceed-btn');
         btn.style.display='block';
