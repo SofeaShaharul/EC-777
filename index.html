@@ -87,32 +87,32 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
 /* Telemetry footer bar — always visible, adds ambient authenticity */
 #telemetry-bar{
   position:fixed;bottom:0;left:0;right:0;height:22px;
-  border-top:1px solid rgba(0,229,255,.12);
-  background:rgba(0,0,0,.4);
+  border-top:1px solid rgba(0,229,255,.22);
+  background:rgba(0,0,0,.55);
   display:flex;align-items:center;
   padding:0 18px;gap:clamp(8px,2vw,24px);
   z-index:10;pointer-events:none;
 }
 .tel-item{
   font-size:8px;letter-spacing:.2em;
-  color:rgba(0,229,255,.3);text-transform:uppercase;
+  color:rgba(0,229,255,.55);text-transform:uppercase;
   display:flex;align-items:center;gap:5px;white-space:nowrap;
 }
 .tel-dot{
   width:5px;height:5px;border-radius:50%;
-  background:#00e5ff;opacity:.5;
+  background:#00e5ff;opacity:.6;
   animation:pulse 2.5s ease-in-out infinite;
 }
-.tel-dot.active{background:#00ff88;opacity:.8;animation:pulse 1.2s ease-in-out infinite;}
+.tel-dot.active{background:#00ff88;opacity:.9;animation:pulse 1.2s ease-in-out infinite;}
 .tel-spacer{flex:1;}
 
 /* Signal bars */
 .sig-bars{display:flex;gap:2px;align-items:flex-end;height:10px;}
-.sig-bar{width:3px;background:rgba(0,229,255,.35);border-radius:1px;}
+.sig-bar{width:3px;background:rgba(0,229,255,.45);border-radius:1px;}
 .sig-bar:nth-child(1){height:3px;}
 .sig-bar:nth-child(2){height:5px;}
 .sig-bar:nth-child(3){height:7px;}
-.sig-bar:nth-child(4){height:9px;background:rgba(0,229,255,.6);}
+.sig-bar:nth-child(4){height:9px;background:rgba(0,229,255,.7);}
 
 .corner{position:fixed;width:28px;height:28px;z-index:10;}
 #c-tl{top:0;left:0;border-top:1px solid rgba(0,229,255,.6);border-left:1px solid rgba(0,229,255,.6);}
@@ -319,7 +319,57 @@ body{font-family:'Courier New',Courier,monospace;color:#00e5ff;}
   z-index:2;position:relative;
 }
 
-/* ── THEATRICAL BREACH SEQUENCE ──────────────────────────────── */
+/* ── VOICE MEMO OVERLAY ─────────────────────────────────────── */
+@keyframes waveBar{
+  0%,100%{transform:scaleY(.3);opacity:.5;}
+  50%{transform:scaleY(1);opacity:1;}
+}
+@keyframes voiceFadeIn{from{opacity:0;transform:translateY(8px);}to{opacity:1;transform:translateY(0);}}
+@keyframes voiceFadeOut{from{opacity:1;}to{opacity:0;}}
+#voice-memo-overlay{
+  position:fixed;inset:0;z-index:875;
+  display:none;flex-direction:column;align-items:center;justify-content:center;
+  background:rgba(0,0,0,.92);
+  gap:clamp(16px,3vh,28px);
+}
+#voice-memo-overlay.show{display:flex;}
+#vmo-label{
+  font-family:'Courier New',monospace;
+  font-size:clamp(8px,1.4vw,10px);letter-spacing:.45em;
+  color:rgba(0,229,255,.45);text-transform:uppercase;
+  animation:voiceFadeIn .4s ease forwards;
+}
+#vmo-source{
+  font-family:'Courier New',monospace;
+  font-size:clamp(10px,2vw,13px);letter-spacing:.3em;
+  color:rgba(0,229,255,.65);text-transform:uppercase;
+  animation:voiceFadeIn .4s ease .1s both;
+}
+#vmo-id{
+  font-family:'Courier New',monospace;
+  font-size:clamp(16px,3.5vw,24px);letter-spacing:.2em;font-weight:bold;
+  color:#00e5ff;
+  text-shadow:0 0 18px rgba(0,229,255,.9);
+  animation:voiceFadeIn .4s ease .2s both;
+}
+#vmo-wave{
+  display:flex;align-items:center;gap:3px;height:clamp(32px,6vh,50px);
+  animation:voiceFadeIn .4s ease .3s both;
+}
+.vmo-bar{
+  width:clamp(3px,0.6vw,5px);
+  height:100%;
+  background:#00e5ff;
+  border-radius:2px;
+  transform-origin:center;
+  animation:waveBar .6s ease-in-out infinite;
+}
+#vmo-playing{
+  font-family:'Courier New',monospace;
+  font-size:clamp(8px,1.2vw,10px);letter-spacing:.35em;
+  color:rgba(0,229,255,.4);text-transform:uppercase;
+  animation:voiceFadeIn .4s ease .4s both,pulse 1.2s ease-in-out infinite;
+}
 @keyframes screenShake{
   0%,100%{transform:translate(0,0);}
   10%{transform:translate(-3px,2px);}
@@ -1059,8 +1109,8 @@ body.shaking{animation:screenShake .45s linear;}
   /* Tighter global chrome so it doesn't eat screen real estate */
   #encom-hud,#clock-hud{font-size:8px;}
   #telemetry-bar{padding:0 10px;gap:6px;}
-  .tel-item{font-size:7px;letter-spacing:.12em;}
-  #telemetry-bar .tel-item:nth-child(3){display:none;} /* hide sector on mobile */
+  .tel-item{font-size:8px;letter-spacing:.1em;}
+  #telemetry-bar .tel-item:nth-child(3){display:flex;} /* show sector on mobile */
   .corner{width:20px;height:20px;}
 
   /* Gateway — bigger touch target, readable labels */
@@ -1176,7 +1226,7 @@ body.shaking{animation:screenShake .45s linear;}
     </span>
     SIGNAL STRONG
   </div>
-  <div class="tel-item">GRID SECTOR: 0-ALPHA</div>
+  <div class="tel-item" id="tel-sector">GRID SECTOR: 0-ALPHA</div>
   <div class="tel-spacer"></div>
   <div class="tel-item" id="tel-session">SESSION: EC-777-X</div>
   <div class="tel-item"><span class="tel-dot"></span>ENCOM INTL</div>
@@ -1190,10 +1240,33 @@ body.shaking{animation:screenShake .45s linear;}
 <audio id="audio-lightcycle" preload="auto"><source src="sfx-lightcycle.mp3" type="audio/mpeg"></audio>
 <audio id="audio-denied"          preload="auto"><source src="sfx-denied.mp3"     type="audio/mpeg"></audio>
 <audio id="audio-granted"         preload="auto"><source src="sfx-granted.mp3"    type="audio/mpeg"></audio>
+<audio id="audio-fxman"          preload="auto"><source src="FXman.mp3"          type="audio/mpeg"></audio>
 <audio id="audio-click"           preload="auto"><source src="sfx-click.mp3"      type="audio/mpeg"></audio>
 
 <!-- Tile wipe transition overlay -->
 <canvas id="tile-wipe"></canvas>
+
+<!-- Voice memo overlay — plays FXman.mp3 before ISIS screen -->
+<div id="voice-memo-overlay">
+  <div id="vmo-label">Incoming Transmission</div>
+  <div id="vmo-source">ISIS Field Operations · Encrypted Channel</div>
+  <div id="vmo-id">AGENT-067 · ERIDANI EFFENDI</div>
+  <div id="vmo-wave">
+    <div class="vmo-bar" style="animation-delay:.0s"></div>
+    <div class="vmo-bar" style="animation-delay:.08s"></div>
+    <div class="vmo-bar" style="animation-delay:.16s"></div>
+    <div class="vmo-bar" style="animation-delay:.24s"></div>
+    <div class="vmo-bar" style="animation-delay:.32s"></div>
+    <div class="vmo-bar" style="animation-delay:.40s"></div>
+    <div class="vmo-bar" style="animation-delay:.48s"></div>
+    <div class="vmo-bar" style="animation-delay:.56s"></div>
+    <div class="vmo-bar" style="animation-delay:.64s"></div>
+    <div class="vmo-bar" style="animation-delay:.72s"></div>
+    <div class="vmo-bar" style="animation-delay:.80s"></div>
+    <div class="vmo-bar" style="animation-delay:.88s"></div>
+  </div>
+  <div id="vmo-playing">▶ PLAYING · VOICE MEMO · 14s</div>
+</div>
 
 <!-- ════════════════════════════════════════════════════════════
      GATEWAY
@@ -1473,11 +1546,11 @@ body.shaking{animation:screenShake .45s linear;}
     <text id="rl-storage-name"  x="420" y="155" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="11">STORAGE ROOM</text>
     <text id="rl-storage-sub"   x="420" y="172" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8">LEVEL 0</text>
 
-    <!-- MOVIE THEATRE -->
-    <rect x="18" y="110" width="130" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1" stroke-dasharray="5 4"/>
-    <text x="83" y="144" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">I/O TOWER</text>
-    <text x="83" y="160" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="10">MOVIE THEATRE</text>
-    <text x="83" y="176" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="8">RESTRICTED</text>
+    <!-- MOVIE THEATRE / I/O TOWER — becomes the final destination -->
+    <rect id="rl-movie-rect" x="18" y="110" width="130" height="82" fill="rgba(0,229,255,0.04)" stroke="rgba(0,229,255,0.18)" stroke-width="1" stroke-dasharray="5 4"/>
+    <text id="rl-movie-label" x="83" y="144" text-anchor="middle" fill="rgba(0,229,255,.65)" font-family="Courier New" font-size="8" letter-spacing="1">I/O TOWER</text>
+    <text id="rl-movie-name"  x="83" y="160" text-anchor="middle" fill="rgba(0,229,255,.75)" font-family="Courier New" font-size="10">MOVIE THEATRE</text>
+    <text id="rl-movie-sub"   x="83" y="176" text-anchor="middle" fill="rgba(0,229,255,.6)" font-family="Courier New" font-size="8">RESTRICTED</text>
 
     <!-- YOU ARE HERE -->
     <circle id="origin-dot" cx="83" cy="311" r="6" fill="#00e5ff" opacity=".95" filter="url(#glow)"/>
@@ -1578,23 +1651,21 @@ body.shaking{animation:screenShake .45s linear;}
     </circle>
 
     <!-- ══ LEG 2 PATHS — ORANGE (fully hidden until ISIS unlock) ═ -->
-    <!-- B1: Golf Sim → L1 Lift centre (horizontal right, 90°) -->
-    <polyline id="lb1g" points="420,461 552,461"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
-    <polyline id="lb1"  points="420,461 552,461"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
-    <!-- B2: L1 Lift up through divider to L0 Lift, continuing up to y=151 (one clean vertical) -->
-    <polyline id="lb2g" points="552,461 552,151"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
-    <polyline id="lb2"  points="552,461 552,151"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
-    <!-- B3: Turn left from 552,151 → Storage Room at 420,151 (horizontal left, 90°) -->
-    <polyline id="lb3g" points="552,151 420,151"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"   stroke-linecap="square" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
-    <polyline id="lb3"  points="552,151 420,151"  fill="none" stroke="#ff8c00"               stroke-width="3"   stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="132" stroke-dashoffset="132" opacity="0"/>
+    <!-- Leg 2: Golf Sim → left to Lift column → up to Movie Theatre (I/O Tower) -->
+    <!-- B1: Golf Sim (420,461) → left to (83,461). distance=337 -->
+    <polyline id="lb1g" points="420,461 83,461"  fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="337" stroke-dashoffset="337" opacity="0"/>
+    <polyline id="lb1"  points="420,461 83,461"  fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="337" stroke-dashoffset="337" opacity="0"/>
+    <!-- B2: (83,461) up to Movie Theatre (83,151). distance=310 -->
+    <polyline id="lb2g" points="83,461 83,151"   fill="none" stroke="rgba(255,140,0,0.35)" stroke-width="10"  stroke-linecap="square" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
+    <polyline id="lb2"  points="83,461 83,151"   fill="none" stroke="#ff8c00"               stroke-width="3"  stroke-linecap="square" filter="url(#glow2)" stroke-dasharray="310" stroke-dashoffset="310" opacity="0"/>
 
-    <!-- Leg 2 flow pulse — matches corrected path -->
-    <polyline id="lb-flow" points="420,461 552,461 552,151 420,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
+    <!-- Leg 2 flow pulse -->
+    <polyline id="lb-flow" points="420,461 83,461 83,151" fill="none" stroke="rgba(255,255,255,0.18)" stroke-width="2" stroke-linecap="square" stroke-dasharray="18 8" opacity="0"/>
 
     <!-- Leg 2 destination dot — entire group hidden until reroute -->
     <g id="dest-b-group" style="display:none;">
-      <circle id="dest-b"       cx="420" cy="151" r="8" fill="#ff8c00" filter="url(#glow2)"/>
-      <circle id="dest-b-pulse" cx="420" cy="151" r="8" fill="none" stroke="#ff8c00" stroke-width="2">
+      <circle id="dest-b"       cx="83" cy="151" r="8" fill="#ff8c00" filter="url(#glow2)"/>
+      <circle id="dest-b-pulse" cx="83" cy="151" r="8" fill="none" stroke="#ff8c00" stroke-width="2">
         <animate attributeName="r" values="8;26" dur="1.5s" repeatCount="indefinite"/>
         <animate attributeName="opacity" values="0.9;0" dur="1.5s" repeatCount="indefinite"/>
       </circle>
@@ -1697,7 +1768,7 @@ body.shaking{animation:screenShake .45s linear;}
       </div>
 
       <div class="transcript-line raised" id="tl5">
-        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I will personally oversee your deletion. Dani, disregard his hysterics; the extraction target is waiting in the Archive Sector. We don't care how you get to it, just get it out."></span>
+        <span class="t-speaker malory">MALORY:</span><span class="t-dialogue" id="td5" data-text="Sterling, one more word out of you and I will personally oversee your deletion. Dani, disregard his hysterics; the extraction target is waiting in the I/O Tower. We don't care how you get to it, just get it out."></span>
       </div>
 
       <div id="transcript-footer">[END RECORDING]</div>
@@ -1757,10 +1828,11 @@ body.shaking{animation:screenShake .45s linear;}
     <div class="msg-line" id="ml3">It was never misplaced, User. It was archived, encrypted deep within the Grid, reserved for your unique authorization key.</div>
 
     <!-- Zone 2: Mission directive -->
-    <div class="msg-highlight" id="ml4">&rarr; Execute: Archive Sector Infiltration</div>
+    <div class="msg-highlight" id="ml4">&rarr; MISSION: EXECUTE I/O TOWER INFILTRATION AND EXTRACTION</div>
 
     <!-- Zone 3: Personal beat -->
-    <div class="msg-joke" id="ml-joke">Data streams confirm: You have the biggest LED lights.</div>
+    <div class="msg-joke" id="ml-joke">Use your tools to locate the asset.</div>
+    <div class="msg-joke" id="ml-joke2">Remember, you have the biggest LED lights.</div>
 
     <!-- Zone 4: Celebration closing -->
     <div class="msg-divider" id="msg-div2"></div>
@@ -1805,6 +1877,16 @@ let telSecond=0;
 
 // Start gateway hex grid immediately — always running on first screen
 let stopGatewayHex=startGatewayHex();
+
+// Rotating sector labels — cycles every 8 seconds to feel like
+// the Grid is actively tracking his location in real time
+const sectors=['GRID SECTOR: 0-ALPHA','GRID SECTOR: 2-DELTA','GRID SECTOR: 1-GAMMA','GRID SECTOR: 0-ALPHA','GRID SECTOR: 3-OMEGA'];
+let sectorIdx=0;
+setInterval(()=>{
+  sectorIdx=(sectorIdx+1)%sectors.length;
+  const el=$('tel-sector');
+  if(el) el.textContent=sectors[sectorIdx];
+},8000);
 
 // Show / hide
 function showEl(id,display='flex'){$(id).style.display=display;}
@@ -2598,11 +2680,11 @@ function showMap(){
 $('pw-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     const val=$('pw-input').value.trim().toLowerCase();
-    // Unlock audio-killer immediately on this user gesture so iOS
-    // Safari will allow play() to fire later from inside timeouts
+    // Unlock audio-killer and audio-fxman immediately on this user gesture
     const k=$('audio-killer');
-    k.volume=0;
-    k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
+    k.volume=0; k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
+    const fx=$('audio-fxman');
+    fx.volume=0; fx.play().catch(()=>{}).then(()=>fx.pause()).catch(()=>{});
     // Start fading EndofLine now so the granted sfx plays into quiet
     if(val==='guest') fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 500);
     if(val==='guest') handleGranted();
@@ -2752,22 +2834,47 @@ function handleGranted(){
       },delay);
     });
 
-    // ── PHASE 4: Hold then transition to ISIS ──────────────────────
-    // Last text appears at 4.1s, hold for ~3s of reading time
+    // ── PHASE 4: Hold, then voice memo (FXman), then ISIS ────────
+    // Last text appears at ~4.1s. Hold then flash to voice memo overlay.
     setTimeout(()=>{
       doFlash(()=>{
         hideEl('access-breach');
         hideEl('breach-text-top');
         hideEl('breach-text-bottom');
         $('access-breach').classList.remove('show');
-        showEl('isis-screen');
-        // Fade EndofLine to zero quickly — The Killer takes over
-        fadeAudio($('audio-bg'), $('audio-bg').volume||0.02, 0, 400);
-        // Play The Killer immediately in this synchronous block —
-        // iOS Safari only honours play() calls close to a user gesture,
-        // so no setTimeout wrapper here
-        playKiller();
-        setTimeout(showIncomingNotice, 2200);
+
+        // Show voice memo overlay and play FXman immediately
+        showEl('voice-memo-overlay','flex');
+        $('voice-memo-overlay').classList.add('show');
+        const fx=$('audio-fxman');
+        fx.currentTime=0; fx.volume=0.9;
+        fx.play().catch(()=>{});
+
+        // Transition function — called by onended or fallback timer
+        let voiceTransitioned=false;
+        function transitionFromVoiceMemo(){
+          if(voiceTransitioned)return;
+          voiceTransitioned=true;
+          fx.onended=null;
+          $('voice-memo-overlay').style.transition='opacity .5s ease';
+          $('voice-memo-overlay').style.opacity='0';
+          setTimeout(()=>{
+            hideEl('voice-memo-overlay');
+            $('voice-memo-overlay').style.opacity='';
+            $('voice-memo-overlay').style.transition='';
+            showEl('isis-screen');
+            fadeAudio($('audio-bg'), $('audio-bg').volume||0.02, 0, 400);
+            playKiller();
+            setTimeout(showIncomingNotice, 2200);
+          },500);
+        }
+
+        // Primary: fire when audio ends naturally
+        fx.onended=transitionFromVoiceMemo;
+
+        // Fallback: fire after 16s regardless — handles iOS onended bug
+        // where the event doesn't fire for short unlocked audio clips
+        setTimeout(transitionFromVoiceMemo, 16000);
       });
     },7200);
 
@@ -2898,7 +3005,7 @@ function showLeg2(){
 
   // Update headers
   $('map-eyebrow').textContent='CLASSIFIED GRID LAYOUT · ROUTE BETA · REROUTED';
-  $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE ARCHIVE SECTOR';
+  $('map-title').textContent  ='MISSION UPDATE: NAVIGATE TO THE I/O TOWER';
 
   // Equipment reminder no longer needed, he's already geared up.
   $('uv-reminder').classList.remove('on');
@@ -2906,13 +3013,13 @@ function showLeg2(){
   // Hide password prompt — no longer needed
   $('pw-block').style.display='none';
 
-  // Reveal the storage room label now
-  ['rl-storage-label','rl-storage-name'].forEach(id=>{
+  // Reveal the movie theatre / I/O Tower label now
+  ['rl-movie-label','rl-movie-name'].forEach(id=>{
     const el=document.getElementById(id);
     if(el){el.style.transition='fill .8s ease';el.style.fill='rgba(255,140,0,0.85)';}
   });
-  const sub=document.getElementById('rl-storage-sub');
-  if(sub){sub.style.fill='rgba(255,140,0,0.55)';sub.textContent='ARCHIVE SECTOR';}
+  const sub=document.getElementById('rl-movie-sub');
+  if(sub){sub.style.fill='rgba(255,140,0,0.55)';sub.textContent='I/O TOWER';}
 
   // Fade out leg 1 paths + flow
   ['la1a','la1ag','la1b','la1bg','la2','la2g','la3','la3g','la4','la4g','la5','la5g','la-flow','dest-a','dest-a-pulse','briefcase-marker'].forEach(id=>{
@@ -2926,25 +3033,24 @@ function showLeg2(){
     $('leg-b-legend-text').style.opacity='1';
   },400);
 
-  // Reveal and animate leg 2
+  // Reveal and animate leg 2 — now only 2 segments to movie theatre
   setTimeout(()=>{
-    ['lb1','lb1g','lb2','lb2g','lb3','lb3g'].forEach(id=>{
+    ['lb1','lb1g','lb2','lb2g'].forEach(id=>{
       const el=document.getElementById(id);
       if(el)el.style.opacity='1';
     });
     playLightcycle();
 
-    animPath('lb1','lb1g',400,  300,()=>flashRoomOrange('rl-golf'));
-    animPath('lb2','lb2g',780,  740,()=>{flashRoomOrange('rl-lift1');flashRoomOrange('rl-lift0');});
-    animPath('lb3','lb3g',400, 1560,()=>{
-      flashRoomOrange('rl-storage-name');
+    animPath('lb1','lb1g',400,  550,()=>flashRoomOrange('rl-golf'));
+    animPath('lb2','lb2g',600, 1000,()=>{
+      flashRoomOrange('rl-movie-name');
       // Flow pulse on leg 2 with orange energy particles
       setTimeout(()=>{
         const flow=$('lb-flow');
         flow.style.opacity='1';
         flow.style.animation='flowB 1.2s linear infinite';
         runPathParticles('mapsvg-wrap',[
-          {x:420,y:461},{x:552,y:461},{x:552,y:151},{x:420,y:151}
+          {x:420,y:461},{x:83,y:461},{x:83,y:151}
         ],'#ff8c00',8);
       },250);
       // Reveal destination
@@ -3193,17 +3299,18 @@ function showFinalMessage(){
   // Zone 2: Mission directive
   setTimeout(()=>$('ml4').classList.add('on'),3000);
 
-  // Zone 3: Personal beat
+  // Zone 3: Tool reminder then LED lights line
   setTimeout(()=>$('ml-joke').classList.add('on'),4200);
+  setTimeout(()=>{ const el=$('ml-joke2'); if(el) el.classList.add('on'); },5000);
 
   // Zone 4: Closing — divider, birthday, end of line, signature stamp
-  setTimeout(()=>$('msg-div2').classList.add('on'),5400);
-  setTimeout(()=>$('ml6').classList.add('on'),6200);
-  setTimeout(()=>$('ml7').classList.add('on'),7100);
-  setTimeout(()=>$('msg-sig-wrap').classList.add('on'),8000);
+  setTimeout(()=>$('msg-div2').classList.add('on'),6000);
+  setTimeout(()=>$('ml6').classList.add('on'),6800);
+  setTimeout(()=>$('ml7').classList.add('on'),7700);
+  setTimeout(()=>$('msg-sig-wrap').classList.add('on'),8600);
 
   // Footer watermark last, barely visible
-  setTimeout(()=>$('msg-footer').classList.add('on'),8800);
+  setTimeout(()=>$('msg-footer').classList.add('on'),9400);
 }
 </script>
 </body>
