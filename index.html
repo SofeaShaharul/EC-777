@@ -2385,16 +2385,12 @@ $('gw-btn').addEventListener('click',()=>{
   // Fade EndofLine from half volume up to normal over 10s —
   // so initial.mp3 is clearly heard first then EndofLine takes over
   fadeAudio($('audio-bg'), 0.09, 0.18, 10000);
-  // Play initial.mp3 with a 2-second delay.
-  // iOS requires play() in the synchronous gesture call stack to unlock
-  // the audio element, so we play immediately then pause and schedule
-  // the real playback — this pattern is reliable on Safari.
-  const init=$('audio-initial');
-  init.volume=0; init.currentTime=0;
-  init.play().catch(()=>{});
+  // Play initial.mp3 after a 2-second delay.
+  // The gateway button tap is a direct user gesture, so setTimeout
+  // here still has iOS autoplay permission — no pre-play unlock needed.
   setTimeout(()=>{
-    init.currentTime=0;
-    init.volume=0.9;
+    const init=$('audio-initial');
+    init.currentTime=0; init.volume=0.9;
     init.play().catch(()=>{});
   },2000);
   // Stop the hex grid canvas to free resources
@@ -2706,12 +2702,11 @@ $('pw-input').addEventListener('keydown',e=>{
   if(e.key==='Enter'){
     const val=$('pw-input').value.trim().toLowerCase();
     if(val==='guest'){
-      // Unlock audio-killer and audio-fxman on correct password only —
-      // must be in this user gesture's call stack for iOS Safari autoplay
-      const k=$('audio-killer');
-      k.volume=0; k.play().catch(()=>{}).then(()=>k.pause()).catch(()=>{});
-      const fx=$('audio-fxman');
-      fx.volume=0; fx.play().catch(()=>{}).then(()=>fx.pause()).catch(()=>{});
+      // Use load() to prime audio elements for later play() calls.
+      // load() is synchronous, resets state cleanly, and doesn't
+      // cause audible blips unlike play().then(pause) on iOS Safari.
+      $('audio-killer').load();
+      $('audio-fxman').load();
       // Start fading EndofLine so the granted sfx plays into quiet
       fadeAudio($('audio-bg'), $('audio-bg').volume||0.18, 0.02, 500);
       handleGranted();
@@ -2872,11 +2867,12 @@ function handleGranted(){
         hideEl('breach-text-bottom');
         $('access-breach').classList.remove('show');
 
-        // Show voice memo overlay and play FXman immediately
+        // Show voice memo overlay and play FXman from clean state
         showEl('voice-memo-overlay','flex');
         $('voice-memo-overlay').classList.add('show');
         const fx=$('audio-fxman');
-        fx.currentTime=0; fx.volume=0.9;
+        fx.load(); // reset to start cleanly — prevents mid-file resume bug
+        fx.volume=0.9;
         fx.play().catch(()=>{});
 
         // Transition function — called by onended or fallback timer
@@ -2901,9 +2897,9 @@ function handleGranted(){
         // Primary: fire when audio ends naturally
         fx.onended=transitionFromVoiceMemo;
 
-        // Fallback: fire after 16s regardless — handles iOS onended bug
-        // where the event doesn't fire for short unlocked audio clips
-        setTimeout(transitionFromVoiceMemo, 16000);
+        // Fallback: fire after 18s regardless — handles iOS onended bug.
+        // FXman.mp3 is 16s long, so 18s gives a 2s buffer.
+        setTimeout(transitionFromVoiceMemo, 18000);
       });
     },7200);
 
@@ -2919,6 +2915,8 @@ function showIncomingNotice(){
 }
 
 $('incoming-answer-btn').addEventListener('click',()=>{
+  // Disable immediately — double-tap on iOS causes duplicate transcript
+  $('incoming-answer-btn').style.pointerEvents='none';
   playClick();
   const notice=$('incoming-notice');
   notice.style.transition='opacity .4s ease';
@@ -2937,8 +2935,11 @@ $('incoming-answer-btn').addEventListener('click',()=>{
 // proceed button appearing once the recording has fully played out.
 const transcriptLines=['tl1','tl2','tl3','tl4','tl5'];
 let transcriptIdx=0;
+let transcriptRunning=false; // guard against double-tap invoking twice
 
 function runTranscript(){
+  if(transcriptRunning)return; // already running — ignore duplicate call
+  transcriptRunning=true;
   const block=$('transcript-block');
   block.classList.add('on');
   transcriptIdx=0;
@@ -3103,20 +3104,16 @@ function showLeg2(){
 $('map-proceed-btn').addEventListener('click',()=>{
   playClick();
   stopLightcycle();
-  // Fade out EndofLine immediately on click
+  // Fade out EndofLine and The Killer
   fadeOutBg(900);
-  // Start EndTitles fading in immediately so the track has
-  // 2 seconds to build before the final page actually appears.
-  // This compensates for the audio file's silent lead-in.
+  fadeOutKiller(9000);
+  // Load and play EndTitles from clean state
   const end=$('audio-end');
+  end.load();
   end.volume=0;
-  end.play().catch(()=>{});
-  let earlyVol=0;
-  const earlyFade=setInterval(()=>{
-    earlyVol=Math.min(0.22,earlyVol+0.01);
-    end.volume=earlyVol;
-    if(earlyVol>=0.22)clearInterval(earlyFade);
-  },50);
+  end.play().catch(e=>console.warn('EndTitles play failed:',e));
+  // Fade in over 2.2 seconds
+  fadeAudio(end,0,0.22,2200);
   // Short dramatic pause, then flash into the final page
   setTimeout(()=>{
     doFlash(showFinalMessage);
@@ -3159,7 +3156,7 @@ function fadeAudio(el, fromVol, toVol, durationMs, onDone){
 // Start The Killer fading in from silence
 function playKiller(){
   const k=$('audio-killer');
-  k.currentTime=0;
+  k.load(); // ensure clean state — prevents restart-from-halfway bug
   k.volume=0;
   k.play().catch(()=>{});
   // Fade in gently over 2.5 seconds
